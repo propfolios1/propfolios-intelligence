@@ -1,0 +1,291 @@
+@import "tailwindcss";
+
+/*
+ * PropFolios Intelligence — design tokens.
+ * Gold is an accent (<5% of any screen). Primary actions are navy.
+ * Text is ink. Backgrounds are warm off-white. Borders are ink-200.
+ */
+
+@theme {
+  /* Navy — primary */
+  --color-navy-50: #f2f4f8;
+  --color-navy-100: #e6eaf2;
+  --color-navy-200: #c7cfdf;
+  --color-navy-300: #9aa8c3;
+  --color-navy-400: #6479a0;
+  --color-navy-500: #3a5080;
+  --color-navy-600: #22396a;
+  --color-navy-700: #152c58;
+  --color-navy-800: #0f2350;
+  --color-navy-900: #0a1f44;
+  --color-navy-950: #06132b;
+
+  /* Gold — accent only */
+  --color-gold-100: #f6efe2;
+  --color-gold-200: #eadbbe;
+  --color-gold-300: #dcc293;
+  --color-gold-400: #cba96d;
+  --color-gold-500: #b8935a;
+  --color-gold-600: #9a7843;
+
+  /* Ink — text & neutrals (warm) */
+  --color-ink-50: #f7f6f3;
+  --color-ink-100: #efede8;
+  --color-ink-200: #e4e1da;
+  --color-ink-300: #cfcbc2;
+  --color-ink-400: #a8a39a;
+  --color-ink-500: #7c776f;
+  --color-ink-600: #5d5953;
+  --color-ink-700: #3f3c38;
+  --color-ink-800: #26262a;
+  --color-ink-900: #15171b;
+
+  /* Surfaces */
+  --color-paper: #faf8f4;
+  --color-surface: #ffffff;
+
+  /* Semantic */
+  --color-positive: #1f7a4d;
+  --color-positive-soft: #e7f3ec;
+  --color-negative: #b42318;
+  --color-negative-soft: #fbeceb;
+  --color-warning: #a8660f;
+  --color-warning-soft: #fcf3e3;
+
+  /* Fonts (wired to next/font variables in app/layout.tsx) */
+  --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+
+  /* Type scale */
+  --text-hero: 3.5rem;
+  --text-hero--line-height: 1.05;
+  --text-hero--letter-spacing: -0.03em;
+  --text-page: 2.5rem;
+  --text-page--line-height: 1.1;
+  --text-page--letter-spacing: -0.02em;
+  --text-section: 2rem;
+  --text-section--line-height: 1.15;
+  --text-section--letter-spacing: -0.02em;
+  --text-card: 1.5rem;
+  --text-card--line-height: 1.25;
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.5;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-secondary: 0.875rem;
+  --text-secondary--line-height: 1.5;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.05em;
+
+  /* Radius */
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --radius-modal: 12px;
+
+  /* Shadows — only two are allowed */
+  --shadow-card: 0 1px 2px rgba(10, 31, 68, 0.04);
+  --shadow-float: 0 8px 24px rgba(10, 31, 68, 0.08);
+
+  /* Motion */
+  --ease-brand: cubic-bezier(0.16, 1, 0.3, 1);
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  --default-transition-duration: 150ms;
+
+  --animate-page-in: page-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-enter: page-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-skeleton: skeleton 1.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  --animate-caret: caret 1s steps(1) infinite;
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes skeleton {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  @keyframes caret {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-ink-200);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  ::selection {
+    background: var(--color-navy-100);
+    color: var(--color-navy-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-navy-500);
+    outline-offset: 2px;
+  }
+}
+
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+@utility eyebrow {
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--color-ink-500);
+}
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-300) transparent;
+}
+
+/* Long-form prose: research dossiers, assistant replies, memos */
+.prose-pf {
+  color: var(--color-ink-800);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+.prose-pf h1,
+.prose-pf h2,
+.prose-pf h3 {
+  font-family: var(--font-display);
+  color: var(--color-navy-900);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.prose-pf h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+.prose-pf h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin: 2.5rem 0 0.75rem;
+}
+.prose-pf h3 {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  margin: 1.75rem 0 0.5rem;
+}
+.prose-pf p {
+  margin: 0 0 1.1em;
+}
+.prose-pf ul,
+.prose-pf ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.25em;
+}
+.prose-pf ul {
+  list-style: disc;
+}
+.prose-pf ol {
+  list-style: decimal;
+}
+.prose-pf li {
+  margin: 0.25em 0;
+}
+.prose-pf li::marker {
+  color: var(--color-ink-400);
+}
+.prose-pf blockquote {
+  border-left: 1px solid var(--color-gold-500);
+  padding-left: 1rem;
+  color: var(--color-ink-600);
+  font-style: italic;
+  margin: 1.5em 0;
+}
+.prose-pf strong {
+  color: var(--color-ink-900);
+  font-weight: 600;
+}
+.prose-pf code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-ink-100);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+.prose-lg-pf {
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+.prose-lg-pf p {
+  margin-bottom: 1.25em;
+}
+
+/* TipTap editor */
+.tiptap {
+  outline: none;
+  min-height: 60vh;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-ink-400);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Mapbox attribution restyle */
+.mapboxgl-ctrl-attrib {
+  font-family: var(--font-sans);
+  font-size: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
