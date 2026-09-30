@@ -12,7 +12,7 @@ const body = z.object({
 
 const DEMO_REPLY = `Your portfolio is concentrated in prime Dubai residential, which has carried most of this year's performance. Most holdings are marked above cost, and one ready asset is now trading comfortably ahead of its base-case exit value [2].
 
-Two items deserve attention. First, the developer on one off-plan asset has requested a seven-month handover extension, which pushes rental income into 2028 [10]. Second, the escrow audit on another off-plan position shows a shortfall against reported construction progress [13] — your analyst has flagged this for a site inspection.
+Two items deserve attention. First, the developer on one off-plan asset has requested a seven-month handover extension, which pushes rental income into 2028 [10]. Second, the escrow audit on another off-plan position shows a shortfall against reported construction progress [13]. Your analyst has booked a site inspection.
 
 If helpful, I can compare a partial exit from that holding against the Saadiyat opportunity currently on your shortlist.`;
 

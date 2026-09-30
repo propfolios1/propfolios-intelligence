@@ -1,14 +1,14 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Building2, List, Map as MapIcon } from "lucide-react";
 import * as React from "react";
-import { DataTable } from "@/components/data-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Pill } from "@/components/ui/pill";
-import { cn, formatMoney } from "@/lib/utils";
+import { DataTable } from "@/components/composites/data-table";
+import { BuildingGlyph } from "@/components/illustrations/building-glyph";
+import { Checkbox } from "@/components/primitives/checkbox";
+import { Segmented } from "@/components/primitives/segmented";
+import { StatusPill } from "@/components/primitives/status-pill";
+import { formatMoney } from "@/lib/utils";
 import { PropertyMap } from "./property-map";
-import { PropertyThumb } from "./property-thumb";
 
 export interface PropertyRow {
   id: string;
@@ -24,7 +24,6 @@ export interface PropertyRow {
   currency: string;
   lat: number;
   lng: number;
-  hue: number;
   grossYield: number;
 }
 
@@ -35,27 +34,26 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
     size: 300,
     meta: { filterable: true },
     cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <PropertyThumb name={row.original.name} hue={row.original.hue} />
+      <div className="flex items-center gap-4">
+        <BuildingGlyph seed={row.original.id} assetClass={row.original.assetClass} />
         <div className="min-w-0">
-          <div className="truncate font-medium text-ink-900">{row.original.name}</div>
-          <div className="truncate text-xs text-ink-500">{row.original.community}</div>
+          <div className="truncate text-ui text-ink">{row.original.name}</div>
+          <div className="truncate text-small text-ink-3">{row.original.community}</div>
         </div>
       </div>
     ),
   },
-  { accessorKey: "developer", header: "Developer", size: 190, meta: { filterable: true } },
-  { accessorKey: "region", header: "Emirate / State", size: 150, meta: { filterable: true } },
-  { accessorKey: "assetClass", header: "Asset class", size: 150, meta: { filterable: true } },
+  { accessorKey: "developer", header: "Developer", size: 190, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-2">{getValue<string>()}</span> },
+  { accessorKey: "region", header: "Emirate or state", size: 150, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-2">{getValue<string>()}</span> },
   {
     id: "price",
     accessorFn: (r) => r.priceMin,
     header: "Price range",
-    size: 200,
+    size: 190,
     meta: { numeric: true },
-    cell: ({ row }) => `${formatMoney(row.original.priceMin, row.original.currency)} – ${formatMoney(row.original.priceMax, row.original.currency).split(" ")[1]}`,
+    cell: ({ row }) => `${formatMoney(row.original.priceMin, row.original.currency)}–${formatMoney(row.original.priceMax, row.original.currency).split(" ")[1]}`,
   },
-  { accessorKey: "grossYield", header: "Yield", size: 90, meta: { numeric: true }, cell: ({ getValue }) => `${getValue<number>().toFixed(1)}%` },
+  { accessorKey: "grossYield", header: "Yield", size: 84, meta: { numeric: true }, cell: ({ getValue }) => `${getValue<number>().toFixed(1)}%` },
   {
     accessorKey: "status",
     header: "Status",
@@ -63,20 +61,21 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
     meta: { filterable: true },
     cell: ({ getValue }) => {
       const v = getValue<string>();
-      return <Pill tone={v === "Ready" ? "positive" : v === "Off-plan" ? "gold" : "navy"}>{v}</Pill>;
+      return <StatusPill tone={v === "Ready" ? "complete" : v === "Off-plan" ? "neutral" : "progress"}>{v}</StatusPill>;
     },
   },
 ];
 
-function FilterGroup({ title, options, value, onChange }: { title: string; options: string[]; value: string[]; onChange: (v: string[]) => void }) {
+function FilterGroup({ title, options, value, onChange }: { title: string; options: [string, number][]; value: string[]; onChange: (v: string[]) => void }) {
   return (
-    <fieldset>
-      <legend className="eyebrow mb-3">{title}</legend>
-      <div className="space-y-2.5">
-        {options.map((o) => (
-          <label key={o} className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+    <fieldset className="border-t border-rule pt-4">
+      <legend className="eyebrow float-left mb-4 w-full">{title}</legend>
+      <div className="clear-both flex flex-col gap-3">
+        {options.map(([o, n]) => (
+          <label key={o} className="flex cursor-pointer items-center gap-3 text-small text-ink">
             <Checkbox checked={value.includes(o)} onCheckedChange={(c) => onChange(c ? [...value, o] : value.filter((x) => x !== o))} />
-            {o}
+            <span className="flex-1">{o}</span>
+            <span className="num text-axis text-ink-3">{n}</span>
           </label>
         ))}
       </div>
@@ -89,55 +88,39 @@ export function PropertiesView({ rows, focusId }: { rows: PropertyRow[]; focusId
   const [markets, setMarkets] = React.useState<string[]>([]);
   const [statuses, setStatuses] = React.useState<string[]>([]);
   const [classes, setClasses] = React.useState<string[]>([]);
-  const filtered = rows.filter(
-    (r) => (!markets.length || markets.includes(r.market)) && (!statuses.length || statuses.includes(r.status)) && (!classes.length || classes.includes(r.assetClass)),
-  );
-  const uniq = (k: keyof PropertyRow) => [...new Set(rows.map((r) => String(r[k])))].sort();
+  const filtered = rows.filter((r) => (!markets.length || markets.includes(r.market)) && (!statuses.length || statuses.includes(r.status)) && (!classes.length || classes.includes(r.assetClass)));
+  const counts = (k: keyof PropertyRow) => [...new Set(rows.map((r) => String(r[k])))].sort().map((v) => [v, rows.filter((r) => String(r[k]) === v).length] as [string, number]);
 
   return (
     <>
-      <div className="mt-10 mb-4 flex items-center justify-between">
-        <div className="flex rounded-control border border-ink-200 bg-surface p-0.5" role="tablist">
-          {(
-            [
-              ["map", "Map", MapIcon],
-              ["list", "List", List],
-            ] as const
-          ).map(([k, label, Icon]) => (
-            <button
-              key={k}
-              role="tab"
-              aria-selected={mode === k}
-              onClick={() => setMode(k)}
-              className={cn("flex h-8 items-center gap-2 rounded-[4px] px-3 text-sm transition-colors", mode === k ? "bg-navy-100 text-navy-900" : "text-ink-600 hover:text-ink-900")}
-            >
-              <Icon className="size-4" /> {label}
-            </button>
-          ))}
-        </div>
-        <span className="num text-xs text-ink-500">
-          {filtered.length} of {rows.length} properties
+      <div className="mt-10 mb-6 flex items-center justify-between">
+        <Segmented
+          label="View"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "map", label: "Map" },
+            { value: "list", label: "List" },
+          ]}
+        />
+        <span className="num text-small text-ink-3">
+          {filtered.length}/{rows.length}
         </span>
       </div>
 
       {mode === "map" ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-          <aside className="space-y-8 rounded-card border border-ink-200 bg-surface p-5">
-            <FilterGroup title="Market" options={uniq("market")} value={markets} onChange={setMarkets} />
-            <FilterGroup title="Status" options={uniq("status")} value={statuses} onChange={setStatuses} />
-            <FilterGroup title="Asset class" options={uniq("assetClass")} value={classes} onChange={setClasses} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <aside className="flex flex-col gap-8 lg:col-span-3 xl:col-span-2">
+            <FilterGroup title="Market" options={counts("market")} value={markets} onChange={setMarkets} />
+            <FilterGroup title="Status" options={counts("status")} value={statuses} onChange={setStatuses} />
+            <FilterGroup title="Asset class" options={counts("assetClass")} value={classes} onChange={setClasses} />
           </aside>
-          <div className="relative h-[640px] overflow-hidden rounded-card border border-ink-200">
+          <div className="relative h-[640px] overflow-hidden border border-rule lg:col-span-9 xl:col-span-10">
             <PropertyMap points={filtered.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, market: r.market, sub: r.community }))} focusId={focusId} />
           </div>
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filtered}
-          initialSorting={[{ id: "name", desc: false }]}
-          empty={{ icon: Building2, headline: "No properties match", subtext: "Clear a filter to see more." }}
-        />
+        <DataTable columns={columns} data={filtered} initialSorting={[{ id: "name", desc: false }]} empty={{ glyph: "opportunities", headline: "No properties match these filters." }} />
       )}
     </>
   );

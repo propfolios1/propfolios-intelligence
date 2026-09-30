@@ -1,18 +1,16 @@
-import { Compass } from "lucide-react";
 import Link from "next/link";
-import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/composites/empty-state";
+import { Button } from "@/components/primitives/button";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-dvh items-center justify-center">
+    <div className="mx-auto flex min-h-dvh max-w-[1440px] items-center px-6 md:px-12 xl:px-20">
       <EmptyState
-        icon={Compass}
-        headline="Page not found"
-        subtext="The page you’re looking for has moved or never existed."
+        glyph="documents"
+        headline="This page does not exist."
         action={
-          <Button asChild>
-            <Link href="/">Return home</Link>
+          <Button asChild variant="secondary">
+            <Link href="/">Home</Link>
           </Button>
         }
       />

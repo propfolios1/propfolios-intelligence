@@ -1,10 +1,11 @@
 "use client";
 
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
-import { ArrowRight, Briefcase, Building2, CornerDownLeft, Search, User, Zap, type LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { DialogOverlay } from "@/components/primitives/dialog";
+import { Kbd } from "@/components/primitives/kbd";
 
 export interface SearchItem {
   id: string;
@@ -14,13 +15,6 @@ export interface SearchItem {
   href: string;
   keywords?: string[];
 }
-
-const GROUP_ICON: Record<SearchItem["group"], LucideIcon> = {
-  Mandates: Briefcase,
-  Properties: Building2,
-  Clients: User,
-  Actions: Zap,
-};
 
 const RECENT_KEY = "pf:palette-recent";
 
@@ -34,6 +28,31 @@ function readRecent(): string[] {
 
 const PaletteContext = React.createContext<{ open: () => void }>({ open: () => {} });
 export const usePalette = () => React.useContext(PaletteContext);
+
+/**
+ * FLIP: each row remembers where it was; when the query re-orders the list it
+ * starts at its old position and eases to the new one over 150ms. Nothing scales.
+ */
+const positions = new Map<string, number>();
+function useReorder(id: string) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const top = el.offsetTop;
+    const prev = positions.get(id);
+    positions.set(id, top);
+    if (prev === undefined || prev === top) return;
+    el.style.transition = "none";
+    el.style.transform = `translateY(${prev - top}px)`;
+    requestAnimationFrame(() => {
+      el.style.transition = "transform 150ms cubic-bezier(0, 0, 0.2, 1)";
+      el.style.transform = "";
+    });
+  });
+  React.useEffect(() => () => void positions.delete(id), [id]);
+  return ref;
+}
 
 export function CommandPaletteProvider({ items, children }: { items: SearchItem[]; children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -56,11 +75,12 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
     if (open) {
       setRecent(readRecent());
       setQuery("");
+      positions.clear();
     }
   }, [open]);
 
   const select = (item: SearchItem) => {
-    const next = [item.id, ...readRecent().filter((id) => id !== item.id)].slice(0, 5);
+    const next = [item.id, ...readRecent().filter((id) => id !== item.id)].slice(0, 4);
     try {
       localStorage.setItem(RECENT_KEY, JSON.stringify(next));
     } catch {}
@@ -75,82 +95,83 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
   return (
     <PaletteContext.Provider value={{ open: () => setOpen(true) }}>
       {children}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent
-          hideClose
-          overlayClassName="bg-navy-950/20"
-          className="top-[18vh] max-w-[640px] translate-y-0 overflow-hidden p-0"
-          aria-describedby={undefined}
-        >
-          <DialogTitle className="sr-only">Search</DialogTitle>
-          <Command label="Command palette" loop className="flex flex-col">
-            <div className="flex items-center gap-3 border-b border-ink-200 px-4">
-              <Search className="size-4 text-ink-400" />
-              <Command.Input
-                value={query}
-                onValueChange={setQuery}
-                placeholder="Search mandates, properties, clients, actions…"
-                className="h-14 flex-1 bg-transparent text-[15px] text-ink-900 outline-none placeholder:text-ink-400"
-              />
-              <kbd className="num rounded-[4px] border border-ink-200 px-1.5 py-0.5 text-[10px] text-ink-500">ESC</kbd>
-            </div>
-            <Command.List className="scrollbar-thin max-h-[420px] overflow-y-auto p-2">
-              <Command.Empty className="px-3 py-10 text-center text-sm text-ink-500">No results for “{query}”.</Command.Empty>
-              {!query && recentItems.length > 0 && (
-                <PaletteGroup heading="Recent">
-                  {recentItems.map((item) => (
-                    <PaletteItem key={`r-${item.id}`} item={item} value={`recent ${item.label} ${item.sub ?? ""}`} onSelect={select} />
-                  ))}
-                </PaletteGroup>
-              )}
-              {groups.map(([g, list]) =>
-                list.length ? (
-                  <PaletteGroup key={g} heading={g}>
-                    {(query ? list : list.slice(0, g === "Actions" ? 8 : 4)).map((item) => (
-                      <PaletteItem key={item.id} item={item} onSelect={select} />
+      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+        <DialogPrimitive.Portal>
+          <DialogOverlay />
+          <DialogPrimitive.Content
+            aria-describedby={undefined}
+            className="fixed top-[16vh] left-1/2 z-50 w-[calc(100vw-32px)] max-w-[640px] origin-top overflow-hidden rounded-lg bg-paper shadow-palette outline-none data-[state=open]:animate-palette-in"
+          >
+            <DialogPrimitive.Title className="sr-only">Search</DialogPrimitive.Title>
+            <Command label="Search" loop>
+              <div className="flex items-center gap-3 px-5">
+                <Command.Input
+                  value={query}
+                  onValueChange={setQuery}
+                  placeholder="Mandate, property, client or action"
+                  className="h-16 flex-1 bg-transparent font-display text-card text-ink outline-none placeholder:text-ink-3"
+                />
+                <Kbd>esc</Kbd>
+              </div>
+              <Command.List className="scrollbar-thin max-h-[400px] overflow-y-auto border-t border-rule px-2 py-2">
+                <Command.Empty className="px-3 py-10 text-small text-ink-2">Nothing matches “{query}”.</Command.Empty>
+                {!query && recentItems.length > 0 && (
+                  <Group heading="Recent">
+                    {recentItems.map((item) => (
+                      <Item key={`r-${item.id}`} rowId={`r-${item.id}`} item={item} value={`recent ${item.label} ${item.sub ?? ""}`} onSelect={select} />
                     ))}
-                  </PaletteGroup>
-                ) : null,
-              )}
-            </Command.List>
-            <div className="flex items-center gap-4 border-t border-ink-200 px-4 py-2.5 text-[11px] text-ink-500">
-              <span className="flex items-center gap-1.5">
-                <kbd className="num rounded-[3px] border border-ink-200 px-1">↑↓</kbd> navigate
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CornerDownLeft className="size-3" /> open
-              </span>
-            </div>
-          </Command>
-        </DialogContent>
-      </Dialog>
+                  </Group>
+                )}
+                {groups.map(([g, list]) =>
+                  list.length ? (
+                    <Group key={g} heading={g}>
+                      {(query ? list : list.slice(0, g === "Actions" ? 6 : 3)).map((item) => (
+                        <Item key={item.id} rowId={item.id} item={item} onSelect={select} />
+                      ))}
+                    </Group>
+                  ) : null,
+                )}
+              </Command.List>
+              <div className="flex items-center gap-5 border-t border-rule px-5 py-2.5 text-small text-ink-3">
+                <span className="flex items-center gap-1.5">
+                  <Kbd>↑</Kbd>
+                  <Kbd>↓</Kbd> move
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Kbd>↵</Kbd> open
+                </span>
+              </div>
+            </Command>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </PaletteContext.Provider>
   );
 }
 
-function PaletteGroup({ heading, children }: { heading: string; children: React.ReactNode }) {
+function Group({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <Command.Group
       heading={heading}
-      className="[&_[cmdk-group-heading]]:eyebrow mb-1 [&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1.5"
+      className="mb-1 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-eyebrow [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:tracking-[0.16em] [&_[cmdk-group-heading]]:text-ink-3 [&_[cmdk-group-heading]]:uppercase"
     >
       {children}
     </Command.Group>
   );
 }
 
-function PaletteItem({ item, value, onSelect }: { item: SearchItem; value?: string; onSelect: (i: SearchItem) => void }) {
-  const Icon = GROUP_ICON[item.group];
+function Item({ item, value, onSelect, rowId }: { item: SearchItem; value?: string; onSelect: (i: SearchItem) => void; rowId: string }) {
+  const ref = useReorder(rowId);
+  const isMandate = item.group === "Mandates";
   return (
     <Command.Item
+      ref={ref}
       value={value ?? `${item.group} ${item.label} ${item.sub ?? ""} ${item.keywords?.join(" ") ?? ""}`}
       onSelect={() => onSelect(item)}
-      className="group flex h-11 cursor-default items-center gap-3 rounded-control px-2.5 text-sm text-ink-800 data-[selected=true]:bg-ink-100"
+      className="relative flex h-11 cursor-default items-baseline gap-3 rounded-sm px-3 pt-3 text-ui text-ink data-[selected=true]:bg-paper-2"
     >
-      <Icon className="size-4 text-ink-400" strokeWidth={1.75} />
-      <span className="truncate">{item.label}</span>
-      {item.sub && <span className="truncate text-ink-500">{item.sub}</span>}
-      <ArrowRight className="ml-auto size-3.5 text-ink-400 opacity-0 group-data-[selected=true]:opacity-100" />
+      <span className={isMandate ? "num text-small" : undefined}>{item.label}</span>
+      {item.sub && <span className="truncate text-small text-ink-3">{item.sub}</span>}
     </Command.Item>
   );
 }

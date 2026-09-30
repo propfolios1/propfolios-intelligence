@@ -1,4 +1,3 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { getViewer } from "@/lib/auth";
 import { clients, listMandateRows, portfolioAlerts, properties } from "@/lib/data/store";
 import { relativeTime } from "@/lib/utils";
@@ -33,12 +32,12 @@ function searchIndex(): SearchItem[] {
       href: `/analyst/mandates?client=${c.id}`,
     })),
     { id: "a-new", group: "Actions", label: "New mandate", href: "/analyst/mandates?new=1", keywords: ["create"] },
-    { id: "a-dash", group: "Actions", label: "Go to dashboard", href: "/analyst/dashboard" },
-    { id: "a-market", group: "Actions", label: "Open market dashboard", href: "/analyst/market" },
-    { id: "a-dev", group: "Actions", label: "Review developer risk", href: "/analyst/developers" },
-    { id: "a-assist", group: "Actions", label: "Ask the assistant", href: "/client/assistant" },
-    { id: "a-portfolio", group: "Actions", label: "Client portfolio view", href: "/client/portfolio" },
-    { id: "a-audit", group: "Actions", label: "Open audit log", href: "/admin/audit" },
+    { id: "a-dash", group: "Actions", label: "Today", sub: "Pipeline and activity", href: "/analyst/dashboard" },
+    { id: "a-market", group: "Actions", label: "Market", sub: "Transactions, pricing, supply", href: "/analyst/market" },
+    { id: "a-dev", group: "Actions", label: "Developer risk", href: "/analyst/developers" },
+    { id: "a-assist", group: "Actions", label: "Ask about a portfolio", href: "/client/assistant" },
+    { id: "a-portfolio", group: "Actions", label: "Client portfolio", href: "/client/portfolio" },
+    { id: "a-audit", group: "Actions", label: "Audit log", href: "/admin/audit" },
   ];
 }
 
@@ -46,18 +45,16 @@ export async function AppShell({ area, children }: { area: Area; children: React
   const viewer = await getViewer(area);
   const notifications = portfolioAlerts.slice(0, 4).map((a) => ({ id: a.id, title: a.title, detail: a.detail, at: relativeTime(a.at) }));
   return (
-    <TooltipProvider>
-      <CommandPaletteProvider items={searchIndex()}>
+          <CommandPaletteProvider items={searchIndex()}>
         <div className="flex min-h-dvh">
           <SidebarNav area={area} viewer={viewer} />
           <div className="flex min-w-0 flex-1 flex-col">
             <TopBar area={area} notifications={notifications} />
             <main className="flex-1">
-              <PageTransition>{children}</PageTransition>
+              <PageTransition area={area}>{children}</PageTransition>
             </main>
           </div>
         </div>
       </CommandPaletteProvider>
-    </TooltipProvider>
   );
 }

@@ -1,8 +1,8 @@
-import { Bars, Heatmap, MultiLine } from "@/components/charts";
+import { Heatmap } from "@/components/charts/heatmap";
+import { BarSeries, LineSeries } from "@/components/charts/series";
+import { PageHeader } from "@/components/composites/page-header";
+import { StatBlock } from "@/components/composites/stat-block";
 import { PageContainer } from "@/components/shell/page-container";
-import { PageHeader } from "@/components/page-header";
-import { StatCard } from "@/components/stat-card";
-import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { heatmap, heatmapClasses, heatmapRegions, marketMonths, priceTrend, supplyPipeline } from "@/lib/data/store";
 
 export const metadata = { title: "Market" };
@@ -10,56 +10,54 @@ export const metadata = { title: "Market" };
 export default function MarketPage() {
   const last = marketMonths.at(-1)!;
   const prev = marketMonths.at(-2)!;
-  const txTotal = marketMonths.reduce((s, m) => s + m.transactions, 0);
+  const tx = marketMonths.reduce((s, m) => s + m.transactions, 0);
   return (
     <PageContainer>
-      <PageHeader eyebrow="Market intelligence" title="Market" subtitle="Transactions, pricing and supply across tracked UAE and India markets. Refreshed weekly by the market-intel agent." />
+      <PageHeader eyebrow="Market intelligence" title="Market" subtitle="Dubai and Abu Dhabi residential, 24 months. Refreshed each Monday from DLD and ADREC filings." />
 
-      <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Transactions (12m)" value={(txTotal / 1000).toFixed(1)} unit="k" delta={21.4} deltaLabel="YoY" spark={marketMonths.map((m) => m.transactions)} />
-        <StatCard
-          label="Median price / sq ft"
-          value={last.medianPriceSqft.toLocaleString()}
-          unit="AED"
-          delta={((last.medianPriceSqft - prev.medianPriceSqft) / prev.medianPriceSqft) * 100}
-          deltaLabel="MoM"
-          spark={marketMonths.map((m) => m.medianPriceSqft)}
-        />
-        <StatCard label="Supply pipeline ’27" value={(supplyPipeline[2]!.units / 1000).toFixed(1)} unit="k units" delta={34.6} deltaLabel="vs ’26" invertDelta />
-        <StatCard label="Absorption rate" value="82" unit="%" delta={-3.1} deltaUnit="pp" deltaLabel="vs last quarter" spark={[88, 87, 86, 85, 84, 83, 82]} />
-      </div>
+      <section className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
+        <StatBlock className="col-span-2 md:col-span-4" emphasis label="Transactions, 12 months" value={tx.toLocaleString()} delta={21.4} deltaLabel="year on year" />
+        <StatBlock className="md:col-span-3" label="Median AED / sq ft" value={last.medianPriceSqft.toLocaleString()} delta={((last.medianPriceSqft - prev.medianPriceSqft) / prev.medianPriceSqft) * 100} deltaLabel="month on month" />
+        <StatBlock className="md:col-span-3" label="Supply 2027" value={(supplyPipeline[2]!.units / 1000).toFixed(1)} unit="k units" delta={34.6} invert deltaLabel="vs 2026" />
+        <StatBlock className="col-span-2 md:col-span-2" label="Absorption" value="82" unit="%" delta={-3.1} deltaUnit="pp" deltaLabel="vs Q2" />
+      </section>
 
-      <Card className="mt-10">
-        <CardHeader eyebrow="Pricing" title="Average price per sq ft, 24 months" />
-        <CardBody>
-          <MultiLine
+      <section className="mt-20">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="font-display text-section text-navy">Price per square foot</h2>
+          <span className="text-small text-ink-3">AED, monthly median</span>
+        </div>
+        <div className="mt-8">
+          <LineSeries
             data={priceTrend}
             x="month"
             series={[
-              { key: "dubai", label: "Dubai (AED)" },
-              { key: "abuDhabi", label: "Abu Dhabi (AED)" },
-              { key: "mumbai", label: "Mumbai (AED equiv.)" },
+              { key: "dubai", label: "Dubai" },
+              { key: "abuDhabi", label: "Abu Dhabi" },
             ]}
-            height={340}
+            height={360}
             format="number"
+            grid
           />
-        </CardBody>
-      </Card>
+        </div>
+      </section>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <Card>
-          <CardHeader eyebrow="Volume" title="Transactions by month" />
-          <CardBody>
-            <Bars data={marketMonths} x="month" y="transactions" name="Transactions" height={300} highlightLast />
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader eyebrow="Performance" title="YoY price change by market × asset class" />
-          <CardBody>
+      <section className="mt-20 grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
+        <div className="xl:col-span-4">
+          <h2 className="font-display text-section text-navy">Volume</h2>
+          <p className="mt-2 text-small text-ink-3">Dubai transactions by month. September in navy.</p>
+          <div className="mt-8">
+            <BarSeries data={marketMonths} x="month" y="transactions" name="Transactions" height={300} emphasiseLast />
+          </div>
+        </div>
+        <div className="xl:col-span-7 xl:col-start-6">
+          <h2 className="font-display text-section text-navy">Where prices moved</h2>
+          <p className="mt-2 text-small text-ink-3">Year on year change, percent. Darker is stronger.</p>
+          <div className="mt-8">
             <Heatmap rows={heatmapRegions} cols={heatmapClasses} values={heatmap} />
-          </CardBody>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </section>
     </PageContainer>
   );
 }

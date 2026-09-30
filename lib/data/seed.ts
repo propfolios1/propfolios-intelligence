@@ -61,20 +61,20 @@ export const clients: Client[] = [
 ];
 
 export const developers: Developer[] = [
-  { id: "dv_01", name: "Emaar Properties", market: "UAE", hq: "Dubai", riskScore: 14, deliveryPct: 96, litigationCount: 2, projectsDelivered: 112, escrowCompliant: true, updatedAt: hoursAgo(20), brandColor: "#0a1f44" },
-  { id: "dv_02", name: "Aldar Properties", market: "UAE", hq: "Abu Dhabi", riskScore: 12, deliveryPct: 97, litigationCount: 1, projectsDelivered: 86, escrowCompliant: true, updatedAt: hoursAgo(30), brandColor: "#22396a" },
-  { id: "dv_03", name: "Sobha Realty", market: "UAE", hq: "Dubai", riskScore: 22, deliveryPct: 91, litigationCount: 3, projectsDelivered: 41, escrowCompliant: true, updatedAt: hoursAgo(44), brandColor: "#3a5080" },
-  { id: "dv_04", name: "DAMAC Properties", market: "UAE", hq: "Dubai", riskScore: 41, deliveryPct: 78, litigationCount: 11, projectsDelivered: 64, escrowCompliant: true, updatedAt: hoursAgo(12), brandColor: "#152c58" },
-  { id: "dv_05", name: "Nakheel", market: "UAE", hq: "Dubai", riskScore: 33, deliveryPct: 82, litigationCount: 7, projectsDelivered: 58, escrowCompliant: true, updatedAt: hoursAgo(70), brandColor: "#6479a0" },
-  { id: "dv_06", name: "Ellington Properties", market: "UAE", hq: "Dubai", riskScore: 26, deliveryPct: 89, litigationCount: 1, projectsDelivered: 19, escrowCompliant: true, updatedAt: hoursAgo(90), brandColor: "#0f2350" },
-  { id: "dv_07", name: "Binghatti", market: "UAE", hq: "Dubai", riskScore: 48, deliveryPct: 74, litigationCount: 6, projectsDelivered: 27, escrowCompliant: true, updatedAt: hoursAgo(8), brandColor: "#3f3c38" },
-  { id: "dv_08", name: "Horizon Crest Developments", market: "UAE", hq: "Ras Al Khaimah", riskScore: 67, deliveryPct: 58, litigationCount: 14, projectsDelivered: 6, escrowCompliant: false, updatedAt: hoursAgo(5), brandColor: "#5d5953" },
-  { id: "dv_09", name: "Godrej Properties", market: "India", hq: "Mumbai", riskScore: 19, deliveryPct: 92, litigationCount: 4, projectsDelivered: 98, escrowCompliant: true, updatedAt: hoursAgo(26), brandColor: "#22396a" },
-  { id: "dv_10", name: "DLF", market: "India", hq: "Gurugram", riskScore: 31, deliveryPct: 84, litigationCount: 18, projectsDelivered: 150, escrowCompliant: true, updatedAt: hoursAgo(50), brandColor: "#0a1f44" },
-  { id: "dv_11", name: "Prestige Group", market: "India", hq: "Bengaluru", riskScore: 24, deliveryPct: 88, litigationCount: 9, projectsDelivered: 280, escrowCompliant: true, updatedAt: hoursAgo(60), brandColor: "#152c58" },
-  { id: "dv_12", name: "Lodha Group", market: "India", hq: "Mumbai", riskScore: 36, deliveryPct: 81, litigationCount: 13, projectsDelivered: 110, escrowCompliant: true, updatedAt: hoursAgo(36), brandColor: "#3a5080" },
-  { id: "dv_13", name: "Meridian Urban Infra", market: "India", hq: "Pune", riskScore: 72, deliveryPct: 52, litigationCount: 21, projectsDelivered: 9, escrowCompliant: false, updatedAt: hoursAgo(3), brandColor: "#7c776f" },
-  { id: "dv_14", name: "Meraas", market: "UAE", hq: "Dubai", riskScore: 18, deliveryPct: 93, litigationCount: 2, projectsDelivered: 37, escrowCompliant: true, updatedAt: hoursAgo(100), brandColor: "#0f2350" },
+  { id: "dv_01", name: "Emaar Properties", market: "UAE", hq: "Dubai", riskScore: 14, deliveryPct: 96, litigationCount: 2, projectsDelivered: 112, escrowCompliant: true, updatedAt: hoursAgo(20) },
+  { id: "dv_02", name: "Aldar Properties", market: "UAE", hq: "Abu Dhabi", riskScore: 12, deliveryPct: 97, litigationCount: 1, projectsDelivered: 86, escrowCompliant: true, updatedAt: hoursAgo(30) },
+  { id: "dv_03", name: "Sobha Realty", market: "UAE", hq: "Dubai", riskScore: 22, deliveryPct: 91, litigationCount: 3, projectsDelivered: 41, escrowCompliant: true, updatedAt: hoursAgo(44) },
+  { id: "dv_04", name: "DAMAC Properties", market: "UAE", hq: "Dubai", riskScore: 41, deliveryPct: 78, litigationCount: 11, projectsDelivered: 64, escrowCompliant: true, updatedAt: hoursAgo(12) },
+  { id: "dv_05", name: "Nakheel", market: "UAE", hq: "Dubai", riskScore: 33, deliveryPct: 82, litigationCount: 7, projectsDelivered: 58, escrowCompliant: true, updatedAt: hoursAgo(70) },
+  { id: "dv_06", name: "Ellington Properties", market: "UAE", hq: "Dubai", riskScore: 26, deliveryPct: 89, litigationCount: 1, projectsDelivered: 19, escrowCompliant: true, updatedAt: hoursAgo(90) },
+  { id: "dv_07", name: "Binghatti", market: "UAE", hq: "Dubai", riskScore: 48, deliveryPct: 74, litigationCount: 6, projectsDelivered: 27, escrowCompliant: true, updatedAt: hoursAgo(8) },
+  { id: "dv_08", name: "Horizon Crest Developments", market: "UAE", hq: "Ras Al Khaimah", riskScore: 67, deliveryPct: 58, litigationCount: 14, projectsDelivered: 6, escrowCompliant: false, updatedAt: hoursAgo(5) },
+  { id: "dv_09", name: "Godrej Properties", market: "India", hq: "Mumbai", riskScore: 19, deliveryPct: 92, litigationCount: 4, projectsDelivered: 98, escrowCompliant: true, updatedAt: hoursAgo(26) },
+  { id: "dv_10", name: "DLF", market: "India", hq: "Gurugram", riskScore: 31, deliveryPct: 84, litigationCount: 18, projectsDelivered: 150, escrowCompliant: true, updatedAt: hoursAgo(50) },
+  { id: "dv_11", name: "Prestige Group", market: "India", hq: "Bengaluru", riskScore: 24, deliveryPct: 88, litigationCount: 9, projectsDelivered: 280, escrowCompliant: true, updatedAt: hoursAgo(60) },
+  { id: "dv_12", name: "Lodha Group", market: "India", hq: "Mumbai", riskScore: 36, deliveryPct: 81, litigationCount: 13, projectsDelivered: 110, escrowCompliant: true, updatedAt: hoursAgo(36) },
+  { id: "dv_13", name: "Meridian Urban Infra", market: "India", hq: "Pune", riskScore: 72, deliveryPct: 52, litigationCount: 21, projectsDelivered: 9, escrowCompliant: false, updatedAt: hoursAgo(3) },
+  { id: "dv_14", name: "Meraas", market: "UAE", hq: "Dubai", riskScore: 18, deliveryPct: 93, litigationCount: 2, projectsDelivered: 37, escrowCompliant: true, updatedAt: hoursAgo(100) },
 ];
 
 const uaeSites: [string, string, number, number][] = [
@@ -226,7 +226,7 @@ export const memos: Memo[] = mandates
     return {
       id: `memo_${m.id}`,
       mandateId: m.id,
-      title: `Investment Memo — ${p.name}`,
+      title: `Investment memo, ${p.name}`,
       status: m.status === "delivered" ? "Delivered" : m.status === "review" ? "In review" : i % 3 === 0 ? "Approved" : "Draft",
       lastEditedAt: m.updatedAt,
       lastEditedBy: analysts.find((a) => a.id === m.analystId)!.name,
@@ -247,12 +247,12 @@ export const documents: DocumentItem[] = [
   })),
   ...mandates.slice(0, 14).flatMap((m, i) => {
     const p = properties.find((x) => x.id === m.propertyId)!;
-    const types = ["SPA", "Valuation", "Title Deed", "Research", "Statement"] as const;
+    const types = ["SPA", "Valuation", "Title deed", "Research", "Statement"] as const;
     const t = types[i % types.length]!;
     return [
       {
         id: `doc_${i}`,
-        title: `${t === "Statement" ? "Q3 Statement" : t} — ${p.name}`,
+        title: `${t === "Statement" ? "Q3 statement" : t}, ${p.name}`,
         type: t,
         mandateId: m.id,
         clientId: m.clientId,

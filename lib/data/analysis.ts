@@ -167,7 +167,7 @@ export function buildSampleAnalysis(m: Mandate, p: Property, d: Developer): Mand
       rationale:
         recommendation === "Decline"
           ? "The bear case on developer execution is not adequately rebutted; downside scenarios breach the mandate's capital-preservation constraint."
-          : `The bull case is better evidenced on fundamentals, but the bear's supply argument is material. At P50, returns meet the mandate objective (${m.objective.charAt(0).toLowerCase() + m.objective.slice(1)}) with acceptable downside.`,
+          : `The bull case is better evidenced on fundamentals, but the bear's supply argument is material. At P50, returns meet the mandate objective, ${m.objective}, with acceptable downside.`,
       conditions:
         recommendation === "Proceed"
           ? ["Standard SPA review"]

@@ -14,7 +14,7 @@ export const STAGE_LABEL: Record<MandateStatus, string> = {
   intake: "Intake",
   research: "Research",
   underwriting: "Underwriting",
-  dd: "DD",
+  dd: "Diligence",
   debate: "Debate",
   memo: "Memo",
   review: "Review",
@@ -47,7 +47,6 @@ export interface Developer {
   projectsDelivered: number;
   escrowCompliant: boolean;
   updatedAt: string;
-  brandColor: string;
 }
 
 export interface Property {
@@ -219,7 +218,7 @@ export interface MandateAnalysis {
 export interface DocumentItem {
   id: string;
   title: string;
-  type: "Memo" | "Title Deed" | "SPA" | "Valuation" | "Statement" | "Research";
+  type: "Memo" | "Title deed" | "SPA" | "Valuation" | "Statement" | "Research";
   mandateId?: string;
   clientId?: string;
   pages: number;

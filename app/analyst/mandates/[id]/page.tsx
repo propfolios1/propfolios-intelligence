@@ -1,24 +1,23 @@
-import { Download, FileText, Printer } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AuditList } from "@/components/audit-list";
-import { DocumentCard } from "@/components/document-card";
-import { EmptyState } from "@/components/empty-state";
-import { DDTab } from "@/components/mandate/dd-tab";
-import { DebateTab } from "@/components/mandate/debate-tab";
-import { OverviewTab } from "@/components/mandate/overview-tab";
-import { ResearchTab } from "@/components/mandate/research-tab";
-import { RunFlowButton } from "@/components/mandate/run-flow-button";
-import { MANDATE_TABS, TabBar, type MandateTab } from "@/components/mandate/tab-bar";
-import { UnderwritingTab } from "@/components/mandate/underwriting-tab";
-import { MemoEditor } from "@/components/memo-editor";
+import { AuditList } from "@/components/composites/audit-list";
+import { DocumentCard } from "@/components/composites/document-card";
+import { EmptyState } from "@/components/composites/empty-state";
+import { DDTab } from "@/components/composites/mandate/dd-tab";
+import { DebateTab } from "@/components/composites/mandate/debate-tab";
+import { OverviewTab } from "@/components/composites/mandate/overview-tab";
+import { ResearchTab } from "@/components/composites/mandate/research-tab";
+import { RunFlowButton } from "@/components/composites/mandate/run-flow-button";
+import { MANDATE_TABS, TabBar, type MandateTab } from "@/components/composites/mandate/tab-bar";
+import { UnderwritingTab } from "@/components/composites/mandate/underwriting-tab";
+import { MemoEditor } from "@/components/composites/memo-editor";
+import { StatusPillFor } from "@/components/composites/status";
+import { Button } from "@/components/primitives/button";
+import { CopyButton } from "@/components/primitives/copy-button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu";
 import { PageContainer } from "@/components/shell/page-container";
-import { PageHeader } from "@/components/page-header";
-import { StatusPill } from "@/components/status";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getAnalysis, getMandateView, getMemoHtml, listAudit, listDocuments } from "@/lib/data/store";
 import { buildMemoDraft } from "@/lib/data/memo";
+import { getAnalysis, getMandateView, getMemoHtml, listAudit, listDocuments } from "@/lib/data/store";
 import { formatDate, formatMoney } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -38,68 +37,66 @@ export default async function MandateDetail({ params, searchParams }: { params: 
   const { mandate, client, property, developer, analyst } = view;
 
   return (
-    <PageContainer className="pt-10 md:pt-12">
-      <PageHeader
-        eyebrow={`${mandate.id} · ${property.community}`}
-        title={
-          <>
-            {client.name}
-            <span className="text-ink-400"> — </span>
+    <PageContainer className="pb-32">
+      <header>
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <CopyButton value={mandate.id} label={`Copy ${mandate.id}`} className="num text-small text-ink-2">
+            {mandate.id}
+          </CopyButton>
+          <span className="eyebrow">{property.community}</span>
+          <StatusPillFor status={mandate.status} />
+        </div>
+        <div className="mt-6 flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+          <h1 className="max-w-[22ch] font-display text-section text-navy md:text-title">
             {property.name}
-          </>
-        }
-        meta={
-          <>
-            <StatusPill status={mandate.status} />
-            <span>
-              Created <span className="num">{formatDate(mandate.createdAt)}</span>
-            </span>
-            <span>
-              Updated <span className="num">{formatDate(mandate.updatedAt, "datetime")}</span>
-            </span>
-            <span>
-              Due <span className="num">{formatDate(mandate.deadline)}</span>
-            </span>
-            <span>{analyst.name}</span>
-            <span className="num">{formatMoney(mandate.ticketSize, "USD")}</span>
-          </>
-        }
-        actions={
-          <>
+            <span className="block text-ink-3">for {client.name}</span>
+          </h1>
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
             <RunFlowButton mandateId={mandate.id} />
             <Button asChild variant="secondary">
               <Link href={`/analyst/mandates/${mandate.id}?tab=memo`} scroll={false}>
-                <FileText /> Generate Memo
+                Generate memo
               </Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary">
-                  <Download /> Export
-                </Button>
+                <Button variant="ghost">Export ▾</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href={`/analyst/mandates/${mandate.id}?tab=memo`}>
-                    <FileText /> Memo (PDF / Word)
-                  </Link>
+                  <Link href={`/analyst/mandates/${mandate.id}?tab=memo`}>Memo as PDF or Word</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href={`/api/mandates/${mandate.id}/export`} download>
-                    <Printer /> Analysis (JSON)
+                    Analysis as JSON
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </>
-        }
-      />
+          </div>
+        </div>
+        <dl className="mt-10 grid grid-cols-2 border-t border-rule md:grid-cols-6">
+          {[
+            ["Ticket", formatMoney(mandate.ticketSize, "USD"), true],
+            ["Hold", `${mandate.horizonYears} years`, true],
+            ["Developer", developer.name, false],
+            ["Analyst", analyst.name, false],
+            ["Opened", formatDate(mandate.createdAt), true],
+            ["Due", formatDate(mandate.deadline), true],
+          ].map(([k, v, mono]) => (
+            <div key={String(k)} className="border-b border-rule py-3 pr-4">
+              <dt className="text-small text-ink-3">{k}</dt>
+              <dd className={mono ? "num mt-0.5 text-ui text-ink" : "mt-0.5 truncate text-ui text-ink"}>{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </header>
 
-      <div className="mt-10">
+      <div className="mt-12">
         <TabBar id={mandate.id} active={tab} />
       </div>
 
-      <div className="pt-10">
+      <div className="pt-14">
         {tab === "overview" && <OverviewTab analysis={analysis} mandate={mandate} />}
         {tab === "research" && <ResearchTab research={analysis.research} />}
         {tab === "underwriting" && <UnderwritingTab uw={analysis.underwriting} />}
@@ -124,55 +121,47 @@ export default async function MandateDetail({ params, searchParams }: { params: 
               {
                 title: "Mandate",
                 items: [
-                  { label: "Client", value: client.name },
                   { label: "Ticket", value: formatMoney(mandate.ticketSize, "USD") },
                   { label: "Hold", value: `${mandate.horizonYears} yrs` },
                 ],
               },
-              { title: "Underwriting", items: analysis.underwriting.scenarios.map((s) => ({ label: `${s.label} IRR`, value: `${s.irr.toFixed(1)}%` })) },
+              { title: "Returns", items: analysis.underwriting.scenarios.map((s) => ({ label: `${s.label} IRR`, value: `${s.irr.toFixed(1)}%` })) },
               {
-                title: "Property",
+                title: "Asset",
                 items: [
-                  { label: "Asset", value: property.assetClass },
                   { label: "Status", value: property.status },
                   { label: "Handover", value: property.handover },
-                  { label: "Gross yield", value: `${property.grossYield}%` },
+                  { label: "Yield", value: `${property.grossYield}%` },
                 ],
               },
               {
                 title: "Developer",
                 items: [
-                  { label: "Name", value: developer.name },
-                  { label: "Risk score", value: `${developer.riskScore}/100` },
-                  { label: "On-time", value: `${developer.deliveryPct}%` },
+                  { label: "Risk", value: `${developer.riskScore}/100` },
+                  { label: "On time", value: `${developer.deliveryPct}%` },
                   { label: "Litigation", value: String(developer.litigationCount) },
                 ],
               },
-              { title: "Due diligence", items: (["critical", "high", "medium", "low"] as const).map((s) => ({ label: s, value: String(analysis.dd.filter((f) => f.severity === s).length) })) },
+              { title: "Diligence", items: (["critical", "high", "medium", "low"] as const).map((s) => ({ label: s.charAt(0).toUpperCase() + s.slice(1), value: String(analysis.dd.filter((f) => f.severity === s).length) })) },
             ]}
             citations={analysis.research.citations}
             initialSuggestions={[
               {
                 kind: "tighten",
-                target: "Subject to client approval, we will issue the conditions to the developer",
-                replacement: "On approval, we will issue these conditions to the developer",
-                reason: "Shorter, and leads with the action.",
+                target: "Subject to client approval, the conditions will be issued to the developer",
+                replacement: "On approval, the conditions go to the developer",
+                reason: "Shorter. Leads with the action.",
               },
               {
                 kind: "add_evidence",
-                target: analysis.bull.thesis.slice(0, 60),
-                replacement: `${analysis.bull.thesis.slice(0, 60)} [2]`,
-                reason: "Claim about supply constraint should cite the market index.",
+                target: analysis.bull.thesis.split(";")[0]!,
+                replacement: `${analysis.bull.thesis.split(";")[0]} [2]`,
+                reason: "The supply claim should cite the prime index.",
               },
             ]}
             initialFlags={[
-              {
-                claim: `${analysis.underwriting.scenarios[1]!.irr.toFixed(1)}%`,
-                issue: "calculation",
-                severity: "low",
-                suggestion: "Matches underwriting P50. Verified.",
-              },
-              ...(analysis.research.dataGaps.slice(0, 1).map((g) => ({ claim: g, issue: "unsupported", severity: "medium" as const, suggestion: "Disclose as a data gap in the memo." })) ?? []),
+              { claim: `${analysis.underwriting.scenarios[1]!.irr.toFixed(1)}%`, issue: "calculation", severity: "low", suggestion: "Matches the P50 underwriting." },
+              ...analysis.research.dataGaps.slice(0, 1).map((g) => ({ claim: g, issue: "unsupported", severity: "medium" as const, suggestion: "Disclose as a data gap." })),
             ]}
           />
         )}
@@ -180,18 +169,13 @@ export default async function MandateDetail({ params, searchParams }: { params: 
           (() => {
             const docs = listDocuments().filter((d) => d.mandateId === mandate.id);
             return docs.length ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {docs.map((d) => (
                   <DocumentCard key={d.id} doc={d} />
                 ))}
               </div>
             ) : (
-              <EmptyState
-                icon={FileText}
-                headline="No documents yet"
-                subtext="Upload the SPA, title deed or valuation and the DD agent will read them."
-                action={<Button variant="secondary">Upload document</Button>}
-              />
+              <EmptyState glyph="documents" headline="No documents on this mandate yet." note="The SPA, title deed and valuation go here. The diligence agent reads them." action={<Button variant="secondary">Upload</Button>} />
             );
           })()}
         {tab === "audit" && <AuditList events={listAudit({ mandateId: mandate.id })} />}

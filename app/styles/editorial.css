@@ -1,0 +1,165 @@
+/*
+ * Long-form reading: research dossiers, memos, assistant replies.
+ * Headings in Instrument Serif. Each section's first paragraph carries a
+ * 32px gold rule, the editorial "section start" mark.
+ */
+
+.prose-pf {
+  color: var(--ink);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.prose-pf > * + * {
+  margin-top: 0;
+}
+.prose-pf h1,
+.prose-pf h2,
+.prose-pf h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--navy);
+}
+.prose-pf h1 {
+  font-size: 3rem;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.5rem;
+}
+.prose-pf h2 {
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 3rem 0 1rem;
+}
+.prose-pf h2:first-child {
+  margin-top: 0;
+}
+.prose-pf h3 {
+  font-size: 1.375rem;
+  line-height: 1.3;
+  margin: 2rem 0 0.75rem;
+}
+.prose-pf p {
+  margin: 0 0 1.25em;
+}
+.prose-pf :is(h2, h3) + p {
+  position: relative;
+  margin-top: 0;
+  padding-top: 1rem;
+}
+.prose-pf :is(h2, h3) + p::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--gold);
+}
+.prose-pf ul,
+.prose-pf ol {
+  margin: 0 0 1.25em;
+  padding-left: 1.25em;
+}
+.prose-pf ul {
+  list-style: none;
+  padding-left: 0;
+}
+.prose-pf ul > li {
+  position: relative;
+  padding-left: 1.25em;
+}
+.prose-pf ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.85em;
+  width: 8px;
+  height: 1px;
+  background: var(--ink-3);
+}
+.prose-pf ol {
+  list-style: decimal-leading-zero;
+}
+.prose-pf ol > li::marker {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+.prose-pf li {
+  margin: 0.35em 0;
+}
+.prose-pf li > p {
+  margin: 0;
+  padding: 0;
+}
+.prose-pf li > p::before {
+  display: none;
+}
+.prose-pf blockquote {
+  margin: 2rem 0;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+}
+.prose-pf blockquote p {
+  margin: 0;
+  padding: 0;
+}
+.prose-pf blockquote p::before {
+  display: none;
+}
+.prose-pf strong {
+  font-weight: 600;
+}
+.prose-pf hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2.5rem 0;
+}
+.prose-pf code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+.prose-read {
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+/* TipTap */
+.tiptap {
+  outline: none;
+  min-height: 60vh;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--ink-3);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Paper grain for the memo surface: felt, not seen. */
+.paper-grain {
+  background-color: var(--white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.1 0 0 0 0 0.18 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+.mapboxgl-ctrl-attrib {
+  font-family: var(--font-sans);
+  font-size: 10px;
+}
+
+@media print {
+  aside,
+  header,
+  nav,
+  [data-no-print] {
+    display: none !important;
+  }
+}

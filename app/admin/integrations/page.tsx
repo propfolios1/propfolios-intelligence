@@ -1,6 +1,6 @@
+import { PageHeader } from "@/components/composites/page-header";
+import { StatusPill } from "@/components/primitives/status-pill";
 import { PageContainer } from "@/components/shell/page-container";
-import { PageHeader } from "@/components/page-header";
-import { Pill } from "@/components/ui/pill";
 import { isAiConfigured, MODEL } from "@/lib/ai/client";
 import { clerkEnabled } from "@/lib/auth";
 
@@ -9,38 +9,36 @@ export const dynamic = "force-dynamic";
 
 export default function IntegrationsPage() {
   const rows = [
-    { name: "Anthropic", purpose: `12 agents + client assistant · ${MODEL}`, ok: isAiConfigured(), env: "ANTHROPIC_API_KEY" },
-    { name: "Clerk", purpose: "Authentication and roles", ok: clerkEnabled, env: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY" },
-    { name: "Mapbox", purpose: "Property map tiles", ok: Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN), env: "NEXT_PUBLIC_MAPBOX_TOKEN" },
-    { name: "Dubai Land Department", purpose: "Transaction feed (market-intel agent)", ok: false, env: "DLD_API_KEY" },
-    { name: "Property Monitor", purpose: "Rental and yield data", ok: false, env: "PROPERTY_MONITOR_API_KEY" },
-  ];
+    ["Anthropic", `Agents and assistant, ${MODEL}`, "ANTHROPIC_API_KEY", isAiConfigured()],
+    ["Clerk", "Authentication and roles", "CLERK_SECRET_KEY", clerkEnabled],
+    ["Mapbox", "Property map tiles", "NEXT_PUBLIC_MAPBOX_TOKEN", Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN)],
+    ["Dubai Land Department", "Transaction feed", "DLD_API_KEY", false],
+    ["Property Monitor", "Rents and yields", "PROPERTY_MONITOR_API_KEY", false],
+  ] as const;
   return (
-    <PageContainer dense>
-      <PageHeader eyebrow="Admin" title="Integrations" />
-      <div className="mt-8 overflow-hidden rounded-card border border-ink-200 bg-surface">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-ink-200">
-              {["Service", "Purpose", "Environment", "Status"].map((h) => (
-                <th key={h} className="eyebrow h-10 px-4 text-left font-medium">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-ink-200">
-            {rows.map((r) => (
-              <tr key={r.name} className="h-11 hover:bg-ink-50">
-                <td className="px-4 font-medium text-ink-900">{r.name}</td>
-                <td className="px-4 text-ink-600">{r.purpose}</td>
-                <td className="num px-4 text-xs text-ink-500">{r.env}</td>
-                <td className="px-4">{r.ok ? <Pill tone="positive" dot>Connected</Pill> : <Pill tone="neutral" dot>Not configured</Pill>}</td>
-              </tr>
+    <PageContainer className="pt-10 md:pt-12">
+      <PageHeader title="Integrations" subtitle={`${rows.filter((r) => r[3]).length} of ${rows.length} connected.`} />
+      <table className="mt-8 w-full border-separate border-spacing-0">
+        <thead>
+          <tr>
+            {["Service", "Used for", "Variable", "Status"].map((h) => (
+              <th key={h} className="eyebrow h-10 border-b-2 border-ink px-4 text-left font-medium first:pl-0">
+                {h}
+              </th>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([name, purpose, env, ok]) => (
+            <tr key={name} className="h-14 transition-[background-color] duration-120 hover:bg-paper-2">
+              <td className="border-b border-rule text-ui text-ink">{name}</td>
+              <td className="border-b border-rule px-4 text-ui text-ink-2">{purpose}</td>
+              <td className="num border-b border-rule px-4 text-small text-ink-2">{env}</td>
+              <td className="border-b border-rule px-4">{ok ? <StatusPill tone="complete">Connected</StatusPill> : <StatusPill>Not set</StatusPill>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </PageContainer>
   );
 }

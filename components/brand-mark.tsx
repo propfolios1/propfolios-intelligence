@@ -1,39 +1,20 @@
 import { cn } from "@/lib/utils";
 
 /**
- * PROPFOLIOS / INTELLIGENCE wordmark with a thin gold rule between.
- * Rendered as SVG text so it scales crisply and inherits Inter from next/font.
+ * PROPFOLIOS over INTELLIGENCE with a hairline gold rule between them.
+ * Set in Geist; the rule is one of the five places gold is allowed.
  */
-export function BrandMark({ className, inverted = false, size = "md" }: { className?: string; inverted?: boolean; size?: "sm" | "md" | "lg" }) {
-  const w = size === "lg" ? 196 : size === "sm" ? 118 : 148;
-  const fg = inverted ? "#ffffff" : "var(--color-navy-900)";
-  const sub = inverted ? "rgba(255,255,255,0.72)" : "var(--color-ink-500)";
+export function BrandMark({ className, inverted = false, size = "md" }: { className?: string; inverted?: boolean; size?: "sm" | "md" }) {
+  const sm = size === "sm";
   return (
-    <svg
-      role="img"
-      aria-label="PropFolios Intelligence"
-      viewBox="0 0 196 44"
-      width={w}
-      height={(w / 196) * 44}
-      className={cn("block shrink-0", className)}
-    >
-      <text
-        x="0"
-        y="17"
-        fill={fg}
-        style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 18.5, letterSpacing: "0.18em" }}
-      >
+    <span className={cn("inline-flex flex-col select-none", className)} aria-label="PropFolios Intelligence" role="img">
+      <span className={cn("font-sans font-semibold leading-none tracking-[0.22em]", sm ? "text-small" : "text-ui", inverted ? "text-paper" : "text-navy")} aria-hidden>
         PROPFOLIOS
-      </text>
-      <rect x="0" y="24.5" width="190" height="0.75" fill="var(--color-gold-500)" />
-      <text
-        x="0"
-        y="40"
-        fill={sub}
-        style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: 9.5, letterSpacing: "0.52em" }}
-      >
+      </span>
+      <span className={cn("block h-px bg-gold", sm ? "my-[5px]" : "my-1.5")} aria-hidden />
+      <span className={cn("font-sans leading-none tracking-[0.42em] text-[0.5625rem]", inverted ? "text-paper" : "text-ink-2")} aria-hidden>
         INTELLIGENCE
-      </text>
-    </svg>
+      </span>
+    </span>
   );
 }

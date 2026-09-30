@@ -2,7 +2,7 @@
 
 import { SignOutButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem } from "@/components/primitives/dropdown-menu";
 
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
@@ -10,12 +10,12 @@ export function SignOutItem({ children }: { children: React.ReactNode }) {
   if (clerkEnabled) {
     return (
       <SignOutButton redirectUrl="/">
-        <DropdownMenuItem destructive>{children}</DropdownMenuItem>
+        <DropdownMenuItem>{children}</DropdownMenuItem>
       </SignOutButton>
     );
   }
   return (
-    <DropdownMenuItem destructive asChild>
+    <DropdownMenuItem asChild>
       <Link href="/">{children}</Link>
     </DropdownMenuItem>
   );

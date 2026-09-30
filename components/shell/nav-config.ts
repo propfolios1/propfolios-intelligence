@@ -3,7 +3,6 @@ export type Area = "analyst" | "client" | "admin";
 export interface NavItem {
   href: string;
   label: string;
-  icon: string;
 }
 
 export interface NavSection {
@@ -11,47 +10,48 @@ export interface NavSection {
   items: NavItem[];
 }
 
+/** Navigation is set in type alone. No icons: every label is already clear. */
 export const NAV: Record<Area, NavSection[]> = {
   analyst: [
     {
       items: [
-        { href: "/analyst/dashboard", label: "Dashboard", icon: "LayoutGrid" },
-        { href: "/analyst/mandates", label: "Mandates", icon: "Briefcase" },
-        { href: "/analyst/memos", label: "Memos", icon: "FileText" },
+        { href: "/analyst/dashboard", label: "Today" },
+        { href: "/analyst/mandates", label: "Mandates" },
+        { href: "/analyst/memos", label: "Memos" },
       ],
     },
     {
       title: "Research",
       items: [
-        { href: "/analyst/properties", label: "Properties", icon: "Building2" },
-        { href: "/analyst/developers", label: "Developer Risk", icon: "ShieldAlert" },
-        { href: "/analyst/market", label: "Market", icon: "LineChart" },
+        { href: "/analyst/properties", label: "Properties" },
+        { href: "/analyst/developers", label: "Developer risk" },
+        { href: "/analyst/market", label: "Market" },
       ],
     },
   ],
   client: [
     {
       items: [
-        { href: "/client/portfolio", label: "Portfolio", icon: "PieChart" },
-        { href: "/client/opportunities", label: "Opportunities", icon: "Compass" },
-        { href: "/client/recommendations", label: "Recommendations", icon: "Sparkles" },
+        { href: "/client/portfolio", label: "Portfolio" },
+        { href: "/client/opportunities", label: "Opportunities" },
+        { href: "/client/recommendations", label: "Recommendations" },
       ],
     },
     {
       title: "Workspace",
       items: [
-        { href: "/client/documents", label: "Documents", icon: "Folder" },
-        { href: "/client/assistant", label: "Assistant", icon: "MessageSquare" },
+        { href: "/client/documents", label: "Documents" },
+        { href: "/client/assistant", label: "Ask" },
       ],
     },
   ],
   admin: [
     {
       items: [
-        { href: "/admin/users", label: "Users", icon: "Users" },
-        { href: "/admin/integrations", label: "Integrations", icon: "Plug" },
-        { href: "/admin/audit", label: "Audit Log", icon: "ScrollText" },
-        { href: "/admin/seed", label: "Data & Seed", icon: "Database" },
+        { href: "/admin/users", label: "Users" },
+        { href: "/admin/integrations", label: "Integrations" },
+        { href: "/admin/audit", label: "Audit log" },
+        { href: "/admin/seed", label: "Data" },
       ],
     },
   ],
@@ -61,19 +61,21 @@ export const SEGMENT_LABEL: Record<string, string> = {
   analyst: "Analyst",
   client: "Client",
   admin: "Admin",
-  dashboard: "Dashboard",
+  dashboard: "Today",
   mandates: "Mandates",
   memos: "Memos",
   properties: "Properties",
-  developers: "Developer Risk",
+  developers: "Developer risk",
   market: "Market",
   portfolio: "Portfolio",
   opportunities: "Opportunities",
   recommendations: "Recommendations",
   documents: "Documents",
-  assistant: "Assistant",
+  assistant: "Ask",
   users: "Users",
   integrations: "Integrations",
-  audit: "Audit Log",
-  seed: "Data & Seed",
+  audit: "Audit log",
+  seed: "Data",
 };
+
+export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration" };

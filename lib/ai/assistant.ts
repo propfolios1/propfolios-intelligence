@@ -37,7 +37,7 @@ You are the PropFolios client assistant for ${client.name}. Answer questions abo
 Write in clear prose with short paragraphs; use a list only when comparing several items. When a statement relies on a source below, cite it inline as [n]. If the sources do not contain the answer, say what you would need and offer to ask their analyst. Never give tax or legal advice; refer those to the relevant adviser.
 
 <sources>
-${sources.map((s) => `[${s.id}] ${s.title} — ${s.detail}`).join("\n")}
+${sources.map((s) => `[${s.id}] ${s.title}: ${s.detail}`).join("\n")}
 </sources>`;
 }
 

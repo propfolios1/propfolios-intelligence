@@ -1,6 +1,6 @@
-import { PageContainer } from "@/components/shell/page-container";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader } from "@/components/composites/page-header";
 import { PropertiesView } from "@/components/properties/properties-view";
+import { PageContainer } from "@/components/shell/page-container";
 import { getDeveloper, properties } from "@/lib/data/store";
 
 export const metadata = { title: "Properties" };
@@ -21,12 +21,12 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
     currency: p.currency,
     lat: p.lat,
     lng: p.lng,
-    hue: p.hue,
     grossYield: p.grossYield,
   }));
+  const uae = rows.filter((r) => r.market === "UAE").length;
   return (
     <PageContainer>
-      <PageHeader eyebrow="Research" title="Properties" subtitle="Tracked schemes across the UAE and India, with pricing, status and developer." />
+      <PageHeader eyebrow="Research" title="Properties" subtitle={`${rows.length} tracked schemes. ${uae} in the UAE, ${rows.length - uae} in India.`} />
       <PropertiesView rows={rows} focusId={focus} />
     </PageContainer>
   );
