@@ -13,11 +13,11 @@ function brandify(map: MapboxMap) {
   const style = map.getStyle();
   for (const layer of style?.layers ?? []) {
     try {
-      if (layer.id.includes("water") && layer.type === "fill") map.setPaintProperty(layer.id, "fill-color", palette.navy);
-      else if (layer.type === "background") map.setPaintProperty(layer.id, "background-color", palette.paper);
-      else if ((layer.id.includes("land") || layer.id.includes("park")) && layer.type === "fill") map.setPaintProperty(layer.id, "fill-color", palette.paper2);
-      else if (layer.id.includes("road") && layer.type === "line") map.setPaintProperty(layer.id, "line-color", palette.rule);
-      else if (layer.type === "symbol") map.setPaintProperty(layer.id, "text-color", palette.ink3);
+      if (layer.id.includes("water") && layer.type === "fill") map.setPaintProperty(layer.id, "fill-color", palette.navy900);
+      else if (layer.type === "background") map.setPaintProperty(layer.id, "background-color", palette.canvas);
+      else if ((layer.id.includes("land") || layer.id.includes("park")) && layer.type === "fill") map.setPaintProperty(layer.id, "fill-color", palette.ink100);
+      else if (layer.id.includes("road") && layer.type === "line") map.setPaintProperty(layer.id, "line-color", palette.ink200);
+      else if (layer.type === "symbol") map.setPaintProperty(layer.id, "text-color", palette.ink500);
     } catch {
       /* some layers reject paint overrides */
     }
@@ -54,20 +54,20 @@ export default function MapboxView({ points, focusId }: { points: MapPoint[]; fo
           id="clusters"
           type="circle"
           filter={["has", "point_count"]}
-          paint={{ "circle-color": palette.gold, "circle-radius": ["step", ["get", "point_count"], 14, 5, 18, 12, 24], "circle-stroke-width": 2, "circle-stroke-color": palette.paper }}
+          paint={{ "circle-color": palette.gold500, "circle-radius": ["step", ["get", "point_count"], 14, 5, 18, 12, 24], "circle-stroke-width": 2, "circle-stroke-color": palette.canvas }}
         />
         <Layer
           id="cluster-count"
           type="symbol"
           filter={["has", "point_count"]}
           layout={{ "text-field": ["get", "point_count_abbreviated"], "text-size": 11, "text-font": ["DIN Pro Medium", "Arial Unicode MS Bold"] }}
-          paint={{ "text-color": palette.paper }}
+          paint={{ "text-color": palette.canvas }}
         />
         <Layer
           id="points"
           type="circle"
           filter={["!", ["has", "point_count"]]}
-          paint={{ "circle-color": palette.gold, "circle-radius": 6, "circle-stroke-width": 2, "circle-stroke-color": palette.paper }}
+          paint={{ "circle-color": palette.gold500, "circle-radius": 6, "circle-stroke-width": 2, "circle-stroke-color": palette.canvas }}
         />
       </Source>
     </MapGL>

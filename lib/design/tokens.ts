@@ -1,65 +1,55 @@
 /**
- * Design tokens. The single typed source for color, spacing, radii and elevation.
+ * Design tokens. The typed source for colour, spacing, radii and elevation.
  * `app/globals.css` mirrors these as CSS variables; components reference the
- * variables (via Tailwind utilities or `cssVar`) and never hardcode values.
- * Raw hex is exported only for contexts that cannot read CSS variables (Mapbox paint).
+ * variables through Tailwind utilities or `cssVar`. Raw hex is exported only
+ * for contexts that cannot read CSS variables (Mapbox paint, PDF renderer, OG images).
  */
 
 export const palette = {
-  paper: "#FBFAF7",
-  paper2: "#F4F2EC",
-  white: "#FFFFFF", // memo editor surface only
-  ink: "#0F1A2E",
-  ink2: "#4A5568",
-  ink3: "#8A94A6",
-  rule: "#E5E2DA",
-  navy: "#0A1F44",
-  gold: "#B8894B",
-  goldSoft: "#E8D5B0",
-  red: "#A23434",
-  green: "#2F6F4E",
+  navy900: "#0A1F44",
+  navy800: "#0F2A5C",
+  navy700: "#1A3A6B",
+  navy100: "#E8EDF5",
+  navy50: "#F4F6FA",
+  gold600: "#A8894A",
+  gold500: "#C9A961",
+  gold100: "#F5EDDA",
+  ink900: "#0A0A0A",
+  ink700: "#374151",
+  ink500: "#6B7280",
+  ink400: "#9CA3AF",
+  ink200: "#E5E7EB",
+  ink100: "#F3F4F6",
+  canvas: "#FAFAF9",
+  surface: "#FFFFFF",
+  success: "#059669",
+  warning: "#D97706",
+  danger: "#DC2626",
 } as const;
 
 export type ColorToken = keyof typeof palette;
 
-const kebab = (k: string) => k.replace(/([a-z])([0-9A-Z])/g, "$1-$2").toLowerCase();
+const kebab = (k: string) => k.replace(/([a-z])([0-9])/g, "$1-$2").toLowerCase();
 
-/** `var(--navy)` etc. Use in SVG and inline styles. */
+/** `var(--navy-900)` etc. Use in SVG and inline styles. */
 export const cssVar = Object.fromEntries(Object.keys(palette).map((k) => [k, `var(--${kebab(k)})`])) as Record<ColorToken, string>;
 
-/** Soft tints derived from locked colors, never new hues. */
-export const tint = {
-  greenSoft: "var(--green-soft)",
-  redSoft: "var(--red-soft)",
-  navy: (pct: number) => `color-mix(in oklab, var(--navy) ${pct}%, var(--paper))`,
-  gold: (pct: number) => `color-mix(in oklab, var(--gold) ${pct}%, transparent)`,
-} as const;
+/** 8px base scale, in px. */
+export const space = [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128] as const;
 
-/** 4px base scale, in px. */
-export const space = [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 128] as const;
+export const radius = { control: "6px", card: "8px", modal: "12px", pill: "999px" } as const;
 
-export const radius = {
-  none: "0px",
-  xs: "2px",
-  sm: "4px", // buttons, inputs, pills
-  lg: "12px", // command palette, tooltips, modals
-} as const;
-
-/** The only two elevations in the product. */
+/** The only two shadows in the product. */
 export const elevation = {
-  overlay: "0 24px 64px -16px rgba(15, 26, 46, 0.24)", // modals
-  palette: "0 16px 48px -12px rgba(15, 26, 46, 0.22)", // command palette
+  card: "0 1px 2px rgba(10,31,68,0.04)",
+  float: "0 8px 24px rgba(10,31,68,0.08)",
 } as const;
 
 export const layout = {
   maxWidth: 1280,
-  gutter: 24,
-  pagePadding: { mobile: 24, tablet: 48, desktop: 80 },
-  sidebar: 232,
+  sidebar: 240,
   topbar: 56,
-  kanbanColumn: 320,
-  kanbanGap: 20,
-  tableRow: 56,
-  tableHeader: 40,
-  memoColumn: 680,
+  kanbanColumn: 296,
+  tableRow: 52,
+  memoColumn: 720,
 } as const;

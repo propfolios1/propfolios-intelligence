@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
-/** Teach tailwind-merge the design system's type scale so `text-small` never evicts `text-paper`. */
+/** Teach tailwind-merge the design system's type scale so `text-small` never evicts `text-surface`. */
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {

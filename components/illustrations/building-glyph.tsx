@@ -21,17 +21,17 @@ export function BuildingGlyph({ seed, assetClass, className, size = 36, framed =
   const floors = Math.max(2, Math.floor((H - 3 - top) / 3.2));
   return (
     <svg width={size} height={size} viewBox={`0 0 ${W} ${H}`} className={cn("block shrink-0", className)} aria-hidden>
-      {framed && <rect x="0.5" y="0.5" width={W - 1} height={H - 1} fill="var(--paper-2)" stroke="var(--rule)" />}
-      <path d={`M3 ${H - 3.5} H${W - 3}`} stroke="var(--ink-3)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-      <rect x={x + 0.5} y={top + 0.5} width={w - 1} height={H - 4 - top} fill="none" stroke="var(--navy)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      {framed && <rect x="0.5" y="0.5" width={W - 1} height={H - 1} fill="var(--ink-100)" stroke="var(--ink-200)" />}
+      <path d={`M3 ${H - 3.5} H${W - 3}`} stroke="var(--ink-500)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      <rect x={x + 0.5} y={top + 0.5} width={w - 1} height={H - 4 - top} fill="none" stroke="var(--navy-900)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
       {Array.from({ length: floors - 1 }, (_, i) => (
-        <path key={i} d={`M${x + 2} ${top + 3.2 * (i + 1) + 0.5} H${x + w - 2}`} stroke="var(--ink-3)" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
+        <path key={i} d={`M${x + 2} ${top + 3.2 * (i + 1) + 0.5} H${x + w - 2}`} stroke="var(--ink-500)" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
       ))}
-      {w > 14 && [1, 2].map((k) => <path key={k} d={`M${x + (w * k) / 3} ${top + 1} V${H - 4}`} stroke="var(--ink-3)" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />)}
+      {w > 14 && [1, 2].map((k) => <path key={k} d={`M${x + (w * k) / 3} ${top + 1} V${H - 4}`} stroke="var(--ink-500)" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />)}
       {kind === "tower" && h % 3 === 1 && top > 6 && (
-        <rect x={x + w * 0.25 + 0.5} y={top - 3.5} width={w * 0.5 - 1} height={3} fill="none" stroke="var(--navy)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        <rect x={x + w * 0.25 + 0.5} y={top - 3.5} width={w * 0.5 - 1} height={3} fill="none" stroke="var(--navy-900)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
       )}
-      {kind === "tower" && h % 4 === 0 && <path d={`M${W / 2} ${top} V${top - 3}`} stroke="var(--navy)" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
+      {kind === "tower" && h % 4 === 0 && <path d={`M${W / 2} ${top} V${top - 3}`} stroke="var(--navy-900)" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
     </svg>
   );
 }

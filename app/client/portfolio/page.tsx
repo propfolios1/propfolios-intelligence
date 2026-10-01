@@ -42,8 +42,8 @@ export default function PortfolioPage() {
         <div className="min-w-0 xl:col-span-8">
           <section>
             <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-section text-navy">Value over time</h2>
-              <span className="text-small text-ink-3">USD, quarter end</span>
+              <h2 className="font-display text-section text-navy-900">Value over time</h2>
+              <span className="text-small text-ink-500">USD, quarter end</span>
             </div>
             <div className="mt-8">
               <AreaSeries data={nav} x="quarter" y="value" name="Portfolio value" format="usd" height={260} />
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
           </section>
 
           <section className="mt-16">
-            <h2 className="font-display text-section text-navy">Allocation</h2>
+            <h2 className="font-display text-section text-navy-900">Allocation</h2>
             <div className="mt-8">
               <AllocationBar items={[...byRegion].map(([label, v]) => ({ label, value: v }))} />
             </div>
@@ -59,19 +59,19 @@ export default function PortfolioPage() {
         </div>
 
         <aside className="xl:col-span-4">
-          <div className="flex items-baseline justify-between border-b border-ink pb-3">
+          <div className="flex items-baseline justify-between border-b border-ink-200 pb-3">
             <h2 className="eyebrow">Alerts</h2>
-            <span className="num text-small text-ink-3">{alerts.length}</span>
+            <span className="num text-small text-ink-500">{alerts.length}</span>
           </div>
           <ol>
             {alerts.map((a) => (
-              <li key={a.id} className="border-b border-rule py-5">
+              <li key={a.id} className="border-b border-ink-200 py-5">
                 <div className="flex items-center justify-between gap-3">
                   <SeverityPill severity={a.severity} />
-                  <time className="num text-axis text-ink-3">{relativeTime(a.at)}</time>
+                  <time className="num text-axis text-ink-500">{relativeTime(a.at)}</time>
                 </div>
-                <h3 className="mt-3 text-ui font-medium text-ink">{a.title}</h3>
-                <p className="mt-1 text-small text-ink-2">{a.detail}</p>
+                <h3 className="mt-3 text-ui font-medium text-ink-900">{a.title}</h3>
+                <p className="mt-1 text-small text-ink-700">{a.detail}</p>
               </li>
             ))}
           </ol>
@@ -80,8 +80,8 @@ export default function PortfolioPage() {
 
       <section className="mt-20">
         <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="font-display text-section text-navy">Holdings</h2>
-          <span className="num text-small text-ink-3">{hs.length}</span>
+          <h2 className="font-display text-section text-navy-900">Holdings</h2>
+          <span className="num text-small text-ink-500">{hs.length}</span>
         </div>
         <HoldingsTable
           rows={hs.map((h) => {

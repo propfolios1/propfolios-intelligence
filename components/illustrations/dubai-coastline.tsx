@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 export function DubaiCoastline({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 480 560" className={cn("block", className)} role="img" aria-label="Line drawing of the Dubai coastline">
-      <g fill="none" stroke="var(--navy)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+      <g fill="none" stroke="var(--navy-900)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
         {/* 1 shoreline */}
         <path d="M8 548 L52 500 L96 462 L140 418 L184 368 L222 330 L258 296 L296 254 L334 210 L370 170 L402 132 L430 96 L472 36" />
         {/* 2 Palm Jumeirah trunk */}
@@ -29,11 +29,11 @@ export function DubaiCoastline({ className }: { className?: string }) {
         {/* 11 Dubai Water Canal */}
         <path d="M258 296 C 280 326, 318 332, 336 300 C 344 286, 342 270, 334 258" />
         {/* 12 Sheikh Zayed Road */}
-        <path d="M60 560 L204 404 L300 300 L372 222 L444 144 L480 104" strokeDasharray="2 6" stroke="var(--ink-3)" />
+        <path d="M60 560 L204 404 L300 300 L372 222 L444 144 L480 104" strokeDasharray="2 6" stroke="var(--ink-500)" />
       </g>
       {/* Downtown */}
-      <circle cx="318" cy="268" r="3.5" fill="var(--gold)" />
-      <circle cx="318" cy="268" r="9" fill="none" stroke="var(--gold)" strokeWidth="1" opacity="0.5" />
+      <circle cx="318" cy="268" r="3.5" fill="var(--gold-500)" />
+      <circle cx="318" cy="268" r="9" fill="none" stroke="var(--gold-500)" strokeWidth="1" opacity="0.5" />
     </svg>
   );
 }

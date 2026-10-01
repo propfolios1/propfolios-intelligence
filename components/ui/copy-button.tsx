@@ -26,7 +26,7 @@ export function CopyButton({ value, children, className, label = "Copy" }: { val
           clearTimeout(timer.current);
           timer.current = setTimeout(() => setCopied(false), 1200);
         }}
-        className={cn("relative inline-flex items-center gap-1.5 text-small text-ink-2 transition-[color] duration-120 hover:text-ink", className)}
+        className={cn("relative inline-flex items-center gap-1.5 text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900", className)}
         aria-label={children ? undefined : label}
       >
         {children ?? label}
@@ -34,7 +34,7 @@ export function CopyButton({ value, children, className, label = "Copy" }: { val
           <span
             key={pulse.key}
             aria-hidden
-            className="pointer-events-none absolute size-3 animate-receipt rounded-full bg-gold"
+            className="pointer-events-none absolute size-3 animate-receipt rounded-full bg-gold-500"
             style={{ left: pulse.x, top: pulse.y }}
           />
         )}
@@ -42,7 +42,7 @@ export function CopyButton({ value, children, className, label = "Copy" }: { val
       <span
         aria-live="polite"
         className={cn(
-          "pointer-events-none absolute top-full left-0 mt-1 text-eyebrow tracking-[0.08em] text-ink-3 uppercase transition-opacity",
+          "pointer-events-none absolute top-full left-0 mt-1 text-eyebrow tracking-[0.08em] text-ink-500 uppercase transition-opacity",
           copied ? "opacity-100 duration-120" : "opacity-0 duration-300",
         )}
       >

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Segmented } from "@/components/primitives/segmented";
+import { Segmented } from "@/components/ui/segmented";
 import type { DocumentItem } from "@/lib/data/types";
 import { DocumentCard } from "./document-card";
 import { EmptyState } from "./empty-state";

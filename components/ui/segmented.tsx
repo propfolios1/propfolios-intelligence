@@ -26,11 +26,11 @@ export function Segmented<T extends string>({
           onClick={() => onChange(o.value)}
           className={cn(
             "relative flex h-8 items-baseline gap-1 text-small transition-[color] duration-120",
-            value === o.value ? "text-ink after:absolute after:inset-x-0 after:bottom-1 after:h-px after:bg-ink" : "text-ink-2 hover:text-ink",
+            value === o.value ? "text-ink-900 after:absolute after:inset-x-0 after:bottom-1 after:h-px after:bg-ink-900" : "text-ink-700 hover:text-ink-900",
           )}
         >
           {o.label}
-          {o.count !== undefined && <sup className="num text-[0.625rem] text-ink-3">{o.count}</sup>}
+          {o.count !== undefined && <sup className="num text-[0.625rem] text-ink-500">{o.count}</sup>}
         </button>
       ))}
     </div>

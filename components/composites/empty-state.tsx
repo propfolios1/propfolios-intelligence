@@ -6,8 +6,8 @@ export function EmptyState({ glyph, headline, action, note, className }: { glyph
   return (
     <div className={cn("flex flex-col items-start px-2 py-16", className)}>
       <EmptyGlyph name={glyph} />
-      <p className="mt-6 max-w-[34ch] font-display text-card text-navy">{headline}</p>
-      {note && <p className="mt-2 max-w-[48ch] text-small text-ink-2">{note}</p>}
+      <p className="mt-6 max-w-[34ch] font-display text-card text-navy-900">{headline}</p>
+      {note && <p className="mt-2 max-w-[48ch] text-small text-ink-700">{note}</p>}
       {action && <div className="mt-6">{action}</div>}
     </div>
   );

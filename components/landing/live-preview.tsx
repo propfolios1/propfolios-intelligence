@@ -1,4 +1,4 @@
-import { LiveDot } from "@/components/primitives/live-dot";
+import { LiveDot } from "@/components/ui/live-dot";
 
 const NAV = [48.1, 49.0, 48.6, 50.2, 51.4, 51.0, 52.9, 54.2, 53.8, 55.6, 57.1, 56.8, 58.9, 60.3, 61.2];
 
@@ -19,36 +19,36 @@ export function LivePreview() {
     ["Mumbai", 18, 30],
   ] as const;
   return (
-    <div className="border border-rule bg-paper p-8">
+    <div className="border border-ink-200 bg-canvas p-8">
       <div className="flex items-center justify-between">
         <span className="eyebrow">Al Noor Family Office</span>
-        <span className="flex items-center gap-2 text-small text-ink-2">
+        <span className="flex items-center gap-2 text-small text-ink-700">
           <LiveDot /> Live
         </span>
       </div>
-      <div className="mt-8 font-display text-[3.5rem] leading-none tracking-[-0.04em] text-navy">$61.2M</div>
+      <div className="mt-8 font-display text-[3.5rem] leading-none tracking-[-0.04em] text-navy-900">$61.2M</div>
       <div className="mt-3 flex items-baseline gap-3 text-small">
-        <span className="num text-green">↑ 8.4%</span>
-        <span className="text-ink-3">since last quarter</span>
+        <span className="num text-success">↑ 8.4%</span>
+        <span className="text-ink-500">since last quarter</span>
       </div>
       <svg viewBox="0 0 400 120" className="mt-8 block h-auto w-full" aria-hidden>
-        <path d={area} fill="var(--paper-2)" />
-        <path d={line} fill="none" stroke="var(--navy)" strokeWidth="1.5" />
+        <path d={area} fill="var(--ink-100)" />
+        <path d={line} fill="none" stroke="var(--navy-900)" strokeWidth="1.5" />
       </svg>
-      <div className="num mt-2 flex justify-between text-axis text-ink-3">
+      <div className="num mt-2 flex justify-between text-axis text-ink-500">
         <span>Q3 ’23</span>
         <span>Q3 ’26</span>
       </div>
       <div className="mt-8 flex h-2 gap-px">
         {alloc.map(([k, v, shade]) => (
-          <span key={k} style={{ width: `${v}%`, background: `color-mix(in oklab, var(--navy) ${shade}%, var(--paper))` }} />
+          <span key={k} style={{ width: `${v}%`, background: `color-mix(in oklab, var(--navy-900) ${shade}%, var(--canvas))` }} />
         ))}
       </div>
       <dl className="mt-4 grid grid-cols-3 gap-4">
         {alloc.map(([k, v]) => (
           <div key={k}>
-            <dt className="text-small text-ink-3">{k}</dt>
-            <dd className="num text-ui text-ink">{v}%</dd>
+            <dt className="text-small text-ink-500">{k}</dt>
+            <dd className="num text-ui text-ink-900">{v}%</dd>
           </div>
         ))}
       </dl>

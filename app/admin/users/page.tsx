@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/composites/page-header";
 import { UsersTable } from "@/components/composites/tables/users-table";
-import { Button } from "@/components/primitives/button";
+import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/shell/page-container";
 import { users } from "@/lib/data/store";
 

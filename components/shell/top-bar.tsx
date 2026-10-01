@@ -4,12 +4,12 @@ import { Bell, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { BrandMark } from "@/components/brand-mark";
-import { Button } from "@/components/primitives/button";
+import { BrandMark } from "@/components/brand/brand-mark";
+import { Button } from "@/components/ui/button";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { DialogOverlay } from "@/components/primitives/dialog";
-import { Kbd } from "@/components/primitives/kbd";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/primitives/popover";
+import { DialogOverlay } from "@/components/ui/dialog";
+import { Kbd } from "@/components/ui/kbd";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { usePalette } from "./command-palette";
 import { SEGMENT_LABEL, type Area } from "./nav-config";
@@ -35,17 +35,17 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
   }));
 
   return (
-    <header className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-rule bg-paper px-6 md:px-12 xl:px-20">
+    <header className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-ink-200 bg-canvas px-6 md:px-12 xl:px-20">
       <div className="flex min-w-0 items-center gap-3">
         <MobileNav area={area} />
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-baseline gap-2 text-small">
           {crumbs.map((c, i) => (
             <React.Fragment key={c.href}>
-              {i > 0 && <span className="text-ink-3">/</span>}
+              {i > 0 && <span className="text-ink-500">/</span>}
               {i === crumbs.length - 1 ? (
-                <span className={cn("truncate text-ink", /^[A-Z]+-\d+$/.test(c.label) && "num")}>{c.label}</span>
+                <span className={cn("truncate text-ink-900", /^[A-Z]+-\d+$/.test(c.label) && "num")}>{c.label}</span>
               ) : (
-                <Link href={c.href} className="truncate text-ink-2 transition-[color] duration-120 hover:text-ink">
+                <Link href={c.href} className="truncate text-ink-700 transition-[color] duration-120 hover:text-ink-900">
                   {c.label}
                 </Link>
               )}
@@ -56,7 +56,7 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
 
       <button
         onClick={palette.open}
-        className="hidden h-8 w-[320px] items-center justify-between rounded-sm border border-rule px-3 text-small text-ink-3 transition-[border-color] duration-120 hover:border-ink md:flex"
+        className="hidden h-8 w-[320px] items-center justify-between rounded-sm border border-ink-200 px-3 text-small text-ink-500 transition-[border-color] duration-120 hover:border-ink-200 md:flex"
       >
         Search
         <Kbd>{mac ? "⌘K" : "Ctrl K"}</Kbd>
@@ -70,22 +70,22 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" aria-label={`Notifications, ${notifications.length} unread`} className="relative">
               <Bell className="!size-4" />
-              {notifications.length > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-gold" aria-hidden />}
+              {notifications.length > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-gold-500" aria-hidden />}
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-[360px] p-0">
-            <div className="flex items-baseline justify-between border-b border-rule px-5 py-3.5">
+            <div className="flex items-baseline justify-between border-b border-ink-200 px-5 py-3.5">
               <span className="eyebrow">Alerts</span>
-              <span className="num text-small text-ink-3">{notifications.length}</span>
+              <span className="num text-small text-ink-500">{notifications.length}</span>
             </div>
             <ul className="max-h-[380px] overflow-y-auto">
               {notifications.map((n) => (
-                <li key={n.id} className="border-b border-rule px-5 py-4 last:border-b-0">
+                <li key={n.id} className="border-b border-ink-200 px-5 py-4 last:border-b-0">
                   <div className="flex items-baseline justify-between gap-4">
-                    <span className="text-small font-medium text-ink">{n.title}</span>
-                    <span className="num shrink-0 text-axis text-ink-3">{n.at}</span>
+                    <span className="text-small font-medium text-ink-900">{n.title}</span>
+                    <span className="num shrink-0 text-axis text-ink-500">{n.at}</span>
                   </div>
-                  <p className="mt-1 text-small text-ink-2">{n.detail}</p>
+                  <p className="mt-1 text-small text-ink-700">{n.detail}</p>
                 </li>
               ))}
             </ul>
@@ -109,7 +109,7 @@ function MobileNav({ area }: { area: Area }) {
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogOverlay />
-        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 left-0 z-50 w-72 border-r border-rule bg-paper py-5 pr-4 shadow-overlay outline-none data-[state=open]:animate-sheet-in">
+        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 left-0 z-50 w-72 border-r border-ink-200 bg-canvas py-5 pr-4 shadow-float outline-none data-[state=open]:animate-sheet-in">
           <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
           <div className="mb-8 px-5">
             <BrandMark size="sm" />

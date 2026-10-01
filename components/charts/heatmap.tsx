@@ -14,7 +14,7 @@ export function Heatmap({ rows, cols, values }: { rows: string[]; cols: string[]
           <tr>
             <th />
             {cols.map((c) => (
-              <th key={c} className="pb-2 text-center text-small font-normal text-ink-3">
+              <th key={c} className="pb-2 text-center text-small font-normal text-ink-500">
                 {c}
               </th>
             ))}
@@ -23,7 +23,7 @@ export function Heatmap({ rows, cols, values }: { rows: string[]; cols: string[]
         <tbody>
           {rows.map((r) => (
             <tr key={r}>
-              <th className="pr-4 text-left text-small font-normal whitespace-nowrap text-ink-2">{r}</th>
+              <th className="pr-4 text-left text-small font-normal whitespace-nowrap text-ink-700">{r}</th>
               {cols.map((c) => {
                 const v = lookup.get(`${r}|${c}`) ?? 0;
                 const p = pct(v);
@@ -31,8 +31,8 @@ export function Heatmap({ rows, cols, values }: { rows: string[]; cols: string[]
                   <td
                     key={c}
                     title={`${r}, ${c}: ${v.toFixed(1)}%`}
-                    className={cn("num h-10 min-w-[52px] text-center text-small", p > 55 ? "text-paper" : "text-ink")}
-                    style={{ background: `color-mix(in oklab, var(--navy) ${p}%, var(--paper))` }}
+                    className={cn("num h-10 min-w-[52px] text-center text-small", p > 55 ? "text-surface" : "text-ink-900")}
+                    style={{ background: `color-mix(in oklab, var(--navy-900) ${p}%, var(--canvas))` }}
                   >
                     {v > 0 ? "+" : ""}
                     {v.toFixed(1)}
@@ -44,9 +44,9 @@ export function Heatmap({ rows, cols, values }: { rows: string[]; cols: string[]
         </tbody>
       </table>
       <figcaption className="mt-4 flex items-center justify-end gap-3">
-        <span className="num text-axis text-ink-3">{min.toFixed(1)}%</span>
-        <span className="h-1.5 w-32" style={{ background: "linear-gradient(90deg, color-mix(in oklab, var(--navy) 6%, var(--paper)), var(--navy))" }} />
-        <span className="num text-axis text-ink-3">{max.toFixed(1)}%</span>
+        <span className="num text-axis text-ink-500">{min.toFixed(1)}%</span>
+        <span className="h-1.5 w-32" style={{ background: "linear-gradient(90deg, color-mix(in oklab, var(--navy-900) 6%, var(--canvas)), var(--navy-900))" }} />
+        <span className="num text-axis text-ink-500">{max.toFixed(1)}%</span>
       </figcaption>
     </figure>
   );

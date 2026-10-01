@@ -19,7 +19,7 @@ export const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-[color-mix(in_oklab,var(--ink)_18%,transparent)] data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in",
+      "fixed inset-0 z-50 bg-navy-900/20 data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in",
       className,
     )}
     {...props}
@@ -36,14 +36,14 @@ export const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed top-1/2 left-1/2 z-50 w-[calc(100vw-48px)] max-w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-rule bg-paper p-8 shadow-overlay outline-none data-[state=closed]:animate-dialog-out data-[state=open]:animate-dialog-in",
+        "fixed top-1/2 left-1/2 z-50 w-[calc(100vw-48px)] max-w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-ink-200 bg-surface p-8 shadow-float outline-none data-[state=closed]:animate-dialog-out data-[state=open]:animate-dialog-in",
         className,
       )}
       {...props}
     >
       {children}
       {!hideClose && (
-        <DialogPrimitive.Close className="absolute top-6 right-6 text-ink-2 transition-[color] duration-120 hover:text-ink">
+        <DialogPrimitive.Close className="absolute top-5 right-5 rounded-xs p-1 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900">
           <X className="size-4 stroke-[1.5]" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

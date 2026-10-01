@@ -3,8 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/primitives/button";
-import { Input } from "@/components/primitives/field";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/form";
 import type { MandateRow } from "@/lib/data/store";
 import { MANDATE_STAGES, STAGE_LABEL } from "@/lib/data/types";
 import { formatDate, formatMoney } from "@/lib/utils";
@@ -24,14 +24,14 @@ const columns: ColumnDef<MandateRow, unknown>[] = [
     cell: ({ row }) => (
       <span className="block truncate">
         {row.original.property}
-        <span className="ml-2 text-small text-ink-3">{row.original.community}</span>
+        <span className="ml-2 text-small text-ink-500">{row.original.community}</span>
       </span>
     ),
   },
   { accessorKey: "status", header: "Stage", size: 128, meta: { filterable: true }, cell: ({ row }) => <StatusPillFor status={row.original.status} /> },
-  { accessorKey: "analyst", header: "Analyst", size: 140, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-2">{getValue<string>()}</span> },
+  { accessorKey: "analyst", header: "Analyst", size: 140, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-700">{getValue<string>()}</span> },
   { accessorKey: "ticketSize", header: "Ticket", size: 116, meta: { numeric: true }, cell: ({ getValue }) => formatMoney(getValue<number>(), "USD") },
-  { accessorKey: "createdAt", header: "Opened", size: 140, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-2">{formatDate(getValue<string>())}</span> },
+  { accessorKey: "createdAt", header: "Opened", size: 140, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-700">{formatDate(getValue<string>())}</span> },
 ];
 
 export function MandatesView({ rows, clients }: { rows: MandateRow[]; clients: { id: string; name: string }[] }) {
@@ -69,14 +69,14 @@ export function MandatesView({ rows, clients }: { rows: MandateRow[]; clients: {
         <MultiSelect label="Client" options={clients.map((c) => ({ value: c.id, label: c.name }))} value={clientIds} onChange={setClientIds} />
         <div className="flex h-10 items-baseline gap-2 text-small">
           <span className="eyebrow">Opened</span>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Opened from" className="num w-[124px] bg-transparent text-small text-ink outline-none" />
-          <span className="text-ink-3">to</span>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="Opened to" className="num w-[124px] bg-transparent text-small text-ink outline-none" />
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Opened from" className="num w-[124px] bg-transparent text-small text-ink-900 outline-none" />
+          <span className="text-ink-500">to</span>
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="Opened to" className="num w-[124px] bg-transparent text-small text-ink-900 outline-none" />
         </div>
         <div className="ml-auto flex items-baseline gap-6">
           {anyFilter ? (
             <button
-              className="text-small text-ink-2 transition-[color] duration-120 hover:text-ink"
+              className="text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900"
               onClick={() => {
                 setQuery("");
                 setStatuses([]);
@@ -88,10 +88,10 @@ export function MandatesView({ rows, clients }: { rows: MandateRow[]; clients: {
               Clear
             </button>
           ) : null}
-          <button onClick={() => setColumnFilters((s) => !s)} className="text-small text-ink-2 transition-[color] duration-120 hover:text-ink" aria-pressed={columnFilters}>
+          <button onClick={() => setColumnFilters((s) => !s)} className="text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900" aria-pressed={columnFilters}>
             {columnFilters ? "Hide column filters" : "Column filters"}
           </button>
-          <span className="num text-small text-ink-3">
+          <span className="num text-small text-ink-500">
             {filtered.length}/{rows.length}
           </span>
         </div>

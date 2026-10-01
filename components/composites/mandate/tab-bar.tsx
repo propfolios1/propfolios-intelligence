@@ -16,7 +16,7 @@ export type MandateTab = (typeof MANDATE_TABS)[number][0];
 /** Sticky section bar under the top bar. Numbered tabs, the active one underlined in ink. */
 export function TabBar({ id, active }: { id: string; active: MandateTab }) {
   return (
-    <div className="sticky top-14 z-20 -mx-6 border-b border-rule bg-paper px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
+    <div className="sticky top-14 z-20 -mx-6 border-b border-ink-200 bg-canvas px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
       <nav className="scrollbar-thin -mb-px flex gap-8 overflow-x-auto" aria-label="Mandate sections">
         {MANDATE_TABS.map(([key, label], i) => (
           <Link
@@ -26,10 +26,10 @@ export function TabBar({ id, active }: { id: string; active: MandateTab }) {
             aria-current={active === key ? "page" : undefined}
             className={cn(
               "flex h-12 shrink-0 items-baseline gap-2 border-b pt-4 text-small transition-[color,border-color] duration-120",
-              active === key ? "border-ink text-ink" : "border-transparent text-ink-2 hover:text-ink",
+              active === key ? "border-ink-200 text-ink-900" : "border-transparent text-ink-700 hover:text-ink-900",
             )}
           >
-            <span className="num text-axis text-ink-3">{String(i + 1).padStart(2, "0")}</span>
+            <span className="num text-axis text-ink-500">{String(i + 1).padStart(2, "0")}</span>
             {label}
           </Link>
         ))}

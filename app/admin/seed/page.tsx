@@ -24,9 +24,9 @@ export default function SeedPage() {
       <PageHeader title="Data" subtitle={`Runtime state since ${formatDate(new Date(stats.seededAt), "datetime")}.`} actions={<SeedButton />} />
       <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
         {counts.map(([k, v]) => (
-          <div key={k} className="border-t border-rule pt-3">
+          <div key={k} className="border-t border-ink-200 pt-3">
             <dt className="eyebrow">{k}</dt>
-            <dd className="num mt-3 text-card text-ink">{v}</dd>
+            <dd className="num mt-3 text-card text-ink-900">{v}</dd>
           </div>
         ))}
       </dl>

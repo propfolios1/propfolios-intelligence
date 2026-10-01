@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { MandatesView } from "@/components/composites/mandate/mandates-view";
 import { PageHeader } from "@/components/composites/page-header";
-import { Button } from "@/components/primitives/button";
+import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/shell/page-container";
 import { clients, listMandateRows } from "@/lib/data/store";
 

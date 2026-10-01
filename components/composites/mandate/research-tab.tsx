@@ -7,14 +7,14 @@ export function ResearchTab({ research }: { research: ResearchDossier }) {
   return (
     <div className="grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
       <article className="prose-pf xl:col-span-7">
-        <p className="font-display text-card leading-[1.4] text-navy md:text-[1.625rem]">
+        <p className="font-display text-card leading-[1.4] text-navy-900 md:text-[1.625rem]">
           <CitedText text={research.summary} sources={sources} />
         </p>
 
         {research.dataGaps.length > 0 && (
-          <aside className="my-12 bg-paper-2 px-6 py-5" role="note">
-            <div className="eyebrow text-red">Unverified</div>
-            <ul className="mt-3 mb-0 text-small text-ink-2">
+          <aside className="my-12 bg-ink-100 px-6 py-5" role="note">
+            <div className="eyebrow text-danger">Unverified</div>
+            <ul className="mt-3 mb-0 text-small text-ink-700">
               {research.dataGaps.map((g) => (
                 <li key={g}>{g}</li>
               ))}
@@ -36,13 +36,13 @@ export function ResearchTab({ research }: { research: ResearchDossier }) {
 
       <aside className="xl:sticky xl:top-32 xl:col-span-4 xl:col-start-9 xl:self-start">
         <div className="eyebrow">Sources</div>
-        <ol className="mt-4 border-t-2 border-ink">
+        <ol className="mt-4 border-t border-ink-200">
           {research.citations.map((c) => (
-            <li key={c.id} className="grid grid-cols-[24px_1fr] gap-3 border-b border-rule py-3.5">
-              <span className="num text-small text-ink-3">{c.id}</span>
+            <li key={c.id} className="grid grid-cols-[24px_1fr] gap-3 border-b border-ink-200 py-3.5">
+              <span className="num text-small text-ink-500">{c.id}</span>
               <div>
-                <div className="text-small text-ink">{c.title}</div>
-                <div className="text-small text-ink-3">
+                <div className="text-small text-ink-900">{c.title}</div>
+                <div className="text-small text-ink-500">
                   {c.source}, <span className="num">{c.date}</span>
                 </div>
               </div>

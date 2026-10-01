@@ -12,9 +12,9 @@ import { MANDATE_TABS, TabBar, type MandateTab } from "@/components/composites/m
 import { UnderwritingTab } from "@/components/composites/mandate/underwriting-tab";
 import { MemoEditor } from "@/components/composites/memo-editor";
 import { StatusPillFor } from "@/components/composites/status";
-import { Button } from "@/components/primitives/button";
-import { CopyButton } from "@/components/primitives/copy-button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { PageContainer } from "@/components/shell/page-container";
 import { buildMemoDraft } from "@/lib/data/memo";
 import { getAnalysis, getMandateView, getMemoHtml, listAudit, listDocuments } from "@/lib/data/store";
@@ -40,16 +40,16 @@ export default async function MandateDetail({ params, searchParams }: { params: 
     <PageContainer className="pb-32">
       <header>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-          <CopyButton value={mandate.id} label={`Copy ${mandate.id}`} className="num text-small text-ink-2">
+          <CopyButton value={mandate.id} label={`Copy ${mandate.id}`} className="num text-small text-ink-700">
             {mandate.id}
           </CopyButton>
           <span className="eyebrow">{property.community}</span>
           <StatusPillFor status={mandate.status} />
         </div>
         <div className="mt-6 flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-          <h1 className="max-w-[22ch] font-display text-section text-navy md:text-title">
+          <h1 className="max-w-[22ch] font-display text-section text-navy-900 md:text-title">
             {property.name}
-            <span className="block text-ink-3">for {client.name}</span>
+            <span className="block text-ink-500">for {client.name}</span>
           </h1>
           <div className="flex shrink-0 flex-wrap items-center gap-3">
             <RunFlowButton mandateId={mandate.id} />
@@ -75,7 +75,7 @@ export default async function MandateDetail({ params, searchParams }: { params: 
             </DropdownMenu>
           </div>
         </div>
-        <dl className="mt-10 grid grid-cols-2 border-t border-rule md:grid-cols-6">
+        <dl className="mt-10 grid grid-cols-2 border-t border-ink-200 md:grid-cols-6">
           {[
             ["Ticket", formatMoney(mandate.ticketSize, "USD"), true],
             ["Hold", `${mandate.horizonYears} years`, true],
@@ -84,9 +84,9 @@ export default async function MandateDetail({ params, searchParams }: { params: 
             ["Opened", formatDate(mandate.createdAt), true],
             ["Due", formatDate(mandate.deadline), true],
           ].map(([k, v, mono]) => (
-            <div key={String(k)} className="border-b border-rule py-3 pr-4">
-              <dt className="text-small text-ink-3">{k}</dt>
-              <dd className={mono ? "num mt-0.5 text-ui text-ink" : "mt-0.5 truncate text-ui text-ink"}>{v}</dd>
+            <div key={String(k)} className="border-b border-ink-200 py-3 pr-4">
+              <dt className="text-small text-ink-500">{k}</dt>
+              <dd className={mono ? "num mt-0.5 text-ui text-ink-900" : "mt-0.5 truncate text-ui text-ink-900"}>{v}</dd>
             </div>
           ))}
         </dl>

@@ -24,8 +24,8 @@ export default function MarketPage() {
 
       <section className="mt-20">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-section text-navy">Price per square foot</h2>
-          <span className="text-small text-ink-3">AED, monthly median</span>
+          <h2 className="font-display text-section text-navy-900">Price per square foot</h2>
+          <span className="text-small text-ink-500">AED, monthly median</span>
         </div>
         <div className="mt-8">
           <LineSeries
@@ -44,15 +44,15 @@ export default function MarketPage() {
 
       <section className="mt-20 grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
         <div className="xl:col-span-4">
-          <h2 className="font-display text-section text-navy">Volume</h2>
-          <p className="mt-2 text-small text-ink-3">Dubai transactions by month. September in navy.</p>
+          <h2 className="font-display text-section text-navy-900">Volume</h2>
+          <p className="mt-2 text-small text-ink-500">Dubai transactions by month. September in navy.</p>
           <div className="mt-8">
             <BarSeries data={marketMonths} x="month" y="transactions" name="Transactions" height={300} emphasiseLast />
           </div>
         </div>
         <div className="xl:col-span-7 xl:col-start-6">
-          <h2 className="font-display text-section text-navy">Where prices moved</h2>
-          <p className="mt-2 text-small text-ink-3">Year on year change, percent. Darker is stronger.</p>
+          <h2 className="font-display text-section text-navy-900">Where prices moved</h2>
+          <p className="mt-2 text-small text-ink-500">Year on year change, percent. Darker is stronger.</p>
           <div className="mt-8">
             <Heatmap rows={heatmapRegions} cols={heatmapClasses} values={heatmap} />
           </div>

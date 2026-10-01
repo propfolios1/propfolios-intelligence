@@ -4,9 +4,9 @@ import type { ColumnDef } from "@tanstack/react-table";
 import * as React from "react";
 import { DataTable } from "@/components/composites/data-table";
 import { BuildingGlyph } from "@/components/illustrations/building-glyph";
-import { Checkbox } from "@/components/primitives/checkbox";
-import { Segmented } from "@/components/primitives/segmented";
-import { StatusPill } from "@/components/primitives/status-pill";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Segmented } from "@/components/ui/segmented";
+import { StatusPill } from "@/components/ui/status-pill";
 import { formatMoney } from "@/lib/utils";
 import { PropertyMap } from "./property-map";
 
@@ -37,14 +37,14 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
       <div className="flex items-center gap-4">
         <BuildingGlyph seed={row.original.id} assetClass={row.original.assetClass} />
         <div className="min-w-0">
-          <div className="truncate text-ui text-ink">{row.original.name}</div>
-          <div className="truncate text-small text-ink-3">{row.original.community}</div>
+          <div className="truncate text-ui text-ink-900">{row.original.name}</div>
+          <div className="truncate text-small text-ink-500">{row.original.community}</div>
         </div>
       </div>
     ),
   },
-  { accessorKey: "developer", header: "Developer", size: 190, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-2">{getValue<string>()}</span> },
-  { accessorKey: "region", header: "Emirate or state", size: 150, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-2">{getValue<string>()}</span> },
+  { accessorKey: "developer", header: "Developer", size: 190, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-700">{getValue<string>()}</span> },
+  { accessorKey: "region", header: "Emirate or state", size: 150, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-700">{getValue<string>()}</span> },
   {
     id: "price",
     accessorFn: (r) => r.priceMin,
@@ -68,14 +68,14 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
 
 function FilterGroup({ title, options, value, onChange }: { title: string; options: [string, number][]; value: string[]; onChange: (v: string[]) => void }) {
   return (
-    <fieldset className="border-t border-rule pt-4">
+    <fieldset className="border-t border-ink-200 pt-4">
       <legend className="eyebrow float-left mb-4 w-full">{title}</legend>
       <div className="clear-both flex flex-col gap-3">
         {options.map(([o, n]) => (
-          <label key={o} className="flex cursor-pointer items-center gap-3 text-small text-ink">
+          <label key={o} className="flex cursor-pointer items-center gap-3 text-small text-ink-900">
             <Checkbox checked={value.includes(o)} onCheckedChange={(c) => onChange(c ? [...value, o] : value.filter((x) => x !== o))} />
             <span className="flex-1">{o}</span>
-            <span className="num text-axis text-ink-3">{n}</span>
+            <span className="num text-axis text-ink-500">{n}</span>
           </label>
         ))}
       </div>
@@ -103,7 +103,7 @@ export function PropertiesView({ rows, focusId }: { rows: PropertyRow[]; focusId
             { value: "list", label: "List" },
           ]}
         />
-        <span className="num text-small text-ink-3">
+        <span className="num text-small text-ink-500">
           {filtered.length}/{rows.length}
         </span>
       </div>
@@ -115,7 +115,7 @@ export function PropertiesView({ rows, focusId }: { rows: PropertyRow[]; focusId
             <FilterGroup title="Status" options={counts("status")} value={statuses} onChange={setStatuses} />
             <FilterGroup title="Asset class" options={counts("assetClass")} value={classes} onChange={setClasses} />
           </aside>
-          <div className="relative h-[640px] overflow-hidden border border-rule lg:col-span-9 xl:col-span-10">
+          <div className="relative h-[640px] overflow-hidden border border-ink-200 lg:col-span-9 xl:col-span-10">
             <PropertyMap points={filtered.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, market: r.market, sub: r.community }))} focusId={focusId} />
           </div>
         </div>

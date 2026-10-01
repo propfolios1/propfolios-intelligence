@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /** Three bespoke 40px glyphs. Hairline, ink-3, drawn on a 40 grid. */
 
-const base = { width: 40, height: 40, viewBox: "0 0 40 40", fill: "none", stroke: "var(--ink-3)", strokeWidth: 1, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const base = { width: 40, height: 40, viewBox: "0 0 40 40", fill: "none", stroke: "var(--ink-500)", strokeWidth: 1, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
 export type GlyphName = "mandates" | "documents" | "opportunities";
 
@@ -32,7 +32,7 @@ export function EmptyGlyph({ name, className }: { name: GlyphName; className?: s
       <path d="M4.5 26.5 H35.5" />
       <path d="M10.5 26.5 A9.5 9.5 0 0 1 29.5 26.5" strokeDasharray="1 3" />
       <path d="M20 12 V9 M12.9 15 L11 13.1 M27.1 15 L29 13.1" />
-      <path d="M8.5 31.5 H31.5" stroke="var(--rule)" />
+      <path d="M8.5 31.5 H31.5" stroke="var(--ink-200)" />
     </svg>
   );
 }

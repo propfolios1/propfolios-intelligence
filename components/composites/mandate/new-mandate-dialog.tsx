@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/primitives/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/primitives/dialog";
-import { Field, Input, Select, Textarea } from "@/components/primitives/field";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Field, Input, Select, Textarea } from "@/components/ui/form";
 
 export function NewMandateDialog({ open, onOpenChange, clients }: { open: boolean; onOpenChange: (o: boolean) => void; clients: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -13,8 +13,8 @@ export function NewMandateDialog({ open, onOpenChange, clients }: { open: boolea
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[600px]">
         <div className="eyebrow">New mandate</div>
-        <DialogTitle className="mt-4 font-display text-section text-navy">Open a mandate</DialogTitle>
-        <DialogDescription className="mt-2 text-ui text-ink-2">Paste the client brief. Research starts when the mandate is created.</DialogDescription>
+        <DialogTitle className="mt-4 font-display text-section text-navy-900">Open a mandate</DialogTitle>
+        <DialogDescription className="mt-2 text-ui text-ink-700">Paste the client brief. Research starts when the mandate is created.</DialogDescription>
         <form
           className="mt-8 flex flex-col gap-6"
           onSubmit={(e) => {
@@ -47,7 +47,7 @@ export function NewMandateDialog({ open, onOpenChange, clients }: { open: boolea
           <Field label="Brief">
             <Textarea rows={5} required placeholder="6 to 8% net yield in prime Dubai residential. Golden Visa eligible. 5 year hold." />
           </Field>
-          <div className="flex justify-end gap-3 border-t border-rule pt-6">
+          <div className="flex justify-end gap-3 border-t border-ink-200 pt-6">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>

@@ -22,16 +22,16 @@ export function PageHeader({
   rule?: boolean;
 }) {
   return (
-    <header className={cn(rule && "border-b border-rule pb-8", className)}>
+    <header className={cn(rule && "border-b border-ink-200 pb-8", className)}>
       {eyebrow && <div className="eyebrow mb-5">{eyebrow}</div>}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h1 className="font-display text-section text-navy md:text-title">{title}</h1>
-          {subtitle && <p className="mt-4 max-w-[60ch] text-body text-ink-2">{subtitle}</p>}
+          <h1 className="font-display text-section text-navy-900 md:text-title">{title}</h1>
+          {subtitle && <p className="mt-4 max-w-[60ch] text-body text-ink-700">{subtitle}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-3 lg:pb-1.5">{actions}</div>}
       </div>
-      {meta && <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-small text-ink-2">{meta}</div>}
+      {meta && <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-small text-ink-700">{meta}</div>}
     </header>
   );
 }

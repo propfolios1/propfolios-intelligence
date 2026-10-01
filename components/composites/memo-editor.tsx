@@ -5,9 +5,9 @@ import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import * as React from "react";
-import { Button } from "@/components/primitives/button";
-import { Kbd } from "@/components/primitives/kbd";
-import { Skeleton } from "@/components/primitives/skeleton";
+import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export interface MemoDataSection {
@@ -170,11 +170,11 @@ export function MemoEditor({
 
       <div className="min-w-0">
         <div className="mb-4 flex items-center justify-between gap-4" data-no-print>
-          <span className="flex items-center gap-2 text-small text-ink-3">
+          <span className="flex items-center gap-2 text-small text-ink-500">
             <Kbd>/</Kbd> for blocks
           </span>
           <div className="flex items-center gap-3">
-            <span className={cn("text-small transition-opacity", saveError ? "text-red opacity-100" : "text-ink-3", saved || saveError ? "opacity-100 duration-120" : "opacity-0 duration-300")} aria-live="polite">
+            <span className={cn("text-small transition-opacity", saveError ? "text-danger opacity-100" : "text-ink-500", saved || saveError ? "opacity-100 duration-120" : "opacity-0 duration-300")} aria-live="polite">
               {saveError ? "Not saved. Retry." : saved ? "Saved" : ""}
             </span>
             <Button variant="secondary" size="sm" onClick={() => editor && save(editor.getHTML())}>
@@ -201,23 +201,23 @@ export function MemoEditor({
           </div>
         </div>
 
-        <details className="mb-6 border-y border-rule 2xl:hidden" data-no-print>
+        <details className="mb-6 border-y border-ink-200 2xl:hidden" data-no-print>
           <summary className="eyebrow flex h-11 cursor-pointer items-center">Data sources</summary>
           <SourcesGrid sections={dataSources} />
         </details>
 
-        <div ref={sheetRef} className="paper-grain relative border border-rule px-8 py-12 md:px-14 md:py-16">
+        <div ref={sheetRef} className="paper-grain relative border border-ink-200 px-8 py-12 md:px-14 md:py-16">
           {editor ? (
             <>
               <BubbleMenu editor={editor} options={{ placement: "top", offset: 10 }}>
-                <div className="flex items-center rounded-sm border border-rule bg-paper px-1 py-1">
+                <div className="flex items-center rounded-sm border border-ink-200 bg-canvas px-1 py-1">
                   <Tool label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
                     <span className="font-semibold">B</span>
                   </Tool>
                   <Tool label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}>
                     <span className="font-display italic">I</span>
                   </Tool>
-                  <span className="mx-1 h-4 w-px bg-rule" />
+                  <span className="mx-1 h-4 w-px bg-ink-200" />
                   <Tool label="Section heading" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
                     <span className="font-display text-ui">H</span>
                   </Tool>
@@ -239,7 +239,7 @@ export function MemoEditor({
             <div
               role="listbox"
               aria-label="Insert block"
-              className="absolute z-30 w-64 rounded-sm border border-rule bg-paper py-1 animate-fade"
+              className="absolute z-30 w-64 rounded-sm border border-ink-200 bg-canvas py-1 animate-fade"
               style={{ top: slash.top, left: Math.max(16, Math.min(slash.left, (sheetRef.current?.clientWidth ?? 600) - 272)) }}
             >
               {filtered.map((c, i) => (
@@ -252,12 +252,12 @@ export function MemoEditor({
                     runSlash(editor, c);
                   }}
                   onMouseEnter={() => setSlash({ ...slash, index: i })}
-                  className={cn("flex w-full items-center gap-3 px-3 py-2 text-left", i === slash.index && "bg-paper-2")}
+                  className={cn("flex w-full items-center gap-3 px-3 py-2 text-left", i === slash.index && "bg-ink-100")}
                 >
-                  <span className="num flex w-6 justify-center text-small text-ink-3">{c.glyph}</span>
+                  <span className="num flex w-6 justify-center text-small text-ink-500">{c.glyph}</span>
                   <span className="min-w-0">
-                    <span className="block text-small text-ink">{c.label}</span>
-                    <span className="block truncate text-axis text-ink-3">{c.hint}</span>
+                    <span className="block text-small text-ink-900">{c.label}</span>
+                    <span className="block truncate text-axis text-ink-500">{c.hint}</span>
                   </span>
                 </button>
               ))}
@@ -278,7 +278,7 @@ function Tool({ label, active, onClick, children }: { label: string; active: boo
       aria-label={label}
       aria-pressed={active}
       onClick={onClick}
-      className={cn("flex h-7 min-w-7 items-center justify-center rounded-xs px-1.5 text-small text-ink-2 transition-[color,background-color] duration-120 hover:text-ink", active && "bg-paper-2 text-navy")}
+      className={cn("flex h-7 min-w-7 items-center justify-center rounded-xs px-1.5 text-small text-ink-700 transition-[color,background-color] duration-120 hover:text-ink-900", active && "bg-ink-100 text-navy-900")}
     >
       {children}
     </button>
@@ -292,7 +292,7 @@ function MemoSkeleton() {
       {[0, 1].map((s) => (
         <div key={s} className={cn(s > 0 && "mt-12")}>
           <Skeleton className="h-8 w-2/5" />
-          <span className="mt-6 block h-0.5 w-8 bg-gold-soft" />
+          <span className="mt-6 block h-0.5 w-8 bg-gold-100" />
           {[100, 96, 88, 62].map((w, i) => (
             <Skeleton key={i} className="mt-4 h-3.5" style={{ width: `${w}%` }} />
           ))}
@@ -307,11 +307,11 @@ function SourcesGrid({ sections }: { sections: MemoDataSection[] }) {
     <div className="grid grid-cols-2 gap-x-10 gap-y-6 pb-6 md:grid-cols-3">
       {sections.map((s) => (
         <dl key={s.title}>
-          <div className="eyebrow mb-2 text-ink-3">{s.title}</div>
+          <div className="eyebrow mb-2 text-ink-500">{s.title}</div>
           {s.items.map((it) => (
-            <div key={it.label} className="flex justify-between gap-3 border-t border-rule py-1.5 text-small">
-              <dt className="text-ink-2">{it.label}</dt>
-              <dd className="num text-right text-ink">{it.value}</dd>
+            <div key={it.label} className="flex justify-between gap-3 border-t border-ink-200 py-1.5 text-small">
+              <dt className="text-ink-700">{it.label}</dt>
+              <dd className="num text-right text-ink-900">{it.value}</dd>
             </div>
           ))}
         </dl>
@@ -326,21 +326,21 @@ function SourcesRail({ sections, className }: { sections: MemoDataSection[]; cla
     <aside className={cn("sticky top-20 self-start", className)}>
       <div className="eyebrow mb-4">Sources</div>
       {sections.map((s) => (
-        <div key={s.title} className="border-t border-rule">
+        <div key={s.title} className="border-t border-ink-200">
           <button
             onClick={() => setOpen((o) => ({ ...o, [s.title]: !o[s.title] }))}
-            className="flex h-10 w-full items-center justify-between text-left text-small text-ink transition-[color] duration-120 hover:text-navy"
+            className="flex h-10 w-full items-center justify-between text-left text-small text-ink-900 transition-[color] duration-120 hover:text-navy-900"
             aria-expanded={open[s.title]}
           >
             {s.title}
-            <span className="num text-axis text-ink-3">{open[s.title] ? "−" : "+"}</span>
+            <span className="num text-axis text-ink-500">{open[s.title] ? "−" : "+"}</span>
           </button>
           {open[s.title] && (
             <dl className="pb-4">
               {s.items.map((it) => (
                 <div key={it.label} className="flex justify-between gap-2 py-1 text-small">
-                  <dt className="truncate text-ink-3">{it.label}</dt>
-                  <dd className="num shrink-0 text-right text-ink">{it.value}</dd>
+                  <dt className="truncate text-ink-500">{it.label}</dt>
+                  <dd className="num shrink-0 text-right text-ink-900">{it.value}</dd>
                 </div>
               ))}
             </dl>
@@ -417,48 +417,48 @@ function RightRail({
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <span className="eyebrow">Suggestions</span>
-          <button onClick={refresh} disabled={loading} className="text-small text-ink-2 transition-[color] duration-120 hover:text-ink disabled:text-ink-3">
+          <button onClick={refresh} disabled={loading} className="text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900 disabled:text-ink-500">
             {loading ? "Reading" : "Refresh"}
           </button>
         </div>
-        {error && <p className="mb-3 text-small text-red">{error}</p>}
+        {error && <p className="mb-3 text-small text-danger">{error}</p>}
         {loading
           ? [0, 1].map((i) => (
-              <div key={i} className="mb-2 border border-rule p-4">
+              <div key={i} className="mb-2 border border-ink-200 p-4">
                 <Skeleton className="h-2.5 w-14" />
                 <Skeleton className="mt-3 h-3 w-full" />
                 <Skeleton className="mt-2 h-3 w-4/5" />
               </div>
             ))
           : suggestions.map((s, i) => (
-              <article key={i} className="mb-2 border border-rule p-4">
-                <div className="eyebrow text-ink-3">{KIND_LABEL[s.kind] ?? s.kind}</div>
-                <p className="mt-2 text-small text-ink-3 line-through decoration-ink-3/60">{s.target}</p>
-                <p className="mt-1 text-small text-ink">{s.replacement}</p>
-                <p className="mt-2 text-small text-ink-2">{s.reason}</p>
+              <article key={i} className="mb-2 border border-ink-200 p-4">
+                <div className="eyebrow text-ink-500">{KIND_LABEL[s.kind] ?? s.kind}</div>
+                <p className="mt-2 text-small text-ink-500 line-through decoration-ink-500/60">{s.target}</p>
+                <p className="mt-1 text-small text-ink-900">{s.replacement}</p>
+                <p className="mt-2 text-small text-ink-700">{s.reason}</p>
                 <div className="mt-3 flex gap-4">
-                  <button onClick={() => apply(s)} className="text-small font-medium text-navy underline decoration-rule underline-offset-4 hover:decoration-navy">
+                  <button onClick={() => apply(s)} className="text-small font-medium text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
                     Apply
                   </button>
-                  <button onClick={() => setSuggestions((l) => l.filter((x) => x !== s))} className="text-small text-ink-2 hover:text-ink">
+                  <button onClick={() => setSuggestions((l) => l.filter((x) => x !== s))} className="text-small text-ink-700 hover:text-ink-900">
                     Dismiss
                   </button>
                 </div>
               </article>
             ))}
-        {!loading && suggestions.length === 0 && <p className="text-small text-ink-3">No open suggestions.</p>}
+        {!loading && suggestions.length === 0 && <p className="text-small text-ink-500">No open suggestions.</p>}
       </section>
 
       <section className="mt-10">
         <div className="eyebrow mb-3">Fact check</div>
         {initialFlags.map((f, i) => (
-          <article key={i} className="mb-2 border border-rule p-4">
+          <article key={i} className="mb-2 border border-ink-200 p-4">
             <div className="flex items-center gap-2">
-              <span className={cn("size-1.5 rounded-full", f.severity === "high" ? "bg-red" : f.severity === "medium" ? "bg-ink-3" : "bg-green")} aria-hidden />
-              <span className="eyebrow text-ink-3">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
+              <span className={cn("size-1.5 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-ink-500" : "bg-success")} aria-hidden />
+              <span className="eyebrow text-ink-500">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
             </div>
-            <p className="mt-2 font-display text-body leading-[1.35] text-ink">“{f.claim}”</p>
-            <p className="mt-2 text-small text-ink-2">{f.suggestion}</p>
+            <p className="mt-2 font-display text-body leading-[1.35] text-ink-900">“{f.claim}”</p>
+            <p className="mt-2 text-small text-ink-700">{f.suggestion}</p>
           </article>
         ))}
       </section>
@@ -467,11 +467,11 @@ function RightRail({
         <div className="eyebrow mb-3">Citations</div>
         <ol>
           {citations.map((c) => (
-            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 border-t border-rule py-2.5 text-small">
-              <span className="num text-ink-3">{c.id}</span>
+            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 border-t border-ink-200 py-2.5 text-small">
+              <span className="num text-ink-500">{c.id}</span>
               <span>
-                <span className="block text-ink">{c.title}</span>
-                <span className="text-ink-3">
+                <span className="block text-ink-900">{c.title}</span>
+                <span className="text-ink-500">
                   {c.source}, <span className="num">{c.date}</span>
                 </span>
               </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/primitives/dropdown-menu";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 /** A filter set in type: "Status  All ⌄". Active filters are underlined in ink. */
@@ -10,8 +10,8 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
     <DropdownMenu>
       <DropdownMenuTrigger className="group flex h-10 items-baseline gap-2 text-small outline-none">
         <span className="eyebrow">{label}</span>
-        <span className={cn("max-w-[160px] truncate border-b pb-px transition-[border-color] duration-120", value.length ? "border-ink text-ink" : "border-transparent text-ink-2 group-hover:border-rule")}>{summary}</span>
-        <span className="num text-axis text-ink-3" aria-hidden>
+        <span className={cn("max-w-[160px] truncate border-b pb-px transition-[border-color] duration-120", value.length ? "border-ink-200 text-ink-900" : "border-transparent text-ink-700 group-hover:border-ink-200")}>{summary}</span>
+        <span className="num text-axis text-ink-500" aria-hidden>
           ▾
         </span>
       </DropdownMenuTrigger>

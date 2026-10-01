@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { StatusPill } from "@/components/primitives/status-pill";
+import { StatusPill } from "@/components/ui/status-pill";
 import type { Developer } from "@/lib/data/types";
 import { cn, relativeTime } from "@/lib/utils";
 import { DataTable } from "../data-table";
@@ -22,8 +22,8 @@ const columns: ColumnDef<Developer, unknown>[] = [
     meta: { filterable: true },
     cell: ({ row }) => (
       <div className="min-w-0">
-        <div className="truncate text-ui text-ink">{row.original.name}</div>
-        <div className="truncate text-small text-ink-3">
+        <div className="truncate text-ui text-ink-900">{row.original.name}</div>
+        <div className="truncate text-small text-ink-500">
           {row.original.hq}, {row.original.market}
         </div>
       </div>
@@ -37,15 +37,15 @@ const columns: ColumnDef<Developer, unknown>[] = [
       const v = getValue<number>();
       return (
         <div className="flex items-center gap-4">
-          <span className={cn("num w-7 text-right text-ui", v > 60 ? "text-red" : "text-ink")}>{v}</span>
+          <span className={cn("num w-7 text-right text-ui", v > 60 ? "text-danger" : "text-ink-900")}>{v}</span>
           <span className="relative h-3 w-[120px]" role="img" aria-label={`${v} of 100`}>
-            <span className="absolute top-1/2 left-0 h-px w-full bg-rule" />
+            <span className="absolute top-1/2 left-0 h-px w-full bg-ink-200" />
             {[25, 50, 75].map((t) => (
-              <span key={t} className="absolute top-0.5 h-2 w-px bg-rule" style={{ left: `${t}%` }} />
+              <span key={t} className="absolute top-0.5 h-2 w-px bg-ink-200" style={{ left: `${t}%` }} />
             ))}
-            <span className={cn("absolute top-1/2 left-0 h-[3px] -translate-y-1/2", v > 60 ? "bg-red" : "bg-navy")} style={{ width: `${v}%` }} />
+            <span className={cn("absolute top-1/2 left-0 h-[3px] -translate-y-1/2", v > 60 ? "bg-danger" : "bg-navy-900")} style={{ width: `${v}%` }} />
           </span>
-          <span className="text-small text-ink-3">{band(v)}</span>
+          <span className="text-small text-ink-500">{band(v)}</span>
         </div>
       );
     },
@@ -57,10 +57,10 @@ const columns: ColumnDef<Developer, unknown>[] = [
     header: "Litigation",
     size: 104,
     meta: { numeric: true },
-    cell: ({ getValue }) => <span className={getValue<number>() >= 10 ? "text-red" : undefined}>{getValue<number>()}</span>,
+    cell: ({ getValue }) => <span className={getValue<number>() >= 10 ? "text-danger" : undefined}>{getValue<number>()}</span>,
   },
   { accessorKey: "escrowCompliant", header: "Escrow", size: 120, cell: ({ getValue }) => (getValue<boolean>() ? <StatusPill tone="complete">Verified</StatusPill> : <StatusPill tone="error">Unverified</StatusPill>) },
-  { accessorKey: "updatedAt", header: "Scored", size: 104, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-3">{relativeTime(getValue<string>())}</span> },
+  { accessorKey: "updatedAt", header: "Scored", size: 104, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500">{relativeTime(getValue<string>())}</span> },
 ];
 
 export function DevelopersTable({ rows }: { rows: Developer[] }) {

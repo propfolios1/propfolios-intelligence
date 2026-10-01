@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/composites/page-header";
-import { StatusPill } from "@/components/primitives/status-pill";
+import { StatusPill } from "@/components/ui/status-pill";
 import { PageContainer } from "@/components/shell/page-container";
 import { isAiConfigured, MODEL } from "@/lib/ai/client";
 import { clerkEnabled } from "@/lib/auth";
@@ -22,7 +22,7 @@ export default function IntegrationsPage() {
         <thead>
           <tr>
             {["Service", "Used for", "Variable", "Status"].map((h) => (
-              <th key={h} className="eyebrow h-10 border-b-2 border-ink px-4 text-left font-medium first:pl-0">
+              <th key={h} className="eyebrow h-10 border-b border-ink-200 px-4 text-left font-medium first:pl-0">
                 {h}
               </th>
             ))}
@@ -30,11 +30,11 @@ export default function IntegrationsPage() {
         </thead>
         <tbody>
           {rows.map(([name, purpose, env, ok]) => (
-            <tr key={name} className="h-14 transition-[background-color] duration-120 hover:bg-paper-2">
-              <td className="border-b border-rule text-ui text-ink">{name}</td>
-              <td className="border-b border-rule px-4 text-ui text-ink-2">{purpose}</td>
-              <td className="num border-b border-rule px-4 text-small text-ink-2">{env}</td>
-              <td className="border-b border-rule px-4">{ok ? <StatusPill tone="complete">Connected</StatusPill> : <StatusPill>Not set</StatusPill>}</td>
+            <tr key={name} className="h-14 transition-[background-color] duration-120 hover:bg-ink-100">
+              <td className="border-b border-ink-200 text-ui text-ink-900">{name}</td>
+              <td className="border-b border-ink-200 px-4 text-ui text-ink-700">{purpose}</td>
+              <td className="num border-b border-ink-200 px-4 text-small text-ink-700">{env}</td>
+              <td className="border-b border-ink-200 px-4">{ok ? <StatusPill tone="complete">Connected</StatusPill> : <StatusPill>Not set</StatusPill>}</td>
             </tr>
           ))}
         </tbody>

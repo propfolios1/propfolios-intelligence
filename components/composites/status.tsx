@@ -1,4 +1,4 @@
-import { StatusPill, type PillTone } from "@/components/primitives/status-pill";
+import { StatusPill, type PillTone } from "@/components/ui/status-pill";
 import type { MandateStatus, Recommendation, RiskRating, Severity } from "@/lib/data/types";
 import { STAGE_LABEL } from "@/lib/data/types";
 

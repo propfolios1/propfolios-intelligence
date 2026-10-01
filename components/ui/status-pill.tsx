@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 export type PillTone = "neutral" | "progress" | "complete" | "error";
 
 const TONE: Record<PillTone, string> = {
-  neutral: "bg-paper-2 text-ink-2",
-  progress: "bg-gold-soft text-[color-mix(in_oklab,var(--gold)_70%,var(--ink))]",
-  complete: "bg-green-soft text-green",
-  error: "bg-red-soft text-red",
+  neutral: "bg-ink-100 text-ink-700",
+  progress: "bg-gold-100 text-[color-mix(in_oklab,var(--gold-500)_70%,var(--ink-900))]",
+  complete: "bg-success-soft text-success",
+  error: "bg-danger-soft text-danger",
 };
 
 /** 20px tall, 4px radius, 11px uppercase. Never a saturated fill. */

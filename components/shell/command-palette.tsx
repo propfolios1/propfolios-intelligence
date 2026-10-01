@@ -4,8 +4,8 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { DialogOverlay } from "@/components/primitives/dialog";
-import { Kbd } from "@/components/primitives/kbd";
+import { DialogOverlay } from "@/components/ui/dialog";
+import { Kbd } from "@/components/ui/kbd";
 
 export interface SearchItem {
   id: string;
@@ -100,7 +100,7 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
           <DialogOverlay />
           <DialogPrimitive.Content
             aria-describedby={undefined}
-            className="fixed top-[16vh] left-1/2 z-50 w-[calc(100vw-32px)] max-w-[640px] origin-top overflow-hidden rounded-lg bg-paper shadow-palette outline-none data-[state=open]:animate-palette-in"
+            className="fixed top-[16vh] left-1/2 z-50 w-[calc(100vw-32px)] max-w-[640px] origin-top overflow-hidden rounded-lg bg-canvas shadow-float outline-none data-[state=open]:animate-palette-in"
           >
             <DialogPrimitive.Title className="sr-only">Search</DialogPrimitive.Title>
             <Command label="Search" loop>
@@ -109,12 +109,12 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
                   value={query}
                   onValueChange={setQuery}
                   placeholder="Mandate, property, client or action"
-                  className="h-16 flex-1 bg-transparent font-display text-card text-ink outline-none placeholder:text-ink-3"
+                  className="h-16 flex-1 bg-transparent font-display text-card text-ink-900 outline-none placeholder:text-ink-500"
                 />
                 <Kbd>esc</Kbd>
               </div>
-              <Command.List className="scrollbar-thin max-h-[400px] overflow-y-auto border-t border-rule px-2 py-2">
-                <Command.Empty className="px-3 py-10 text-small text-ink-2">Nothing matches “{query}”.</Command.Empty>
+              <Command.List className="scrollbar-thin max-h-[400px] overflow-y-auto border-t border-ink-200 px-2 py-2">
+                <Command.Empty className="px-3 py-10 text-small text-ink-700">Nothing matches “{query}”.</Command.Empty>
                 {!query && recentItems.length > 0 && (
                   <Group heading="Recent">
                     {recentItems.map((item) => (
@@ -132,7 +132,7 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
                   ) : null,
                 )}
               </Command.List>
-              <div className="flex items-center gap-5 border-t border-rule px-5 py-2.5 text-small text-ink-3">
+              <div className="flex items-center gap-5 border-t border-ink-200 px-5 py-2.5 text-small text-ink-500">
                 <span className="flex items-center gap-1.5">
                   <Kbd>↑</Kbd>
                   <Kbd>↓</Kbd> move
@@ -153,7 +153,7 @@ function Group({ heading, children }: { heading: string; children: React.ReactNo
   return (
     <Command.Group
       heading={heading}
-      className="mb-1 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-eyebrow [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:tracking-[0.16em] [&_[cmdk-group-heading]]:text-ink-3 [&_[cmdk-group-heading]]:uppercase"
+      className="mb-1 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-eyebrow [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:tracking-[0.16em] [&_[cmdk-group-heading]]:text-ink-500 [&_[cmdk-group-heading]]:uppercase"
     >
       {children}
     </Command.Group>
@@ -168,10 +168,10 @@ function Item({ item, value, onSelect, rowId }: { item: SearchItem; value?: stri
       ref={ref}
       value={value ?? `${item.group} ${item.label} ${item.sub ?? ""} ${item.keywords?.join(" ") ?? ""}`}
       onSelect={() => onSelect(item)}
-      className="relative flex h-11 cursor-default items-baseline gap-3 rounded-sm px-3 pt-3 text-ui text-ink data-[selected=true]:bg-paper-2"
+      className="relative flex h-11 cursor-default items-baseline gap-3 rounded-sm px-3 pt-3 text-ui text-ink-900 data-[selected=true]:bg-ink-100"
     >
       <span className={isMandate ? "num text-small" : undefined}>{item.label}</span>
-      {item.sub && <span className="truncate text-small text-ink-3">{item.sub}</span>}
+      {item.sub && <span className="truncate text-small text-ink-500">{item.sub}</span>}
     </Command.Item>
   );
 }

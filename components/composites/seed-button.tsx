@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/primitives/button";
+import { Button } from "@/components/ui/button";
 
 export function SeedButton() {
   const router = useRouter();
@@ -10,7 +10,7 @@ export function SeedButton() {
   if (state === "confirm")
     return (
       <span className="flex items-center gap-3">
-        <span className="text-small text-ink-2">Discard agent output and edits?</span>
+        <span className="text-small text-ink-700">Discard agent output and edits?</span>
         <Button
           variant="destructive"
           size="sm"

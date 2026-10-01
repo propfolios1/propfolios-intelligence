@@ -12,12 +12,12 @@ export const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex size-3 shrink-0 items-center justify-center rounded-xs border border-ink-3 transition-[background-color,border-color] duration-120 data-[state=checked]:border-navy data-[state=checked]:bg-navy",
+      "relative flex size-3 shrink-0 items-center justify-center rounded-xs border border-ink-500 transition-[background-color,border-color] duration-120 data-[state=checked]:border-navy-900 data-[state=checked]:bg-navy-900",
       className,
     )}
     {...props}
   >
-    <CheckboxPrimitive.Indicator className="size-1 bg-paper" />
+    <CheckboxPrimitive.Indicator className="size-1 bg-canvas" />
   </CheckboxPrimitive.Root>
 ));
 Checkbox.displayName = "Checkbox";

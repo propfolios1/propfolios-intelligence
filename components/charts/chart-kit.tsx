@@ -5,14 +5,14 @@ import { cssVar } from "@/lib/design/tokens";
 import { formatCompact } from "@/lib/utils";
 
 export const C = {
-  primary: cssVar.navy,
-  comparison: cssVar.gold,
-  reference: cssVar.ink3,
-  fill: cssVar.paper2,
-  rule: cssVar.rule,
+  primary: cssVar.navy900,
+  comparison: cssVar.gold500,
+  reference: cssVar.ink500,
+  fill: cssVar.ink100,
+  rule: cssVar.ink200,
 } as const;
 
-export const AXIS_TICK = { fontSize: 11, fill: cssVar.ink3, fontFamily: "var(--font-mono)" } as const;
+export const AXIS_TICK = { fontSize: 11, fill: cssVar.ink500, fontFamily: "var(--font-mono)" } as const;
 
 /** Serializable number formats so server components can configure charts. */
 export type ChartFormat = "compact" | "number" | "usd" | "percent" | "pp";
@@ -29,16 +29,16 @@ export function ChartTooltip({ active, payload, label, format }: TooltipContentP
   if (!active || !payload?.length) return null;
   const fmt = FORMAT[format];
   return (
-    <div className="min-w-[148px] rounded-lg border border-rule bg-paper px-3.5 py-3">
-      <div className="num text-axis text-ink-3">{label}</div>
+    <div className="min-w-[148px] rounded-lg border border-ink-200 bg-canvas px-3.5 py-3">
+      <div className="num text-axis text-ink-500">{label}</div>
       <div className="mt-2 flex flex-col gap-1.5">
         {payload.map((p) => (
           <div key={String(p.dataKey)} className="flex items-center justify-between gap-6">
-            <span className="flex items-center gap-2 text-small text-ink-2">
+            <span className="flex items-center gap-2 text-small text-ink-700">
               <span className="h-px w-3" style={{ background: (p.stroke as string) || (p.color as string) }} />
               {p.name}
             </span>
-            <span className="num text-small text-ink">{fmt(Number(p.value))}</span>
+            <span className="num text-small text-ink-900">{fmt(Number(p.value))}</span>
           </div>
         ))}
       </div>
@@ -52,7 +52,7 @@ export function ChartLegend({ items }: { items: { label: string; color: string; 
   return (
     <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-1">
       {items.map((i) => (
-        <span key={i.label} className="eyebrow flex items-center gap-2 text-ink-2">
+        <span key={i.label} className="eyebrow flex items-center gap-2 text-ink-700">
           <span className="w-4 border-t" style={{ borderColor: i.color, borderTopWidth: 2, borderStyle: i.dashed ? "dashed" : "solid" }} />
           {i.label}
         </span>

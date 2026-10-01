@@ -2,33 +2,49 @@
   *,
   ::before,
   ::after {
-    border-color: var(--rule);
+    border-color: var(--ink-200);
   }
 
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    background: var(--paper);
+    background: var(--canvas);
   }
 
   body {
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--canvas);
+    color: var(--ink-900);
     font-family: var(--font-sans);
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1.6;
-    font-feature-settings: "ss01", "cv11";
+    font-feature-settings: "cv11", "ss01";
   }
 
   ::selection {
-    background: var(--gold-soft);
-    color: var(--ink);
+    background: var(--navy-100);
+    color: var(--navy-900);
   }
 
-  /* The focus ring is one of the five places gold is allowed. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-200) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--ink-200);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* 2px gold focus ring on every interactive element. */
   :focus-visible {
-    outline: 2px solid var(--gold);
+    outline: 2px solid var(--gold-500);
     outline-offset: 2px;
   }
 
@@ -50,30 +66,30 @@
 /* The signature small caps label. */
 @utility eyebrow {
   font-family: var(--font-sans);
-  font-size: 0.6875rem;
-  line-height: 1.2;
-  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: 500;
-  color: var(--ink-2);
+  color: var(--ink-500);
 }
 
 @utility scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--rule) transparent;
+  scrollbar-color: var(--ink-200) transparent;
 }
 
 /* Skeleton: a warm block with a slow travelling sheen. Shapes always match the final layout. */
 @utility skeleton {
   position: relative;
   overflow: hidden;
-  background: var(--paper-2);
+  background: var(--ink-100);
   border-radius: 2px;
   &::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--white) 70%, transparent), transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--surface) 65%, transparent), transparent);
     animation: var(--animate-shimmer);
   }
 }

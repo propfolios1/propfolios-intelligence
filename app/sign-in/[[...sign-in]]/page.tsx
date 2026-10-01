@@ -1,8 +1,8 @@
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
-import { BrandMark } from "@/components/brand-mark";
-import { Button } from "@/components/primitives/button";
-import { Field, Input } from "@/components/primitives/field";
+import { BrandMark } from "@/components/brand/brand-mark";
+import { Button } from "@/components/ui/button";
+import { Field, Input } from "@/components/ui/form";
 
 export const metadata = { title: "Sign in" };
 
@@ -18,8 +18,8 @@ export default function SignInPage() {
         <div className="flex flex-1 items-center py-16">
           <div className="w-full max-w-[400px] animate-hero">
             <div className="eyebrow">Client portal</div>
-            <h1 className="mt-6 font-display text-title text-navy">Sign in.</h1>
-            <p className="mt-4 text-ui text-ink-2">Access is by invitation from your relationship lead.</p>
+            <h1 className="mt-6 font-display text-title text-navy-900">Sign in.</h1>
+            <p className="mt-4 text-ui text-ink-700">Access is by invitation from your relationship lead.</p>
             <div className="mt-12">
               {clerkEnabled ? (
                 <SignIn
@@ -32,11 +32,11 @@ export default function SignInPage() {
                       cardBox: "w-full shadow-none border-0",
                       card: "shadow-none border-0 p-0 bg-transparent",
                       header: "hidden",
-                      formButtonPrimary: "bg-navy hover:bg-ink shadow-none normal-case text-small h-11 rounded-sm",
-                      formFieldInput: "h-10 border-rule shadow-none rounded-sm bg-paper",
+                      formButtonPrimary: "bg-navy-900 hover:bg-ink-900 shadow-none normal-case text-small h-11 rounded-sm",
+                      formFieldInput: "h-10 border-ink-200 shadow-none rounded-sm bg-canvas",
                       formFieldLabel: "eyebrow",
                       footer: "bg-transparent",
-                      socialButtonsBlockButton: "border-rule shadow-none rounded-sm",
+                      socialButtonsBlockButton: "border-ink-200 shadow-none rounded-sm",
                     },
                   }}
                 />
@@ -51,25 +51,25 @@ export default function SignInPage() {
                   <Button type="submit" size="lg" className="mt-2 w-full">
                     Sign in
                   </Button>
-                  <p className="text-small text-ink-3">Demo mode. Set Clerk keys to require real accounts.</p>
+                  <p className="text-small text-ink-500">Demo mode. Set Clerk keys to require real accounts.</p>
                 </form>
               )}
             </div>
           </div>
         </div>
-        <p className="text-small text-ink-3">Sessions expire after 30 minutes of inactivity.</p>
+        <p className="text-small text-ink-500">Sessions expire after 30 minutes of inactivity.</p>
       </section>
 
-      <section className="relative hidden flex-col justify-between overflow-hidden bg-navy px-16 py-8 lg:col-span-6 lg:flex xl:px-20">
+      <section className="relative hidden flex-col justify-between overflow-hidden bg-navy-900 px-16 py-8 lg:col-span-6 lg:flex xl:px-20">
         <div className="flex h-12 items-center justify-end">
-          <span className="eyebrow text-paper/60">Dubai · Mumbai · London</span>
+          <span className="eyebrow text-surface/60">Dubai · Mumbai · London</span>
         </div>
         <blockquote className="max-w-[560px]">
-          <p className="font-display text-[3.5rem] leading-[1.05] tracking-[-0.03em] text-paper">
+          <p className="font-display text-[3.5rem] leading-[1.05] tracking-[-0.03em] text-surface">
             Buy land. They are not making it <em className="italic">anymore</em>.
           </p>
-          <footer className="mt-10 flex items-center gap-4 text-small text-paper/60">
-            <span className="h-px w-8 bg-gold" />
+          <footer className="mt-10 flex items-center gap-4 text-small text-surface/60">
+            <span className="h-px w-8 bg-gold-500" />
             Attributed to Mark Twain
           </footer>
         </blockquote>

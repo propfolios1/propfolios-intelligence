@@ -5,7 +5,7 @@ export function Delta({ value, unit = "%", invert, className, digits = 1 }: { va
   const good = invert ? value < 0 : value > 0;
   const flat = value === 0;
   return (
-    <span className={cn("num inline-flex items-baseline gap-1", flat ? "text-ink-3" : good ? "text-green" : "text-red", className)}>
+    <span className={cn("num inline-flex items-baseline gap-1", flat ? "text-ink-500" : good ? "text-success" : "text-danger", className)}>
       <span aria-hidden>{flat ? "→" : value > 0 ? "↑" : "↓"}</span>
       <span>
         {Math.abs(value).toFixed(digits)}

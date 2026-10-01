@@ -25,7 +25,7 @@ function tooltip(format: ChartFormat) {
   return SeriesTooltip;
 }
 
-/** Area: paper-2 fill under a 1.5px navy stroke. No gradient, no grid. */
+/** Area: ink-100 fill under a 1.5px navy stroke. No gradient, no grid. */
 export function AreaSeries({ data, x, y, name, height = 240, format = "compact" }: { data: object[]; x: string; y: string; name: string; height?: number; format?: ChartFormat }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -118,7 +118,7 @@ export function BarSeries({
           {rows.map((r, i) => (
             <Cell
               key={i}
-              fill={diverging && r[y]! < 0 ? C.reference : emphasiseLast && i !== rows.length - 1 ? "color-mix(in oklab, var(--navy) 30%, var(--paper))" : C.primary}
+              fill={diverging && r[y]! < 0 ? C.reference : emphasiseLast && i !== rows.length - 1 ? "color-mix(in oklab, var(--navy-900) 30%, var(--canvas))" : C.primary}
             />
           ))}
         </Bar>

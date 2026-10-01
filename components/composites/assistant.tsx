@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CopyButton } from "@/components/primitives/copy-button";
+import { CopyButton } from "@/components/ui/copy-button";
 import { cn } from "@/lib/utils";
 import { CitedText, type CitationSource } from "./citation";
 
@@ -111,17 +111,17 @@ export function Assistant({ initialQuery }: { initialQuery?: string }) {
           {empty ? (
             <div className="pt-[8vh]">
               <div className="eyebrow">Ask</div>
-              <h1 className="mt-5 font-display text-title text-navy">Questions about your portfolio, answered with sources.</h1>
-              <ol className="mt-12 border-b border-rule">
+              <h1 className="mt-5 font-display text-title text-navy-900">Questions about your portfolio, answered with sources.</h1>
+              <ol className="mt-12 border-b border-ink-200">
                 {PROMPTS.map((p, i) => (
                   <li key={p}>
                     <button
                       onClick={() => send(p)}
-                      className="group grid w-full grid-cols-[40px_1fr_auto] items-baseline border-t border-rule py-4 text-left transition-[background-color] duration-120 hover:bg-paper-2"
+                      className="group grid w-full grid-cols-[40px_1fr_auto] items-baseline border-t border-ink-200 py-4 text-left transition-[background-color] duration-120 hover:bg-ink-100"
                     >
-                      <span className="num pl-1 text-small text-ink-3">{String(i + 1).padStart(2, "0")}</span>
-                      <span className="text-body text-ink">{p}</span>
-                      <span className="pr-2 text-ink-3 transition-[color,transform] duration-120 group-hover:translate-x-0.5 group-hover:text-ink" aria-hidden>
+                      <span className="num pl-1 text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-body text-ink-900">{p}</span>
+                      <span className="pr-2 text-ink-500 transition-[color,transform] duration-120 group-hover:translate-x-0.5 group-hover:text-ink-900" aria-hidden>
                         →
                       </span>
                     </button>
@@ -133,7 +133,7 @@ export function Assistant({ initialQuery }: { initialQuery?: string }) {
             <div className="flex flex-col gap-12">
               {messages.map((m, i) =>
                 m.role === "user" ? (
-                  <p key={i} className="ml-auto max-w-[80%] border-r border-ink pr-4 text-right text-body whitespace-pre-wrap text-ink-2">
+                  <p key={i} className="ml-auto max-w-[80%] border-r border-ink-200 pr-4 text-right text-body whitespace-pre-wrap text-ink-700">
                     {m.content}
                   </p>
                 ) : (
@@ -146,7 +146,7 @@ export function Assistant({ initialQuery }: { initialQuery?: string }) {
         </div>
       </div>
 
-      <div className="border-t border-rule px-6 pt-5 pb-6">
+      <div className="border-t border-ink-200 px-6 pt-5 pb-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -167,19 +167,19 @@ export function Assistant({ initialQuery }: { initialQuery?: string }) {
             rows={1}
             placeholder="Ask about a holding, an alert or a market"
             aria-label="Question"
-            className="max-h-40 min-h-12 flex-1 resize-none rounded-sm border border-rule bg-paper px-4 py-3 text-body text-ink placeholder:text-ink-3 transition-[border-color] duration-120 focus:border-ink focus:outline-2 focus:outline-offset-2 focus:outline-gold"
+            className="max-h-40 min-h-12 flex-1 resize-none rounded-sm border border-ink-200 bg-canvas px-4 py-3 text-body text-ink-900 placeholder:text-ink-500 transition-[border-color] duration-120 focus:border-ink-200 focus:outline-2 focus:outline-offset-2 focus:outline-gold-500"
           />
           {streaming ? (
-            <button type="button" onClick={() => abortRef.current?.abort()} className="h-12 rounded-sm border border-rule px-5 text-small text-ink transition-[border-color] duration-120 hover:border-ink">
+            <button type="button" onClick={() => abortRef.current?.abort()} className="h-12 rounded-sm border border-ink-200 px-5 text-small text-ink-900 transition-[border-color] duration-120 hover:border-ink-200">
               Stop
             </button>
           ) : (
-            <button type="submit" disabled={!input.trim()} className="h-12 rounded-sm bg-navy px-5 text-small font-medium text-paper transition-[background-color] duration-120 ease-linear hover:bg-ink disabled:opacity-40">
+            <button type="submit" disabled={!input.trim()} className="h-12 rounded-sm bg-navy-900 px-5 text-small font-medium text-surface transition-[background-color] duration-120 ease-linear hover:bg-ink-900 disabled:opacity-40">
               Ask
             </button>
           )}
         </form>
-        <p className="mx-auto mt-3 max-w-[720px] text-small text-ink-3">Answers are informational. Your analyst signs off material decisions.</p>
+        <p className="mx-auto mt-3 max-w-[720px] text-small text-ink-500">Answers are informational. Your analyst signs off material decisions.</p>
       </div>
     </div>
   );
@@ -188,9 +188,9 @@ export function Assistant({ initialQuery }: { initialQuery?: string }) {
 function Reply({ message, sources, streaming }: { message: Message; sources: CitationSource[]; streaming: boolean }) {
   return (
     <article className="group">
-      <div className={cn("prose-pf prose-read", message.error && "text-red")}>
+      <div className={cn("prose-pf prose-read", message.error && "text-danger")}>
         {message.content ? <Rich text={message.content} sources={sources} /> : <p />}
-        {streaming && <span className="ml-0.5 inline-block h-[1.15em] w-[1.5px] translate-y-[3px] animate-caret bg-gold" aria-hidden />}
+        {streaming && <span className="ml-0.5 inline-block h-[1.15em] w-[1.5px] translate-y-[3px] animate-caret bg-gold-500" aria-hidden />}
       </div>
       {!streaming && message.content && !message.error && (
         <div className="mt-2 opacity-0 transition-opacity duration-120 group-hover:opacity-100 focus-within:opacity-100">

@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/primitives/button";
-import { LiveDot } from "@/components/primitives/live-dot";
-import { Popover, PopoverAnchor, PopoverContent } from "@/components/primitives/popover";
+import { Button } from "@/components/ui/button";
+import { LiveDot } from "@/components/ui/live-dot";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { STAGE_LABEL, type MandateStatus } from "@/lib/data/types";
 import { formatUsdCost } from "@/lib/utils";
 
@@ -68,26 +68,26 @@ export function RunFlowButton({ mandateId }: { mandateId: string }) {
         </Button>
       </PopoverAnchor>
       <PopoverContent align="end" className="w-[320px] p-0">
-        <div className="border-b border-rule px-5 py-3.5">
+        <div className="border-b border-ink-200 px-5 py-3.5">
           <div className="eyebrow">Agent flow</div>
         </div>
         <ol className="px-5 py-2">
           {lines.length === 0 && !summary && (
-            <li className="flex items-center gap-2.5 py-2 text-small text-ink-2">
+            <li className="flex items-center gap-2.5 py-2 text-small text-ink-700">
               <LiveDot /> Starting research
             </li>
           )}
           {lines.map((l) => (
             <li key={l.stage} className="flex items-center justify-between py-2 text-small">
-              <span className="flex items-center gap-2.5 text-ink">
-                {l.state === "running" ? <LiveDot /> : <span className={l.state === "done" ? "size-1.5 rounded-full bg-green" : "size-1.5 rounded-full bg-red"} />}
+              <span className="flex items-center gap-2.5 text-ink-900">
+                {l.state === "running" ? <LiveDot /> : <span className={l.state === "done" ? "size-1.5 rounded-full bg-success" : "size-1.5 rounded-full bg-danger"} />}
                 {STAGE_LABEL[l.stage]}
               </span>
-              <span className="num text-ink-3">{l.state === "done" ? `${formatUsdCost(l.cost ?? 0)} · ${Math.round((l.ms ?? 0) / 1000)}s` : l.state === "error" ? "stopped" : ""}</span>
+              <span className="num text-ink-500">{l.state === "done" ? `${formatUsdCost(l.cost ?? 0)} · ${Math.round((l.ms ?? 0) / 1000)}s` : l.state === "error" ? "stopped" : ""}</span>
             </li>
           ))}
         </ol>
-        {summary && <p className="border-t border-rule px-5 py-3.5 text-small text-ink-2">{summary}</p>}
+        {summary && <p className="border-t border-ink-200 px-5 py-3.5 text-small text-ink-700">{summary}</p>}
       </PopoverContent>
     </Popover>
   );

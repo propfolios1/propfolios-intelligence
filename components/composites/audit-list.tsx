@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Input } from "@/components/primitives/field";
-import { Segmented } from "@/components/primitives/segmented";
+import { Input } from "@/components/ui/form";
+import { Segmented } from "@/components/ui/segmented";
 import type { AuditEvent } from "@/lib/data/types";
 import { cn, formatUsdCost } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
@@ -43,30 +43,30 @@ export function AuditList({ events, showMandate = false, dense = false }: { even
             { value: "system", label: "System", count: count("system") },
           ]}
         />
-        <span className="num ml-auto text-small text-ink-3">{formatUsdCost(cost)} agent spend</span>
+        <span className="num ml-auto text-small text-ink-500">{formatUsdCost(cost)} agent spend</span>
       </div>
       {filtered.length === 0 ? (
         <EmptyState glyph="documents" headline="No events match this filter." />
       ) : (
-        <ol className="border-t-2 border-ink">
+        <ol className="border-t border-ink-200">
           {filtered.map((e) => {
             const s = stamp(e.at);
             return (
-              <li key={e.id} className={cn("grid grid-cols-[88px_1fr] gap-6 border-b border-rule transition-[background-color] duration-120 hover:bg-paper-2 md:grid-cols-[120px_1fr_auto]", dense ? "py-3" : "py-4")}>
-                <span className="num pl-1 text-small text-ink-3">
-                  {s.day} <span className="text-ink-2">{s.time}</span>
+              <li key={e.id} className={cn("grid grid-cols-[88px_1fr] gap-6 border-b border-ink-200 transition-[background-color] duration-120 hover:bg-ink-100 md:grid-cols-[120px_1fr_auto]", dense ? "py-3" : "py-4")}>
+                <span className="num pl-1 text-small text-ink-500">
+                  {s.day} <span className="text-ink-700">{s.time}</span>
                 </span>
                 <div className="min-w-0 text-ui">
-                  <span className={cn("font-medium", e.actorType === "agent" ? "text-navy" : "text-ink")}>{e.actor}</span> <span className="text-ink-2">{e.action}</span>
+                  <span className={cn("font-medium", e.actorType === "agent" ? "text-navy-900" : "text-ink-900")}>{e.actor}</span> <span className="text-ink-700">{e.action}</span>
                   {e.costUsd !== undefined && (
-                    <div className="num mt-1 text-small text-ink-3">
+                    <div className="num mt-1 text-small text-ink-500">
                       {formatUsdCost(e.costUsd)} · {(e.inputTokens ?? 0).toLocaleString()} in · {(e.outputTokens ?? 0).toLocaleString()} out
                       {e.durationMs ? ` · ${(e.durationMs / 1000).toFixed(1)}s` : ""}
                     </div>
                   )}
-                  {e.costUsd === undefined && e.detail && e.detail !== e.mandateId && <div className="mt-1 text-small text-ink-3">{e.detail}</div>}
+                  {e.costUsd === undefined && e.detail && e.detail !== e.mandateId && <div className="mt-1 text-small text-ink-500">{e.detail}</div>}
                 </div>
-                {showMandate && e.mandateId && <span className="num hidden pr-1 text-small text-ink-2 md:block">{e.mandateId}</span>}
+                {showMandate && e.mandateId && <span className="num hidden pr-1 text-small text-ink-700 md:block">{e.mandateId}</span>}
               </li>
             );
           })}

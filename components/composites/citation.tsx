@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/primitives/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export interface CitationSource {
   id: number;
@@ -21,7 +21,7 @@ export function CitationPill({ n, source }: { n: number; source?: CitationSource
           type="button"
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
-          className="num relative -top-[0.45em] mx-px inline-flex h-4 min-w-4 items-center justify-center rounded-xs border border-rule px-1 align-baseline text-[0.625rem] leading-none text-ink-2 transition-[border-color,color] duration-120 hover:border-ink hover:text-ink"
+          className="num relative -top-[0.45em] mx-px inline-flex h-4 min-w-4 items-center justify-center rounded-xs border border-ink-200 px-1 align-baseline text-[0.625rem] leading-none text-ink-700 transition-[border-color,color] duration-120 hover:border-ink-200 hover:text-ink-900"
           aria-label={`Source ${n}${source ? `: ${source.title}` : ""}`}
         >
           {n}
@@ -31,10 +31,10 @@ export function CitationPill({ n, source }: { n: number; source?: CitationSource
         <PopoverContent side="top" align="center" className="w-80" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
           <div className="flex items-baseline justify-between gap-4">
             <span className="eyebrow">{source.source ?? "Source"}</span>
-            {source.date && <span className="num text-axis text-ink-3">{source.date}</span>}
+            {source.date && <span className="num text-axis text-ink-500">{source.date}</span>}
           </div>
-          <p className="mt-2 text-small font-medium text-ink">{source.title}</p>
-          {source.detail && <p className="mt-1 text-small text-ink-2">{source.detail}</p>}
+          <p className="mt-2 text-small font-medium text-ink-900">{source.title}</p>
+          {source.detail && <p className="mt-1 text-small text-ink-700">{source.detail}</p>}
         </PopoverContent>
       )}
     </Popover>
