@@ -1,4 +1,4 @@
-import type { MandateContext } from "../schemas";
+import type { MandateContext } from "../legacy-schemas";
 
 export const FIRM_PREAMBLE = `You work for PropFolios Intelligence, an institutional real estate advisory serving family offices and high-net-worth investors deploying capital into UAE and India real estate.
 

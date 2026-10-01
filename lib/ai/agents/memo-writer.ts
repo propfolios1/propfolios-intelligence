@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineAgent } from "../define-agent";
-import { ddFindingSchema, debateCaseSchema, judgeSchema, mandateContextSchema, researchDossierSchema, underwritingSchema } from "../schemas";
+import { ddFindingSchema, debateCaseSchema, judgeSchema, mandateContextSchema, researchDossierSchema, underwritingSchema } from "../legacy-schemas";
 import { FIRM_PREAMBLE, describeMandate } from "./_shared";
 
 export const memoWriterAgent = defineAgent({

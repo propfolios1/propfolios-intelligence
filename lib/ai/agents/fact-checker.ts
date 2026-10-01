@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineAgent } from "../define-agent";
-import { citationSchema } from "../schemas";
+import { citationSchema } from "../legacy-schemas";
 import { FIRM_PREAMBLE } from "./_shared";
 
 export const factCheckerAgent = defineAgent({

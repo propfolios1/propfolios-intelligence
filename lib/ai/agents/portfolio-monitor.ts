@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineAgent } from "../define-agent";
-import { severitySchema } from "../schemas";
+import { severitySchema } from "../legacy-schemas";
 import { FIRM_PREAMBLE } from "./_shared";
 
 export const portfolioMonitorAgent = defineAgent({

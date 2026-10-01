@@ -1,6 +1,6 @@
 import "server-only";
 import { getMandateView } from "@/lib/data/store";
-import type { MandateContext } from "./schemas";
+import type { MandateContext } from "./legacy-schemas";
 
 export function buildMandateContext(mandateId: string): MandateContext | undefined {
   const v = getMandateView(mandateId);

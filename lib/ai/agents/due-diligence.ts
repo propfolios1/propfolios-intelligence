@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defineAgent } from "../define-agent";
-import { ddFindingSchema, mandateContextSchema, researchDossierSchema } from "../schemas";
+import { ddFindingSchema, mandateContextSchema, researchDossierSchema } from "../legacy-schemas";
 import { FIRM_PREAMBLE, describeMandate } from "./_shared";
 
 export const dueDiligenceAgent = defineAgent({
