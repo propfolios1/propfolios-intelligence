@@ -12,11 +12,12 @@ export interface HoldingRow {
   property: string;
   community: string;
   assetClass: string;
-  costUsd: number;
-  valueUsd: number;
+  costAed: number;
+  valueAed: number;
   irr: number;
   cashYield: number;
   status: string;
+  unit?: string;
 }
 
 const columns: ColumnDef<HoldingRow, unknown>[] = [
@@ -34,11 +35,11 @@ const columns: ColumnDef<HoldingRow, unknown>[] = [
       </div>
     ),
   },
-  { accessorKey: "costUsd", header: "Cost", size: 120, meta: { numeric: true }, cell: ({ getValue }) => formatMoney(getValue<number>(), "USD") },
-  { accessorKey: "valueUsd", header: "Value", size: 120, meta: { numeric: true }, cell: ({ getValue }) => formatMoney(getValue<number>(), "USD") },
+  { accessorKey: "costAed", header: "Cost", size: 120, meta: { numeric: true }, cell: ({ getValue }) => formatMoney(getValue<number>(), "AED") },
+  { accessorKey: "valueAed", header: "Value", size: 120, meta: { numeric: true }, cell: ({ getValue }) => formatMoney(getValue<number>(), "AED") },
   {
     id: "gain",
-    accessorFn: (r) => (r.valueUsd - r.costUsd) / r.costUsd,
+    accessorFn: (r) => (r.valueAed - r.costAed) / r.costAed,
     header: "Gain",
     size: 100,
     meta: { numeric: true },
@@ -55,11 +56,28 @@ const columns: ColumnDef<HoldingRow, unknown>[] = [
     size: 200,
     cell: ({ getValue }) => {
       const v = getValue<string>();
-      return <StatusPill tone={v === "Performing" ? "complete" : v === "Watch" ? "error" : "progress"}>{v}</StatusPill>;
+      return <StatusPill tone={v === "performing" ? "complete" : v === "watch" ? "error" : "progress"}>{v.replace("_", " ")}</StatusPill>;
     },
   },
 ];
 
 export function HoldingsTable({ rows }: { rows: HoldingRow[] }) {
-  return <DataTable columns={columns} data={rows} initialSorting={[{ id: "valueUsd", desc: true }]} maxHeight="none" />;
+  return (
+    <DataTable
+      columns={columns}
+      data={rows}
+      initialSorting={[{ id: "valueAed", desc: true }]}
+      maxHeight="none"
+      mobileCard={(r) => (
+        <div>
+          <div className="text-ui font-medium text-ink-900">{r.property}</div>
+          <div className="text-small text-ink-500">{r.community}</div>
+          <div className="num mt-2 flex justify-between text-small">
+            <span>{formatMoney(r.valueAed, "AED")}</span>
+            <span>IRR {r.irr.toFixed(1)}%</span>
+          </div>
+        </div>
+      )}
+    />
+  );
 }

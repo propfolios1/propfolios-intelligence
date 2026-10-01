@@ -23,7 +23,7 @@ export function AllocationBar({ items }: { items: { label: string; value: number
               {s.label}
             </dt>
             <dd className="num mt-1 text-ui text-ink-900">
-              {((s.value / total) * 100).toFixed(0)}%<span className="ml-2 text-small text-ink-500">${formatCompact(s.value)}</span>
+              {((s.value / total) * 100).toFixed(0)}%<span className="ml-2 text-small text-ink-500">AED {formatCompact(s.value)}</span>
             </dd>
           </div>
         ))}

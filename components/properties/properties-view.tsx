@@ -1,26 +1,32 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { DataTable } from "@/components/composites/data-table";
 import { BuildingGlyph } from "@/components/illustrations/building-glyph";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/form";
 import { Segmented } from "@/components/ui/segmented";
 import { StatusPill } from "@/components/ui/status-pill";
-import { formatMoney } from "@/lib/utils";
+import { formatLocal, PROPERTY_STATUS_LABEL } from "@/lib/domain";
+import { useUi } from "@/lib/store";
 import { PropertyMap } from "./property-map";
 
 export interface PropertyRow {
   id: string;
+  slug: string;
   name: string;
-  developer: string;
+  developerName: string;
   region: string;
+  city: string;
   community: string;
   market: "UAE" | "India";
   assetClass: string;
   status: string;
   priceMin: number;
   priceMax: number;
+  pricePerSqft: number;
   currency: string;
   lat: number;
   lng: number;
@@ -32,41 +38,34 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
     accessorKey: "name",
     header: "Property",
     size: 300,
-    meta: { filterable: true },
     cell: ({ row }) => (
       <div className="flex items-center gap-4">
         <BuildingGlyph seed={row.original.id} assetClass={row.original.assetClass} />
         <div className="min-w-0">
           <div className="truncate text-ui text-ink-900">{row.original.name}</div>
-          <div className="truncate text-small text-ink-500">{row.original.community}</div>
+          <div className="truncate text-small text-ink-500">
+            {row.original.community}, {row.original.city}
+          </div>
         </div>
       </div>
     ),
   },
-  { accessorKey: "developer", header: "Developer", size: 190, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-700">{getValue<string>()}</span> },
-  { accessorKey: "region", header: "Emirate or state", size: 150, meta: { filterable: true }, cell: ({ getValue }) => <span className="text-ink-700">{getValue<string>()}</span> },
-  {
-    id: "price",
-    accessorFn: (r) => r.priceMin,
-    header: "Price range",
-    size: 190,
-    meta: { numeric: true },
-    cell: ({ row }) => `${formatMoney(row.original.priceMin, row.original.currency)}–${formatMoney(row.original.priceMax, row.original.currency).split(" ")[1]}`,
-  },
+  { accessorKey: "developerName", header: "Developer", size: 190, cell: ({ getValue }) => <span className="text-ink-700">{getValue<string>()}</span> },
+  { id: "price", accessorFn: (r) => r.priceMin, header: "From", size: 130, meta: { numeric: true }, cell: ({ row }) => formatLocal(row.original.priceMin, row.original.currency) },
+  { accessorKey: "pricePerSqft", header: "Per sq ft", size: 110, meta: { numeric: true }, cell: ({ getValue }) => Math.round(getValue<number>()).toLocaleString("en-US") },
   { accessorKey: "grossYield", header: "Yield", size: 84, meta: { numeric: true }, cell: ({ getValue }) => `${getValue<number>().toFixed(1)}%` },
   {
     accessorKey: "status",
     header: "Status",
     size: 170,
-    meta: { filterable: true },
     cell: ({ getValue }) => {
       const v = getValue<string>();
-      return <StatusPill tone={v === "Ready" ? "complete" : v === "Off-plan" ? "neutral" : "progress"}>{v}</StatusPill>;
+      return <StatusPill tone={v === "ready" ? "complete" : v === "off_plan" ? "neutral" : "progress"}>{PROPERTY_STATUS_LABEL[v] ?? v}</StatusPill>;
     },
   },
 ];
 
-function FilterGroup({ title, options, value, onChange }: { title: string; options: [string, number][]; value: string[]; onChange: (v: string[]) => void }) {
+function FilterGroup({ title, options, value, onChange, labels = {} }: { title: string; options: [string, number][]; value: string[]; onChange: (v: string[]) => void; labels?: Record<string, string> }) {
   return (
     <fieldset className="border-t border-ink-200 pt-4">
       <legend className="eyebrow float-left mb-4 w-full">{title}</legend>
@@ -74,7 +73,7 @@ function FilterGroup({ title, options, value, onChange }: { title: string; optio
         {options.map(([o, n]) => (
           <label key={o} className="flex cursor-pointer items-center gap-3 text-small text-ink-900">
             <Checkbox checked={value.includes(o)} onCheckedChange={(c) => onChange(c ? [...value, o] : value.filter((x) => x !== o))} />
-            <span className="flex-1">{o}</span>
+            <span className="flex-1">{labels[o] ?? o}</span>
             <span className="num text-axis text-ink-500">{n}</span>
           </label>
         ))}
@@ -83,45 +82,71 @@ function FilterGroup({ title, options, value, onChange }: { title: string; optio
   );
 }
 
-export function PropertiesView({ rows, focusId }: { rows: PropertyRow[]; focusId?: string }) {
-  const [mode, setMode] = React.useState<"map" | "list">("map");
+export function PropertiesView({ rows, basePath = "/analyst/properties" }: { rows: PropertyRow[]; basePath?: string }) {
+  const router = useRouter();
+  const { propertyView: mode, setPropertyView: setMode } = useUi();
+  const [q, setQ] = React.useState("");
   const [markets, setMarkets] = React.useState<string[]>([]);
   const [statuses, setStatuses] = React.useState<string[]>([]);
   const [classes, setClasses] = React.useState<string[]>([]);
-  const filtered = rows.filter((r) => (!markets.length || markets.includes(r.market)) && (!statuses.length || statuses.includes(r.status)) && (!classes.length || classes.includes(r.assetClass)));
+  const filtered = rows.filter(
+    (r) =>
+      (!markets.length || markets.includes(r.market)) &&
+      (!statuses.length || statuses.includes(r.status)) &&
+      (!classes.length || classes.includes(r.assetClass)) &&
+      (!q || `${r.name} ${r.community} ${r.city} ${r.developerName}`.toLowerCase().includes(q.toLowerCase())),
+  );
   const counts = (k: keyof PropertyRow) => [...new Set(rows.map((r) => String(r[k])))].sort().map((v) => [v, rows.filter((r) => String(r[k]) === v).length] as [string, number]);
 
   return (
-    <>
-      <div className="mt-10 mb-6 flex items-center justify-between">
-        <Segmented
-          label="View"
-          value={mode}
-          onChange={setMode}
-          options={[
-            { value: "map", label: "Map" },
-            { value: "list", label: "List" },
-          ]}
-        />
-        <span className="num text-small text-ink-500">
-          {filtered.length}/{rows.length}
-        </span>
-      </div>
-
-      {mode === "map" ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <aside className="flex flex-col gap-8 lg:col-span-3 xl:col-span-2">
-            <FilterGroup title="Market" options={counts("market")} value={markets} onChange={setMarkets} />
-            <FilterGroup title="Status" options={counts("status")} value={statuses} onChange={setStatuses} />
-            <FilterGroup title="Asset class" options={counts("assetClass")} value={classes} onChange={setClasses} />
-          </aside>
-          <div className="relative h-[640px] overflow-hidden border border-ink-200 lg:col-span-9 xl:col-span-10">
-            <PropertyMap points={filtered.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, market: r.market, sub: r.community }))} focusId={focusId} />
-          </div>
+    <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
+      <aside className="flex flex-col gap-6 lg:col-span-3 xl:col-span-2">
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" aria-label="Search properties" />
+        <FilterGroup title="Market" options={counts("market")} value={markets} onChange={setMarkets} />
+        <FilterGroup title="Status" options={counts("status")} value={statuses} onChange={setStatuses} labels={PROPERTY_STATUS_LABEL} />
+        <FilterGroup title="Asset class" options={counts("assetClass")} value={classes} onChange={setClasses} />
+      </aside>
+      <div className="min-w-0 lg:col-span-9 xl:col-span-10">
+        <div className="mb-4 flex items-center justify-between">
+          <Segmented
+            label="View"
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "list", label: "List" },
+              { value: "map", label: "Map" },
+            ]}
+          />
+          <span className="num text-small text-ink-500">
+            {filtered.length} of {rows.length}
+          </span>
         </div>
-      ) : (
-        <DataTable columns={columns} data={filtered} initialSorting={[{ id: "name", desc: false }]} empty={{ glyph: "opportunities", headline: "No properties match these filters." }} />
-      )}
-    </>
+        {mode === "map" ? (
+          <div className="relative h-[620px] overflow-hidden rounded-md border border-ink-200">
+            <PropertyMap points={filtered.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, market: r.market, sub: r.community, href: `${basePath}/${r.slug}` }))} />
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filtered}
+            initialSorting={[{ id: "grossYield", desc: true }]}
+            onRowClick={(r) => router.push(`${basePath}/${r.slug}`)}
+            mobileCard={(r) => (
+              <div>
+                <div className="text-ui font-medium text-ink-900">{r.name}</div>
+                <div className="text-small text-ink-500">
+                  {r.community}, {r.city} · {r.developerName}
+                </div>
+                <div className="num mt-2 flex justify-between text-small text-ink-700">
+                  <span>{formatLocal(r.priceMin, r.currency)}</span>
+                  <span>{r.grossYield.toFixed(1)}% gross</span>
+                </div>
+              </div>
+            )}
+            empty={{ glyph: "opportunities", headline: "No properties match these filters." }}
+          />
+        )}
+      </div>
+    </div>
   );
 }

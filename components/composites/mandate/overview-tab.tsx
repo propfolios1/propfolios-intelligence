@@ -1,74 +1,82 @@
-import { ScenarioComparison } from "@/components/charts/scenario-comparison";
-import { LiveDot } from "@/components/ui/live-dot";
-import type { Mandate, MandateAnalysis } from "@/lib/data/types";
-import { STAGE_LABEL } from "@/lib/data/types";
-import { cn, formatMoney, formatUsdCost } from "@/lib/utils";
-import { RiskPill } from "../status";
+import Link from "next/link";
+import { RiskRadar } from "@/components/charts/risk-radar";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { formatAed, formatLocal, PROPERTY_STATUS_LABEL } from "@/lib/domain";
+import type { MandateDetail } from "@/lib/queries";
+import { formatDate } from "@/lib/utils";
+import { Metric, MetricGrid } from "../metric";
+import { ScenarioCards } from "../scenario-cards";
+import { RecommendationPill, RiskPill } from "../status";
+import { LiveTimeline } from "./live-mandate";
 
-/**
- * Left: the state machine as a ledger, one row per stage with agent, cost and
- * duration. Right: the committee's answer and the three IRRs on one scale.
- */
-export function OverviewTab({ analysis, mandate }: { analysis: MandateAnalysis; mandate: Mandate }) {
-  const done = analysis.timeline.filter((t) => t.costUsd !== undefined);
-  const totalCost = done.reduce((s, t) => s + (t.costUsd ?? 0), 0);
-  const totalMs = done.reduce((s, t) => s + (t.durationMs ?? 0), 0);
-  const p50 = analysis.underwriting.scenarios.find((s) => s.label === "P50")!;
-
+export function OverviewTab({ d }: { d: MandateDetail }) {
+  const { mandate: m, client, property: p, developer: dev } = d;
+  const hurdle = d.simulation ? (d.simulation.assumptions.discountRate as number) * 100 : undefined;
   return (
-    <div className="grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
-      <section className="xl:col-span-6">
-        <div className="flex items-baseline justify-between">
-          <h2 className="eyebrow">State machine</h2>
-          <span className="num text-small text-ink-500">
-            {formatUsdCost(totalCost)} · {(totalMs / 60000).toFixed(1)} min
-          </span>
-        </div>
-        <ol className="mt-4 border-t border-ink-200">
-          {analysis.timeline.map((t, i) => (
-            <li key={t.stage} className="grid h-14 grid-cols-[32px_1fr_auto_64px] items-center gap-4 border-b border-ink-200">
-              <span className="num text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
-              <span className="min-w-0">
-                <span className={cn("flex items-center gap-2 text-ui", t.status === "pending" ? "text-ink-500" : "text-ink-900")}>
-                  {STAGE_LABEL[t.stage]}
-                  {t.status === "running" && <LiveDot label="In progress" />}
-                </span>
-                <span className="block truncate text-small text-ink-500">{t.agent}</span>
-              </span>
-              <span className="num text-right text-small text-ink-700">{t.costUsd !== undefined ? formatUsdCost(t.costUsd) : t.status === "running" ? "running" : ""}</span>
-              <span className="num text-right text-small text-ink-500">{t.durationMs !== undefined ? `${Math.round(t.durationMs / 1000)}s` : ""}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="xl:col-span-5 xl:col-start-8">
-        <h2 className="eyebrow">Committee</h2>
-        <p className="mt-6 font-display text-section text-navy-900">{analysis.recommendation}.</p>
-        <div className="mt-4 flex gap-2">
-          <RiskPill value={analysis.riskRating} />
-        </div>
-        <p className="mt-6 text-body text-ink-700">{analysis.judge.rationale}</p>
-
-        <div className="mt-12">
-          <h3 className="eyebrow mb-8">Levered IRR by scenario</h3>
-          <ScenarioComparison scenarios={analysis.underwriting.scenarios} />
-        </div>
-
-        <dl className="mt-10 grid grid-cols-2 border-t border-ink-200">
-          {[
-            ["Ticket", formatMoney(mandate.ticketSize, "USD")],
-            ["P50 exit value", formatMoney(p50.exitValue, "USD")],
-            ["P50 multiple", `${p50.equityMultiple.toFixed(2)}×`],
-            ["Hold", `${mandate.horizonYears} years`],
-          ].map(([k, v]) => (
-            <div key={k} className="border-b border-ink-200 py-3 odd:pr-6 even:border-l even:pl-6">
-              <dt className="text-small text-ink-500">{k}</dt>
-              <dd className="num mt-1 text-ui text-ink-900">{v}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <div className="flex flex-col gap-6 xl:col-span-8">
+        {d.debate ? (
+          <Card>
+            <CardHeader eyebrow="Committee recommendation" title={<span className="font-display text-card text-navy-900">{d.debate.judge.recommendation}</span>} actions={<><RecommendationPill value={d.debate.judge.recommendation} /><RiskPill value={d.debate.judge.riskRating} /></>} />
+            <CardContent>
+              <p className="max-w-[70ch] text-body text-ink-700">{d.debate.judge.rationale}</p>
+              {d.debate.judge.conditions.length > 0 && (
+                <ol className="mt-5 flex flex-col gap-2 border-t border-ink-200 pt-4">
+                  {d.debate.judge.conditions.map((c, i) => (
+                    <li key={c} className="grid grid-cols-[28px_1fr] text-small text-ink-900">
+                      <span className="num text-ink-500">{String(i + 1).padStart(2, "0")}</span>
+                      {c}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader eyebrow="Brief" title={m.objective} />
+            <CardContent>
+              <p className="max-w-[70ch] text-body text-ink-700">{m.brief}</p>
+            </CardContent>
+          </Card>
+        )}
+        {d.simulation && <ScenarioCards scenarios={d.simulation.scenarios} currency={p.currency} hurdlePct={hurdle} />}
+        <Card>
+          <CardHeader eyebrow="Mandate" title="Key facts" />
+          <CardContent>
+            <MetricGrid>
+              <Metric label="Ticket size" value={formatAed(m.ticketSizeAed)} />
+              <Metric label="Horizon" value={`${m.horizonYears} years`} />
+              <Metric label="Client" value={<Link href={`/analyst/clients/${client.id}`} className="hover:underline">{client.name}</Link>} sub={`${client.type} · ${client.riskProfile}`} />
+              <Metric label="Residency" value={client.residency} sub={client.nationality} />
+              <Metric label="Property" value={<Link href={`/analyst/properties/${p.slug}`} className="hover:underline">{p.name}</Link>} sub={`${p.community}, ${p.city}`} />
+              <Metric label="Status" value={PROPERTY_STATUS_LABEL[p.status]} sub={p.handover} />
+              <Metric label="Price per sq ft" value={`${p.currency} ${Math.round(p.pricePerSqft).toLocaleString("en-US")}`} sub={`${formatLocal(p.priceMin, p.currency)} to ${formatLocal(p.priceMax, p.currency)}`} />
+              <Metric label="Developer" value={dev.name} sub={`Risk score ${dev.riskScore.toFixed(1)} · ${dev.deliveryPct}% on time`} />
+              <Metric label="Analyst" value={d.analystName ?? "Unassigned"} />
+              <Metric label="Opened" value={formatDate(m.createdAt)} />
+              {m.deadline && <Metric label="Committee deadline" value={formatDate(m.deadline)} />}
+              <Metric label="Agent cost" value={`$${m.totalCostUsd.toFixed(3)}`} />
+            </MetricGrid>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="flex flex-col gap-6 xl:col-span-4">
+        <Card>
+          <CardHeader eyebrow="Live" title="Agent pipeline" />
+          <CardContent>
+            <LiveTimeline compact />
+          </CardContent>
+        </Card>
+        {d.simulation && (
+          <Card>
+            <CardHeader eyebrow="1 low, 10 high" title="Risk profile" />
+            <CardContent>
+              <RiskRadar data={d.simulation.risk} size={280} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

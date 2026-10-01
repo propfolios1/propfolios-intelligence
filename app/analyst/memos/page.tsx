@@ -1,18 +1,29 @@
 import { PageHeader } from "@/components/composites/page-header";
+import { StatCard } from "@/components/composites/stat-card";
 import { MemosTable } from "@/components/composites/tables/memos-table";
 import { PageContainer } from "@/components/shell/page-container";
-import { listMemos } from "@/lib/data/store";
+import { getDb } from "@/db";
+import { requireRole } from "@/lib/auth";
+import { listMemos } from "@/lib/queries";
 
 export const metadata = { title: "Memos" };
+export const dynamic = "force-dynamic";
 
-export default function MemosPage() {
-  const memos = listMemos();
-  const review = memos.filter((m) => m.status === "In review").length;
+export default async function MemosPage() {
+  const user = await requireRole(["admin", "analyst"]);
+  const memos = await listMemos(await getDb(), user);
+  const count = (s: string) => memos.filter((m) => m.status === s).length;
   return (
     <PageContainer>
-      <PageHeader eyebrow="Deliverables" title="Memos" subtitle={`${memos.length} memos. ${review} in review.`} />
-      <div className="mt-10">
-        <MemosTable rows={memos} />
+      <PageHeader eyebrow="Investment committee" title="Memos" subtitle="Allocation and Exit Memos drafted by the memo agent, edited by analysts and approved by the committee before delivery." />
+      <section className="mt-8 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard label="In review" value={String(count("in_review"))} />
+        <StatCard label="Draft" value={String(count("draft"))} />
+        <StatCard label="Approved" value={String(count("approved"))} />
+        <StatCard label="Delivered" value={String(count("delivered"))} />
+      </section>
+      <div className="mt-8">
+        <MemosTable rows={memos.map((m) => ({ id: m.id, title: m.title, status: m.status, version: m.version, reference: m.reference, clientName: m.clientName, recommendation: m.recommendation, approvedBy: m.approvedBy, updatedAt: m.updatedAt.toISOString() }))} />
       </div>
     </PageContainer>
   );

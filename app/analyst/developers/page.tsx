@@ -1,30 +1,34 @@
 import { PageHeader } from "@/components/composites/page-header";
-import { StatBlock } from "@/components/composites/stat-block";
+import { StatCard } from "@/components/composites/stat-card";
 import { DevelopersTable } from "@/components/composites/tables/developers-table";
 import { PageContainer } from "@/components/shell/page-container";
-import { developers } from "@/lib/data/store";
+import { getDb } from "@/db";
+import { requireRole } from "@/lib/auth";
+import { listDevelopers } from "@/lib/queries";
 
-export const metadata = { title: "Developer risk" };
+export const metadata = { title: "Developers" };
+export const dynamic = "force-dynamic";
 
-export default function DevelopersPage() {
-  const high = developers.filter((d) => d.riskScore > 60);
-  const avgDelivery = developers.reduce((s, d) => s + d.deliveryPct, 0) / developers.length;
-  const unverified = developers.filter((d) => !d.escrowCompliant).length;
+export default async function DevelopersPage() {
+  await requireRole(["admin", "analyst"]);
+  const rows = await listDevelopers(await getDb());
+  const avg = rows.reduce((a, d) => a + d.riskScore, 0) / rows.length;
+  const elevated = rows.filter((d) => d.riskScore > 25).length;
+  const best = [...rows].sort((a, b) => a.riskScore - b.riskScore)[0]!;
   return (
     <PageContainer>
       <PageHeader
-        eyebrow="Counterparty"
+        eyebrow="Research"
         title="Developer risk"
-        subtitle="Scored 0 to 100 from delivery record, litigation, scale and escrow. Higher is riskier. Rescored weekly."
+        subtitle="Composite score of delivery record (35%), financial health (25%), litigation (15%), market sentiment (15%) and escrow compliance (10%). Lower is stronger. Re-scored weekly by the developer risk agent."
       />
-      <section className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
-        <StatBlock className="md:col-span-3" label="Tracked" value={String(developers.length)} note="UAE and India" />
-        <StatBlock className="md:col-span-3" label="High risk" value={String(high.length)} note={high.map((d) => d.name.split(" ")[0]).join(", ")} />
-        <StatBlock className="md:col-span-3" label="Avg on time" value={avgDelivery.toFixed(0)} unit="%" />
-        <StatBlock className="md:col-span-3" label="Escrow unverified" value={String(unverified)} />
+      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Developers scored" value={String(rows.length)} note={`${rows.filter((d) => d.market === "UAE").length} UAE, ${rows.filter((d) => d.market === "India").length} India`} />
+        <StatCard label="Average risk score" value={avg.toFixed(1)} note={`${elevated} above 25`} />
+        <StatCard label="Strongest" value={best.name} note={`Score ${best.riskScore.toFixed(1)}`} />
       </section>
-      <div className="mt-16">
-        <DevelopersTable rows={developers} />
+      <div className="mt-8">
+        <DevelopersTable rows={rows} />
       </div>
     </PageContainer>
   );

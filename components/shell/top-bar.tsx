@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Menu } from "lucide-react";
+import { Bell, Keyboard, Menu } from "lucide-react";
+import { useUi } from "@/lib/store";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -20,6 +21,7 @@ export interface Notification {
   title: string;
   detail: string;
   at: string;
+  severity?: string;
 }
 
 export function TopBar({ area, notifications }: { area: Area; notifications: Notification[] }) {
@@ -29,8 +31,9 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
   const [mac, setMac] = React.useState(true);
   React.useEffect(() => setMac(/Mac|iPhone|iPad/.test(navigator.platform)), []);
 
+  const named = useUi((s) => s.crumbs);
   const crumbs = segments.slice(1).map((seg, i) => ({
-    label: SEGMENT_LABEL[seg] ?? decodeURIComponent(seg),
+    label: named[seg] ?? SEGMENT_LABEL[seg] ?? (/^[0-9a-f-]{36}$/.test(seg) ? "Detail" : decodeURIComponent(seg).replace(/-/g, " ")),
     href: "/" + segments.slice(0, i + 2).join("/"),
   }));
 
@@ -63,6 +66,9 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
       </button>
 
       <div className="flex items-center justify-end gap-2">
+        <Button variant="ghost" size="icon" aria-label="Keyboard shortcuts" className="hidden md:inline-flex" onClick={() => useUi.getState().setShortcutsOpen(true)}>
+          <Keyboard className="!size-4" />
+        </Button>
         <Button variant="ghost" size="sm" className="md:hidden" onClick={palette.open}>
           Search
         </Button>
@@ -75,14 +81,18 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
           </PopoverTrigger>
           <PopoverContent align="end" className="w-[360px] p-0">
             <div className="flex items-baseline justify-between border-b border-ink-200 px-5 py-3.5">
-              <span className="eyebrow">Alerts</span>
+              <span className="eyebrow">Open alerts</span>
               <span className="num text-small text-ink-500">{notifications.length}</span>
             </div>
             <ul className="max-h-[380px] overflow-y-auto">
+              {notifications.length === 0 && <li className="px-5 py-6 text-small text-ink-500">No open alerts.</li>}
               {notifications.map((n) => (
                 <li key={n.id} className="border-b border-ink-200 px-5 py-4 last:border-b-0">
                   <div className="flex items-baseline justify-between gap-4">
-                    <span className="text-small font-medium text-ink-900">{n.title}</span>
+                    <span className="flex items-baseline gap-2 text-small font-medium text-ink-900">
+                      {n.severity && <span className={cn("size-1.5 shrink-0 translate-y-[-1px] rounded-full", n.severity === "HIGH" || n.severity === "CRITICAL" ? "bg-danger" : n.severity === "MEDIUM" ? "bg-warning" : "bg-ink-400")} aria-hidden />}
+                      {n.title}
+                    </span>
                     <span className="num shrink-0 text-axis text-ink-500">{n.at}</span>
                   </div>
                   <p className="mt-1 text-small text-ink-700">{n.detail}</p>

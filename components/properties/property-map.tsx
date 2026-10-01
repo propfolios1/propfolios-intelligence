@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -13,6 +14,7 @@ export interface MapPoint {
   lng: number;
   market: "UAE" | "India";
   sub: string;
+  href?: string;
 }
 
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -31,6 +33,7 @@ const PANELS = {
 
 function VectorFallback({ points, focusId }: { points: MapPoint[]; focusId?: string }) {
   const [hover, setHover] = React.useState<{ market: string; i: number } | null>(null);
+  const router = useRouter();
   return (
     <div className="grid h-full grid-cols-1 bg-navy-900 md:grid-cols-[3fr_2fr]">
       {(Object.keys(PANELS) as (keyof typeof PANELS)[]).map((m, pi) => {
@@ -62,7 +65,7 @@ function VectorFallback({ points, focusId }: { points: MapPoint[]; focusId?: str
                 const n = c.items.length;
                 const focus = c.items.some((p) => p.id === focusId);
                 return (
-                  <g key={i} transform={`translate(${c.x},${c.y})`} onMouseEnter={() => setHover({ market: m, i })} onMouseLeave={() => setHover(null)} className="cursor-pointer">
+                  <g key={i} transform={`translate(${c.x},${c.y})`} onMouseEnter={() => setHover({ market: m, i })} onMouseLeave={() => setHover(null)} onClick={() => n === 1 && c.items[0]!.href && router.push(c.items[0]!.href)} className="cursor-pointer">
                     {n > 1 && <circle r={10 + Math.min(n, 8) * 1.5} fill="none" stroke="var(--gold-500)" strokeOpacity="0.5" />}
                     <circle r={n > 1 ? 4 : 3} fill="var(--gold-500)" />
                     {focus && <circle r={14} fill="none" stroke="var(--canvas)" />}

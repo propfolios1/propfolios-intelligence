@@ -19,6 +19,8 @@ export interface ShellViewer {
   name: string;
   role: string;
   email: string;
+  userRole: "admin" | "analyst" | "client";
+  demo: boolean;
 }
 
 export function NavList({ area, pathname }: { area: Area; pathname: string }) {
@@ -56,13 +58,13 @@ export function NavList({ area, pathname }: { area: Area; pathname: string }) {
   );
 }
 
-/** 232px, text-only navigation. The active item is marked by a 2px gold bar. */
+/** 240px, text-only navigation. The active item is marked by a 2px gold bar. */
 export function SidebarNav({ area, viewer }: { area: Area; viewer: ShellViewer }) {
   const pathname = usePathname();
   const home = NAV[area][0]!.items[0]!.href;
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-58 shrink-0 flex-col border-r border-ink-200 lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-ink-200 lg:flex">
       <div className="flex h-14 items-center px-5">
         <Link href={home} aria-label="Home">
           <BrandMark size="sm" />
@@ -82,12 +84,29 @@ export function SidebarNav({ area, viewer }: { area: Area; viewer: ShellViewer }
             <DropdownMenuLabel className="normal-case tracking-normal">{viewer.email}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {(["analyst", "client", "admin"] as const)
-              .filter((a) => a !== area)
+              .filter((a) => a !== area && (viewer.userRole === "admin" || (viewer.userRole === "analyst" && a !== "admin")))
               .map((a) => (
                 <DropdownMenuItem key={a} asChild>
                   <Link href={NAV[a][0]!.items[0]!.href}>{AREA_LABEL[a]}</Link>
                 </DropdownMenuItem>
               ))}
+            {viewer.demo && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Demonstration persona</DropdownMenuLabel>
+                {(
+                  [
+                    ["admin", "Amol Bandekar, administrator"],
+                    ["analyst", "Aisha Rahman, analyst"],
+                    ["client", "Client: Ahmed Al Mansoori"],
+                  ] as const
+                ).map(([as, label]) => (
+                  <DropdownMenuItem key={as} asChild>
+                    <a href={`/api/demo/persona?as=${as}`}>{label}</a>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
             <DropdownMenuSeparator />
             <SignOutItem>Sign out</SignOutItem>
           </DropdownMenuContent>

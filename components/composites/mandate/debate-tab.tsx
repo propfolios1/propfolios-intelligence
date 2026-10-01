@@ -1,6 +1,6 @@
-import type { DebateCase, JudgeDecision } from "@/lib/data/types";
+import type { DebateCase, JudgeDecision } from "@/lib/ai/schemas";
 import { cn } from "@/lib/utils";
-import { RecommendationPill } from "../status";
+import { RecommendationPill, RiskPill } from "../status";
 
 function Side({ side, c }: { side: "bull" | "bear"; c: DebateCase }) {
   const bull = side === "bull";
@@ -18,10 +18,15 @@ function Side({ side, c }: { side: "bull" | "bear"; c: DebateCase }) {
             <div>
               <div className="text-ui font-medium text-ink-900">{p.title}</div>
               <p className="mt-1 text-ui text-ink-700">{p.detail}</p>
+              <p className="mt-1 text-small text-ink-500">Evidence: {p.evidence}</p>
             </div>
           </li>
         ))}
       </ol>
+      <div className="mt-6 rounded-md bg-ink-100 px-5 py-4">
+        <div className="eyebrow">Rebuttal</div>
+        <p className="mt-2 text-small text-ink-700">{c.rebuttal}</p>
+      </div>
     </section>
   );
 }
@@ -43,12 +48,22 @@ export function DebateTab({ bull, bear, judge }: { bull: DebateCase; bear: Debat
           <span className="flex items-center gap-3">
             <span className="num text-small text-ink-500">{Math.round(judge.confidence * 100)}% confidence</span>
             <RecommendationPill value={judge.recommendation} />
+            <RiskPill value={judge.riskRating} />
           </span>
         </div>
         <div className="mt-8 grid grid-cols-1 gap-12 xl:grid-cols-12 xl:gap-6">
           <div className="xl:col-span-7">
             <p className="font-display text-title text-navy-900">{judge.recommendation}.</p>
             <p className="mt-6 max-w-[62ch] text-body text-ink-700">{judge.rationale}</p>
+            <div className="mt-8 eyebrow">Decisive arguments</div>
+            <ul className="mt-3 flex flex-col gap-2">
+              {judge.decisiveArguments.map((a) => (
+                <li key={a} className="text-ui text-ink-900">
+                  <span className="mr-2 text-gold-600">—</span>
+                  {a}
+                </li>
+              ))}
+            </ul>
           </div>
           {judge.conditions.length > 0 && (
             <div className="xl:col-span-4 xl:col-start-9">

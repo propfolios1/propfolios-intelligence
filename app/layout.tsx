@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import { palette } from "@/lib/design/tokens";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600"], style: ["normal", "italic"], variable: "--font-playfair", display: "swap" });
@@ -18,7 +19,9 @@ const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const body = (
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${jetbrains.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
   return clerkEnabled ? (

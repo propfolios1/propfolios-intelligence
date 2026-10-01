@@ -55,6 +55,7 @@ export function DataTable<T>({
   empty,
   className,
   maxHeight = "calc(100dvh - 280px)",
+  mobileCard,
 }: {
   columns: ColumnDef<T, unknown>[];
   data: T[];
@@ -67,6 +68,8 @@ export function DataTable<T>({
   empty?: { glyph: GlyphName; headline: string; action?: React.ReactNode };
   className?: string;
   maxHeight?: string;
+  /** On small screens, render rows as cards instead of a table. */
+  mobileCard?: (row: T) => React.ReactNode;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -142,7 +145,23 @@ export function DataTable<T>({
 
   return (
     <div className={cn("relative", className)}>
-      <div className="scrollbar-thin overflow-auto" style={{ maxHeight }}>
+      {mobileCard && (
+        <ul className="flex flex-col gap-3 md:hidden">
+          {rows.map((row) => (
+            <li key={row.id}>
+              {onRowClick ? (
+                <button type="button" onClick={() => onRowClick(row.original)} className="block w-full rounded-md border border-ink-200 bg-surface p-4 text-left shadow-card">
+                  {mobileCard(row.original)}
+                </button>
+              ) : (
+                <div className="rounded-md border border-ink-200 bg-surface p-4 shadow-card">{mobileCard(row.original)}</div>
+              )}
+            </li>
+          ))}
+          {!loading && rows.length === 0 && <EmptyState glyph={empty?.glyph ?? "mandates"} headline={empty?.headline ?? "No rows match these filters."} action={empty?.action} />}
+        </ul>
+      )}
+      <div className={cn("scrollbar-thin overflow-auto", mobileCard && "hidden md:block")} style={{ maxHeight }}>
         <table className="w-full border-separate border-spacing-0" style={{ width: table.getTotalSize(), minWidth: "100%", tableLayout: "fixed" }}>
           <thead className="sticky top-0 z-10 bg-canvas">
             {table.getHeaderGroups().map((hg) => (
@@ -156,7 +175,7 @@ export function DataTable<T>({
                         key={h.id}
                         style={{ width: h.getSize() }}
                         className={cn(
-                          "eyebrow group/th relative h-10 border-b border-ink-200 px-4 text-left align-middle font-medium whitespace-nowrap select-none",
+                          "eyebrow group/th relative h-10 border-b border-ink-200 bg-canvas px-4 text-left align-middle font-medium whitespace-nowrap select-none",
                           meta?.numeric && "text-right",
                           meta?.className,
                         )}

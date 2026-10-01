@@ -1,101 +1,82 @@
-import { RiskRadar } from "@/components/charts/risk-radar";
-import { ScenarioComparison } from "@/components/charts/scenario-comparison";
+import { CashFlowChart } from "@/components/charts/cash-flow-chart";
 import { BarSeries } from "@/components/charts/series";
 import { Tornado } from "@/components/charts/tornado";
-import type { Underwriting } from "@/lib/data/types";
-import { cn, formatMoney } from "@/lib/utils";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { formatLocal } from "@/lib/domain";
+import type { SimulationView } from "@/lib/queries";
+import { ScenarioCards } from "../scenario-cards";
 
-const NAME = { P10: "Downside", P50: "Base", P90: "Upside" } as const;
+const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 
-/**
- * Scenarios set as a table, not three cards: the IRR row is the display line.
- * Then cash flow, sensitivity and a five-axis risk profile.
- */
-export function UnderwritingTab({ uw }: { uw: Underwriting }) {
-  const rows: [string, (s: Underwriting["scenarios"][number]) => string][] = [
-    ["NPV", (s) => formatMoney(s.npv, "USD")],
-    ["Exit value", (s) => formatMoney(s.exitValue, "USD")],
-    ["Equity multiple", (s) => `${s.equityMultiple.toFixed(2)}×`],
-    ["Cash yield", (s) => `${s.cashYield.toFixed(1)}%`],
+export function UnderwritingTab({ sim, currency }: { sim: SimulationView; currency: string }) {
+  const a = sim.assumptions as SimulationView["assumptions"] & Record<string, number>;
+  const hurdle = a.discountRate * 100;
+  const rows: [string, string][] = [
+    ["Purchase price", formatLocal(a.purchasePrice, currency)],
+    ["Hold period", `${a.holdYears} years`],
+    ["Handover", a.handoverYear ? `Year ${a.handoverYear}` : "Ready"],
+    ["Gross yield", pct(a.grossYield)],
+    ["Rental growth", pct(a.rentGrowth)],
+    ["Vacancy", pct(a.vacancy)],
+    ["Service charges and management", `${pct(a.opexRatio)} of rent`],
+    ["Capital growth", pct(a.capitalGrowth)],
+    ["Acquisition costs", pct(a.acquisitionCostPct)],
+    ["Exit costs", pct(a.exitCostPct)],
+    ["Hurdle (discount rate)", pct(a.discountRate)],
   ];
-  const risk = uw.risk.filter((r) => r.axis !== "Currency").slice(0, 5);
   return (
-    <div className="flex flex-col gap-20">
-      <section>
-        <table className="w-full border-separate border-spacing-0">
-          <thead>
-            <tr>
-              <th className="w-1/4 border-b border-ink-200" />
-              {uw.scenarios.map((s) => (
-                <th key={s.label} className="border-b border-ink-200 pb-3 text-right align-bottom">
-                  <span className="num text-small text-ink-900">{s.label}</span>
-                  <span className="eyebrow ml-2 text-ink-500">{NAME[s.label]}</span>
-                </th>
+    <div className="flex flex-col gap-8">
+      {sim.commentary && <p className="max-w-[72ch] font-display text-read text-navy-900">{sim.commentary}</p>}
+      <ScenarioCards scenarios={sim.scenarios} currency={currency} hurdlePct={hurdle} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <Card className="xl:col-span-7">
+          <CardHeader eyebrow="Base case" title="Annual cash flows" />
+          <CardContent>
+            <CashFlowChart id="uw" data={sim.cashflows.map((c) => ({ label: c.year, net: c.net, cumulative: c.cumulative }))} />
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-5">
+          <CardHeader eyebrow={`${sim.distribution.iterations.toLocaleString("en-US")} simulated paths`} title="IRR distribution" />
+          <CardContent>
+            <BarSeries data={sim.distribution.histogram} x="bucket" y="count" name="Paths" height={220} format="number" />
+            <p className="mt-3 text-small text-ink-500">
+              {(sim.distribution.probBelowHurdle * 100).toFixed(0)}% of paths fall below the {hurdle.toFixed(1)}% hurdle. Mean IRR {(sim.distribution.mean * 100).toFixed(1)}%.
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-7">
+          <CardHeader eyebrow="IRR change, percentage points" title="Sensitivity" />
+          <CardContent>
+            <Tornado data={sim.sensitivity} />
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-5">
+          <CardHeader eyebrow="Set by the underwriting agent" title="Assumptions" />
+          <CardContent>
+            <dl className="divide-y divide-ink-200 border-y border-ink-200">
+              {rows.map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 py-2 text-small">
+                  <dt className="text-ink-700">{k}</dt>
+                  <dd className="num text-ink-900">{v}</dd>
+                </div>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th className="border-b border-ink-200 py-6 text-left align-bottom">
-                <span className="eyebrow">Levered IRR</span>
-              </th>
-              {uw.scenarios.map((s) => (
-                <td key={s.label} className={cn("num border-b border-ink-200 py-6 text-right text-[3.25rem] leading-none tracking-[-0.03em]", s.label === "P50" ? "text-navy-900" : "text-ink-500")}>
-                  {s.irr.toFixed(1)}
-                  <span className="text-card">%</span>
-                </td>
-              ))}
-            </tr>
-            {rows.map(([k, f]) => (
-              <tr key={k} className="transition-[background-color] duration-120 hover:bg-ink-100">
-                <th className="h-14 border-b border-ink-200 text-left text-ui font-normal text-ink-700">{k}</th>
-                {uw.scenarios.map((s) => (
-                  <td key={s.label} className={cn("num h-14 border-b border-ink-200 text-right text-ui", s.npv < 0 && k === "NPV" ? "text-danger" : "text-ink-900")}>
-                    {f(s)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="mt-12 max-w-[720px]">
-          <h3 className="eyebrow mb-8">On one scale</h3>
-          <ScenarioComparison scenarios={uw.scenarios} />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="font-display text-section text-navy-900">Base case cash flow</h2>
-        <p className="mt-2 text-small text-ink-500">Net cash flow by year, USD. Acquisition in Y0, exit in the final year.</p>
-        <div className="mt-8">
-          <BarSeries data={uw.cashflows} x="year" y="net" name="Net cash flow" format="usd" height={280} diverging />
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
-        <div className="xl:col-span-7">
-          <h2 className="font-display text-section text-navy-900">Sensitivity</h2>
-          <p className="mt-2 mb-8 text-small text-ink-500">Change in P50 IRR, percentage points, as each driver moves alone.</p>
-          <Tornado data={uw.sensitivity} />
-        </div>
-        <div className="xl:col-span-4 xl:col-start-9">
-          <h2 className="font-display text-section text-navy-900">Risk</h2>
-          <p className="mt-2 mb-4 text-small text-ink-500">0 to 10. Further out is riskier.</p>
-          <RiskRadar data={risk} />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="eyebrow">Assumptions</h2>
-        <dl className="mt-4 grid grid-cols-2 border-t border-ink-200 md:grid-cols-3 xl:grid-cols-6">
-          {uw.assumptions.map((a) => (
-            <div key={a.label} className="border-b border-ink-200 py-4 pr-4">
-              <dt className="text-small text-ink-500">{a.label}</dt>
-              <dd className="num mt-1 text-ui text-ink-900">{a.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+            </dl>
+            {a.rationale && (
+              <div className="mt-6">
+                <div className="eyebrow">Basis</div>
+                <ul className="mt-2 flex flex-col gap-2.5">
+                  {a.rationale.map((r) => (
+                    <li key={r.assumption} className="text-small">
+                      <span className="font-medium text-ink-900">{r.assumption}.</span> <span className="text-ink-700">{r.basis}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      <p className="text-small text-ink-500">Returns are computed by the PropFolios financial engine (IRR, NPV, Monte Carlo), not by the language model. Projections are not guarantees.</p>
     </div>
   );
 }

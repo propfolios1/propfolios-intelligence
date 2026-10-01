@@ -164,9 +164,3 @@ export async function requireApiUser(roles?: Role[]): Promise<CurrentUser> {
 export function canSeeClient(user: CurrentUser, clientId: string) {
   return user.role !== "client" || user.clientId === clientId;
 }
-
-/** Shell display data for the signed-in user. */
-export async function getViewer(_area?: string) {
-  const u = await getCurrentUser();
-  return { name: u?.name ?? "Guest", role: u ? `${u.title ?? u.role}` : "", email: u?.email ?? "" };
-}

@@ -4,20 +4,20 @@ import * as React from "react";
 import { Segmented } from "@/components/ui/segmented";
 import { cn } from "@/lib/utils";
 
-const RATES = { USD: 1, AED: 3.6725, INR: 83.2 } as const;
+const RATES = { AED: 1, USD: 1 / 3.6725, INR: 22.6 } as const;
 type Ccy = keyof typeof RATES;
-const SYMBOL: Record<Ccy, string> = { USD: "$", AED: "AED ", INR: "₹" };
+const SYMBOL: Record<Ccy, string> = { AED: "AED ", USD: "USD ", INR: "INR " };
 
 function compact(v: number) {
   return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
 }
 
 /**
- * The portfolio's headline. The number is the display, set in Instrument Serif.
+ * The portfolio's headline. The number is the display, set in Playfair Display.
  * Switching currency counts the figure over 400ms; nothing animates on load.
  */
-export function PortfolioHero({ valueUsd, costUsd, qoq, irr, cashYield }: { valueUsd: number; costUsd: number; qoq: number; irr: number; cashYield: number }) {
-  const [ccy, setCcy] = React.useState<Ccy>("USD");
+export function PortfolioHero({ valueAed: valueUsd, costAed: costUsd, gainPct: qoq, irr, cashYield }: { valueAed: number; costAed: number; gainPct: number; irr: number; cashYield: number }) {
+  const [ccy, setCcy] = React.useState<Ccy>("AED");
   const [shown, setShown] = React.useState(valueUsd);
   const from = React.useRef(valueUsd);
   const raf = React.useRef<number | undefined>(undefined);
@@ -55,7 +55,7 @@ export function PortfolioHero({ valueUsd, costUsd, qoq, irr, cashYield }: { valu
           <span className={cn("num text-[1rem]", qoq >= 0 ? "text-success" : "text-danger")}>
             {qoq >= 0 ? "↑" : "↓"} {Math.abs(qoq).toFixed(1)}%
           </span>
-          <span className="text-small text-ink-500">since last quarter</span>
+          <span className="text-small text-ink-500">above cost</span>
           <span className="text-small text-ink-500">
             Cost basis <span className="num text-ink-700">{SYMBOL[ccy]}{compact(costUsd * RATES[ccy])}</span>
           </span>

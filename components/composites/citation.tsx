@@ -9,6 +9,7 @@ export interface CitationSource {
   source?: string;
   detail?: string;
   date?: string;
+  href?: string;
 }
 
 /** A superscript numeral in mono. Hover or focus opens the source. */
@@ -35,6 +36,11 @@ export function CitationPill({ n, source }: { n: number; source?: CitationSource
           </div>
           <p className="mt-2 text-small font-medium text-ink-900">{source.title}</p>
           {source.detail && <p className="mt-1 text-small text-ink-700">{source.detail}</p>}
+          {source.href && (
+            <a href={source.href} className="mt-2 inline-block text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
+              Open
+            </a>
+          )}
         </PopoverContent>
       )}
     </Popover>

@@ -3,6 +3,7 @@ import { BrandMark } from "@/components/brand/brand-mark";
 import { DubaiCoastline } from "@/components/illustrations/dubai-coastline";
 import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
+import { clerkEnabled } from "@/lib/auth";
 
 const INDEX = [
   ["01", "Research", "A cited dossier on market, developer and comparables for every mandate."],
@@ -11,14 +12,18 @@ const INDEX = [
 ] as const;
 
 export default function Landing() {
+  const desk = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=analyst";
+  const portal = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=client";
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-6 md:px-12 xl:px-20">
         <BrandMark />
         <nav className="flex items-center gap-8 text-small">
-          <Link href="/analyst/dashboard" className="text-ink-700 transition-[color] duration-120 hover:text-ink-900">
-            Demo
-          </Link>
+          {!clerkEnabled && (
+            <Link href="/api/demo/persona?as=admin" className="text-ink-700 transition-[color] duration-120 hover:text-ink-900">
+              Administration
+            </Link>
+          )}
           <Link href="/sign-in" className="text-ink-900 underline decoration-ink-200 underline-offset-4 transition-[text-decoration-color] duration-120 hover:decoration-ink-900">
             Sign in
           </Link>
@@ -36,12 +41,13 @@ export default function Landing() {
           </p>
           <div className="mt-12 flex flex-wrap items-center gap-4">
             <Button asChild size="lg">
-              <Link href="/sign-in">Client login</Link>
+              <Link href={portal}>Client portal</Link>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <Link href="/analyst/dashboard">View the analyst desk</Link>
+              <Link href={desk}>Analyst desk</Link>
             </Button>
           </div>
+          {!clerkEnabled && <p className="mt-4 text-small text-ink-500">Demonstration mode: no sign-in required. Configure Clerk to require authentication.</p>}
 
           <ol className="mt-24 max-w-[640px] border-t border-ink-200">
             {INDEX.map(([n, title, body]) => (
@@ -65,7 +71,7 @@ export default function Landing() {
 
       <footer className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 border-t border-ink-200 px-6 py-8 text-small text-ink-500 md:flex-row md:items-center md:justify-between md:px-12 xl:px-20">
         <BrandMark size="sm" />
-        <span>© {new Date().getFullYear()} PropFolios. Dubai · Mumbai · London.</span>
+        <span>© {new Date().getFullYear()} PropFolios. Dubai, United Arab Emirates.</span>
       </footer>
     </div>
   );

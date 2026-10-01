@@ -2,32 +2,35 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { MandatesView } from "@/components/composites/mandate/mandates-view";
 import { PageHeader } from "@/components/composites/page-header";
-import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/shell/page-container";
-import { clients, listMandateRows } from "@/lib/data/store";
+import { Button } from "@/components/ui/button";
+import { getDb } from "@/db";
+import { requireRole } from "@/lib/auth";
+import { listClients, listMandates } from "@/lib/queries";
+import { mandateRows } from "@/lib/serialize";
 
 export const metadata = { title: "Mandates" };
 export const dynamic = "force-dynamic";
 
-export default function MandatesPage() {
-  const rows = listMandateRows();
-  const open = rows.filter((r) => r.status !== "delivered").length;
+export default async function MandatesPage() {
+  const user = await requireRole(["admin", "analyst"]);
+  const db = await getDb();
+  const [rows, clients] = await Promise.all([listMandates(db, user), listClients(db, user)]);
+  const open = rows.filter((r) => r.status !== "DELIVERED").length;
   return (
     <PageContainer>
       <PageHeader
         eyebrow="Pipeline"
         title="Mandates"
-        subtitle={`${rows.length} mandates across ${clients.length} clients. ${open} open.`}
+        subtitle={`${rows.length} mandates across ${clients.length} clients; ${open} open. Drag a card back to re-open a stage.`}
         actions={
           <Button asChild>
-            <Link href="/analyst/mandates?new=1" scroll={false}>
-              New mandate
-            </Link>
+            <Link href="/analyst/mandates/new">Create Mandate</Link>
           </Button>
         }
       />
       <Suspense>
-        <MandatesView rows={rows} clients={clients.map((c) => ({ id: c.id, name: c.name }))} />
+        <MandatesView rows={mandateRows(rows)} clients={clients.map((c) => ({ id: c.id, name: c.name }))} />
       </Suspense>
     </PageContainer>
   );

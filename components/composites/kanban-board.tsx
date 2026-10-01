@@ -15,31 +15,31 @@ import {
 import Link from "next/link";
 import * as React from "react";
 import { LiveDot } from "@/components/ui/live-dot";
-import type { MandateStatus } from "@/lib/data/types";
-import { MANDATE_STAGES, STAGE_LABEL } from "@/lib/data/types";
+import { toast } from "@/components/ui/toaster";
+import { MANDATE_STAGES, STAGE_LABEL, type MandateStage as MandateStatus } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 
 export interface KanbanCard {
   id: string;
+  reference: string;
   status: MandateStatus;
   client: string;
   property: string;
-  deadline: string;
+  deadline: string | null;
   updatedAt: string;
-  priority: "Standard" | "Priority";
+  running: boolean;
+  priority: "standard" | "priority";
 }
 
-function deadline(iso: string) {
+function deadline(iso: string | null) {
+  if (!iso) return { text: "", tone: "text-ink-500" };
   const days = Math.round((new Date(iso).getTime() - Date.now()) / 86_400_000);
   if (days < 0) return { text: new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }), tone: "text-ink-500" };
   if (days === 0) return { text: "today", tone: "text-danger" };
   return { text: `${days}d`, tone: days <= 2 ? "text-danger" : "text-ink-700" };
 }
 
-/** An agent is working on the mandate if it moved in the last three hours. */
-function isLive(c: KanbanCard) {
-  return c.status !== "intake" && c.status !== "delivered" && Date.now() - new Date(c.updatedAt).getTime() < 3 * 3_600_000;
-}
+const isLive = (c: KanbanCard) => c.running;
 
 /**
  * Pipeline board. 320px columns, 20px apart, counts as mono superscripts.
@@ -49,7 +49,6 @@ function isLive(c: KanbanCard) {
 export function KanbanBoard({ cards: initial }: { cards: KanbanCard[] }) {
   const [cards, setCards] = React.useState(initial);
   const [activeId, setActiveId] = React.useState<string | null>(null);
-  const [error, setError] = React.useState<string>();
   const dndId = React.useId();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor));
 
@@ -69,21 +68,23 @@ export function KanbanBoard({ cards: initial }: { cards: KanbanCard[] }) {
     const card = cards.find((c) => c.id === id);
     if (!to || !card || card.status === to) return;
     const previous = card.status;
-    setError(undefined);
+    // optimistic move; rolled back with the server's reason if the transition is not allowed
     setCards((cs) => cs.map((c) => (c.id === id ? { ...c, status: to } : c)));
-    fetch(`/api/mandates/${id}/status`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: to }) }).then((r) => {
+    fetch(`/api/mandates/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: to }) }).then(async (r) => {
       if (!r.ok) {
+        const json = await r.json().catch(() => ({}));
         setCards((cs) => cs.map((c) => (c.id === id ? { ...c, status: previous } : c)));
-        setError(`Could not move ${id}. Retry.`);
+        toast.error(`${card.reference} was not moved`, { description: json.error ?? "Retry." });
+      } else {
+        toast.success(`${card.reference} moved to ${STAGE_LABEL[to]}`);
       }
     });
   };
 
   return (
     <DndContext id={dndId} sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
-      {error && <p className="mb-4 text-small text-danger">{error}</p>}
-      <div className="scrollbar-thin -mx-6 overflow-x-auto px-6 pb-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
-        <div className="flex min-w-max gap-5">
+      <div className="scrollbar-thin pb-6 md:-mx-12 md:overflow-x-auto md:px-12 xl:-mx-20 xl:px-20">
+        <div className="flex flex-col gap-8 md:min-w-max md:flex-row md:gap-5">
           {MANDATE_STAGES.map((stage) => (
             <Column key={stage} stage={stage} cards={byStage.get(stage)!} activeId={activeId} activeFrom={active?.status} />
           ))}
@@ -98,14 +99,14 @@ function Column({ stage, cards, activeId, activeFrom }: { stage: MandateStatus; 
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const showDrop = isOver && activeFrom !== stage;
   return (
-    <section ref={setNodeRef} aria-label={STAGE_LABEL[stage]} className="flex w-80 shrink-0 flex-col">
+    <section ref={setNodeRef} aria-label={STAGE_LABEL[stage]} className="flex w-full shrink-0 flex-col md:w-72">
       <header className="flex h-10 items-baseline justify-between border-b border-ink-200">
         <h3 className="text-small font-medium text-ink-900">
           {STAGE_LABEL[stage]}
           <sup className="num ml-1 text-axis font-normal text-ink-500">{cards.length}</sup>
         </h3>
       </header>
-      <div className="flex min-h-[200px] flex-col pt-3">
+      <div className="flex flex-col pt-3 md:min-h-[200px]">
         {cards.map((c) => (
           <DraggableCard key={c.id} card={c} dimmed={activeId === c.id} />
         ))}
@@ -137,8 +138,8 @@ function CardBody({ card, lifted }: { card: KanbanCard; lifted?: boolean }) {
       draggable={false}
       onClick={(e) => lifted && e.preventDefault()}
       className={cn(
-        "block h-[84px] rounded-sm border bg-canvas px-4 py-3 transition-[border-color,transform] duration-120 ease-[ease] hover:-translate-y-px hover:border-ink-500",
-        lifted ? "-translate-y-0.5 cursor-grabbing border-ink-200 bg-surface" : "border-ink-200",
+        "block h-[88px] rounded-md border bg-surface px-4 py-3 shadow-card transition-[border-color,transform] duration-120 ease-[ease] hover:-translate-y-px hover:border-ink-500",
+        lifted ? "-translate-y-0.5 cursor-grabbing border-ink-400 shadow-float" : "border-ink-200",
       )}
     >
       <div className="flex items-baseline justify-between gap-3">
@@ -147,9 +148,9 @@ function CardBody({ card, lifted }: { card: KanbanCard; lifted?: boolean }) {
       </div>
       <div className="mt-0.5 truncate text-small text-ink-700">{card.property}</div>
       <div className="mt-2 flex items-center gap-2">
-        {live ? <LiveDot label="Agent running" /> : <span className={cn("size-1.5 rounded-full", card.status === "delivered" ? "bg-success" : "bg-ink-500")} aria-hidden />}
-        <span className="num text-axis text-ink-500">{card.id}</span>
-        {card.priority === "Priority" && <span className="eyebrow ml-auto text-ink-500">Priority</span>}
+        {live ? <LiveDot label="Agents running" /> : <span className={cn("size-1.5 rounded-full", card.status === "DELIVERED" ? "bg-success" : "bg-ink-400")} aria-hidden />}
+        <span className="num text-axis text-ink-500">{card.reference}</span>
+        {card.priority === "priority" && <span className="eyebrow ml-auto text-gold-600">Priority</span>}
       </div>
     </Link>
   );

@@ -3,7 +3,21 @@
 import * as React from "react";
 import { Input } from "@/components/ui/form";
 import { Segmented } from "@/components/ui/segmented";
-import type { AuditEvent } from "@/lib/data/types";
+export interface AuditEvent {
+  id: string;
+  at: string;
+  actor: string;
+  actorType: "user" | "agent" | "system";
+  action: string;
+  detail?: string;
+  mandateId?: string;
+  reference?: string;
+  model?: string;
+  costUsd?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  durationMs?: number;
+}
 import { cn, formatUsdCost } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
 
@@ -23,7 +37,7 @@ export function AuditList({ events, showMandate = false, dense = false }: { even
   const [q, setQ] = React.useState("");
   const [type, setType] = React.useState<"all" | AuditEvent["actorType"]>("all");
   const filtered = events.filter(
-    (e) => (type === "all" || e.actorType === type) && (!q || `${e.actor} ${e.action} ${e.detail ?? ""} ${e.mandateId ?? ""}`.toLowerCase().includes(q.toLowerCase())),
+    (e) => (type === "all" || e.actorType === type) && (!q || `${e.actor} ${e.action} ${e.detail ?? ""} ${e.reference ?? ""}`.toLowerCase().includes(q.toLowerCase())),
   );
   const cost = filtered.reduce((s, e) => s + (e.costUsd ?? 0), 0);
   const count = (t: AuditEvent["actorType"]) => events.filter((e) => e.actorType === t).length;
@@ -60,13 +74,17 @@ export function AuditList({ events, showMandate = false, dense = false }: { even
                   <span className={cn("font-medium", e.actorType === "agent" ? "text-navy-900" : "text-ink-900")}>{e.actor}</span> <span className="text-ink-700">{e.action}</span>
                   {e.costUsd !== undefined && (
                     <div className="num mt-1 text-small text-ink-500">
-                      {formatUsdCost(e.costUsd)} · {(e.inputTokens ?? 0).toLocaleString()} in · {(e.outputTokens ?? 0).toLocaleString()} out
+                      {e.model === "replay" ? "replay mode" : e.model} · {formatUsdCost(e.costUsd)} · {(e.inputTokens ?? 0).toLocaleString()} in · {(e.outputTokens ?? 0).toLocaleString()} out
                       {e.durationMs ? ` · ${(e.durationMs / 1000).toFixed(1)}s` : ""}
                     </div>
                   )}
                   {e.costUsd === undefined && e.detail && e.detail !== e.mandateId && <div className="mt-1 text-small text-ink-500">{e.detail}</div>}
                 </div>
-                {showMandate && e.mandateId && <span className="num hidden pr-1 text-small text-ink-700 md:block">{e.mandateId}</span>}
+                {showMandate && e.reference && (
+                  <a href={`/analyst/mandates/${e.mandateId}`} className="num hidden pr-1 text-small text-ink-700 hover:text-ink-900 md:block">
+                    {e.reference}
+                  </a>
+                )}
               </li>
             );
           })}

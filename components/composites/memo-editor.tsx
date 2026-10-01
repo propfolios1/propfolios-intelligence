@@ -14,12 +14,6 @@ export interface MemoDataSection {
   title: string;
   items: { label: string; value: string }[];
 }
-export interface MemoSuggestion {
-  kind: string;
-  target: string;
-  replacement: string;
-  reason: string;
-}
 export interface MemoFlag {
   claim: string;
   issue: string;
@@ -66,22 +60,25 @@ interface SlashState {
  * exists while text is selected. Type / for blocks.
  */
 export function MemoEditor({
-  mandateId,
+  memoId,
+  version: initialVersion,
   initialHtml,
+  readOnly,
   dataSources,
   citations,
-  initialSuggestions,
-  initialFlags,
+  flags,
 }: {
-  mandateId: string;
+  memoId: string;
+  version: number;
   initialHtml: string;
+  readOnly?: boolean;
   dataSources: MemoDataSection[];
   citations: MemoCitation[];
-  initialSuggestions: MemoSuggestion[];
-  initialFlags: MemoFlag[];
+  flags: MemoFlag[];
 }) {
   const [saved, setSaved] = React.useState(false);
-  const [saveError, setSaveError] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | false>(false);
+  const versionRef = React.useRef(initialVersion);
   const [slash, setSlash] = React.useState<SlashState | null>(null);
   const slashRef = React.useRef<SlashState | null>(null);
   slashRef.current = slash;
@@ -96,15 +93,17 @@ export function MemoEditor({
 
   const save = React.useCallback(
     async (html: string) => {
-      const res = await fetch(`/api/mandates/${mandateId}/memo`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ html }) });
-      setSaveError(!res.ok);
+      const res = await fetch(`/api/memos/${memoId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ contentHtml: html, version: versionRef.current }) });
+      const json = await res.json().catch(() => ({}));
+      setSaveError(res.ok ? false : (json.error ?? "Not saved. Retry."));
       if (res.ok) {
+        versionRef.current = json.version;
         setSaved(true);
         clearTimeout(holdTimer.current);
         holdTimer.current = setTimeout(() => setSaved(false), 1500);
       }
     },
-    [mandateId],
+    [memoId],
   );
 
   const runSlash = React.useCallback((editor: Editor, cmd: SlashCommand) => {
@@ -117,6 +116,7 @@ export function MemoEditor({
 
   const editor = useEditor({
     immediatelyRender: false,
+    editable: !readOnly,
     extensions: [StarterKit.configure({ heading: { levels: [2, 3] } }), Placeholder.configure({ placeholder: "Write, or type / for a block." })],
     content: initialHtml,
     editorProps: {
@@ -150,6 +150,7 @@ export function MemoEditor({
         setSlash((prev) => ({ from: start, query: m[1]!, top: coords.bottom - box.top + 8, left: coords.left - box.left, index: prev && prev.from === start ? prev.index : 0 }));
       } else if (slashRef.current) setSlash(null);
 
+      if (readOnly) return;
       clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => save(editor.getHTML()), 1200);
     },
@@ -171,32 +172,25 @@ export function MemoEditor({
       <div className="min-w-0">
         <div className="mb-4 flex items-center justify-between gap-4" data-no-print>
           <span className="flex items-center gap-2 text-small text-ink-500">
-            <Kbd>/</Kbd> for blocks
+            {readOnly ? "Locked after delivery" : (
+              <>
+                <Kbd>/</Kbd> for blocks · saves automatically
+              </>
+            )}
           </span>
           <div className="flex items-center gap-3">
-            <span className={cn("text-small transition-opacity", saveError ? "text-danger opacity-100" : "text-ink-500", saved || saveError ? "opacity-100 duration-120" : "opacity-0 duration-300")} aria-live="polite">
-              {saveError ? "Not saved. Retry." : saved ? "Saved" : ""}
+            <span className={cn("text-small transition-opacity", saveError ? "text-danger opacity-100" : "text-ink-500", saved || saveError ? "opacity-100 duration-150" : "opacity-0 duration-250")} aria-live="polite">
+              {saveError ? saveError : saved ? "Saved" : ""}
             </span>
-            <Button variant="secondary" size="sm" onClick={() => editor && save(editor.getHTML())}>
-              Save
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => window.print()}>
-              PDF
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (!editor) return;
-                const blob = new Blob([`<html><body>${editor.getHTML()}</body></html>`], { type: "application/msword" });
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = `${mandateId}-memo.doc`;
-                a.click();
-                URL.revokeObjectURL(a.href);
-              }}
-            >
-              Word
+            {!readOnly && (
+              <Button variant="secondary" size="sm" onClick={() => editor && save(editor.getHTML())}>
+                Save
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" asChild>
+              <a href={`/api/memos/${memoId}/export`} target="_blank" rel="noreferrer">
+                Export PDF
+              </a>
             </Button>
           </div>
         </div>
@@ -266,7 +260,7 @@ export function MemoEditor({
         </div>
       </div>
 
-      <RightRail mandateId={mandateId} editor={editor} citations={citations} initialSuggestions={initialSuggestions} initialFlags={initialFlags} />
+      <RightRail citations={citations} flags={flags} />
     </div>
   );
 }
@@ -351,120 +345,36 @@ function SourcesRail({ sections, className }: { sections: MemoDataSection[]; cla
   );
 }
 
-const KIND_LABEL: Record<string, string> = { rewrite: "Rewrite", tighten: "Tighten", add_evidence: "Cite", tone: "Tone", structure: "Structure" };
 const ISSUE_LABEL: Record<string, string> = {
   unsupported: "Unsupported",
   contradicts_source: "Contradicts source",
   stale: "Stale",
   calculation: "Figure checked",
   missing_citation: "Uncited",
+  verified: "Verified",
 };
 
-function RightRail({
-  mandateId,
-  editor,
-  citations,
-  initialSuggestions,
-  initialFlags,
-}: {
-  mandateId: string;
-  editor: Editor | null;
-  citations: MemoCitation[];
-  initialSuggestions: MemoSuggestion[];
-  initialFlags: MemoFlag[];
-}) {
-  const [suggestions, setSuggestions] = React.useState(initialSuggestions);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string>();
-
-  async function refresh() {
-    if (!editor) return;
-    setLoading(true);
-    setError(undefined);
-    const sel = editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, " ");
-    try {
-      const res = await fetch("/api/agents/memo-assist", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ mandateId, input: { memoHtml: editor.getHTML(), selection: sel || undefined } }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Could not load suggestions.");
-      setSuggestions(json.output.suggestions);
-    } catch (e) {
-      setError((e as Error).message.includes("ANTHROPIC") ? "Suggestions need an Anthropic key." : "Could not load suggestions. Retry.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function apply(s: MemoSuggestion) {
-    if (!editor) return;
-    let applied = false;
-    editor.state.doc.descendants((node, pos) => {
-      if (applied || !node.isText || !node.text) return;
-      const idx = node.text.indexOf(s.target);
-      if (idx >= 0) {
-        editor.chain().focus().insertContentAt({ from: pos + idx, to: pos + idx + s.target.length }, s.replacement).run();
-        applied = true;
-      }
-    });
-    setSuggestions((l) => l.filter((x) => x !== s));
-  }
-
+function RightRail({ citations, flags }: { citations: MemoCitation[]; flags: MemoFlag[] }) {
   return (
-    <aside className="xl:sticky xl:top-20 xl:max-h-[calc(100dvh-104px)] xl:self-start xl:overflow-y-auto scrollbar-thin" data-no-print>
+    <aside className="scrollbar-thin xl:sticky xl:top-20 xl:max-h-[calc(100dvh-104px)] xl:self-start xl:overflow-y-auto" data-no-print>
       <section>
-        <div className="mb-3 flex items-baseline justify-between">
-          <span className="eyebrow">Suggestions</span>
-          <button onClick={refresh} disabled={loading} className="text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900 disabled:text-ink-500">
-            {loading ? "Reading" : "Refresh"}
-          </button>
-        </div>
-        {error && <p className="mb-3 text-small text-danger">{error}</p>}
-        {loading
-          ? [0, 1].map((i) => (
-              <div key={i} className="mb-2 border border-ink-200 p-4">
-                <Skeleton className="h-2.5 w-14" />
-                <Skeleton className="mt-3 h-3 w-full" />
-                <Skeleton className="mt-2 h-3 w-4/5" />
-              </div>
-            ))
-          : suggestions.map((s, i) => (
-              <article key={i} className="mb-2 border border-ink-200 p-4">
-                <div className="eyebrow text-ink-500">{KIND_LABEL[s.kind] ?? s.kind}</div>
-                <p className="mt-2 text-small text-ink-500 line-through decoration-ink-500/60">{s.target}</p>
-                <p className="mt-1 text-small text-ink-900">{s.replacement}</p>
-                <p className="mt-2 text-small text-ink-700">{s.reason}</p>
-                <div className="mt-3 flex gap-4">
-                  <button onClick={() => apply(s)} className="text-small font-medium text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
-                    Apply
-                  </button>
-                  <button onClick={() => setSuggestions((l) => l.filter((x) => x !== s))} className="text-small text-ink-700 hover:text-ink-900">
-                    Dismiss
-                  </button>
-                </div>
-              </article>
-            ))}
-        {!loading && suggestions.length === 0 && <p className="text-small text-ink-500">No open suggestions.</p>}
-      </section>
-
-      <section className="mt-10">
         <div className="eyebrow mb-3">Fact check</div>
-        {initialFlags.map((f, i) => (
-          <article key={i} className="mb-2 border border-ink-200 p-4">
+        {flags.length === 0 && <p className="text-small text-ink-500">No figures to check.</p>}
+        {flags.map((f, i) => (
+          <article key={i} className="mb-2 rounded-md border border-ink-200 bg-surface p-4">
             <div className="flex items-center gap-2">
-              <span className={cn("size-1.5 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-ink-500" : "bg-success")} aria-hidden />
-              <span className="eyebrow text-ink-500">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
+              <span className={cn("size-1.5 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-warning" : "bg-success")} aria-hidden />
+              <span className="eyebrow">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
             </div>
-            <p className="mt-2 font-display text-body leading-[1.35] text-ink-900">“{f.claim}”</p>
-            <p className="mt-2 text-small text-ink-700">{f.suggestion}</p>
+            <p className="mt-2 text-small font-medium text-ink-900">{f.claim}</p>
+            <p className="mt-1 text-small text-ink-700">{f.suggestion}</p>
           </article>
         ))}
       </section>
 
       <section className="mt-10">
         <div className="eyebrow mb-3">Citations</div>
+        {citations.length === 0 && <p className="text-small text-ink-500">No citations in the research dossier.</p>}
         <ol>
           {citations.map((c) => (
             <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 border-t border-ink-200 py-2.5 text-small">

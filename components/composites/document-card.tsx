@@ -1,62 +1,54 @@
-import type { DocumentItem } from "@/lib/data/types";
+import { FileText } from "lucide-react";
+import { DOC_TYPE_LABEL } from "@/lib/domain";
 import { cn, formatDate } from "@/lib/utils";
 
-function seedOf(s: string) {
-  return s.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+export interface DocumentCardData {
+  id: string;
+  title: string;
+  type: string;
+  pages: number;
+  sizeBytes: number;
+  blobUrl: string | null;
+  createdAt: Date | string;
 }
 
-/**
- * First page of the PDF, set in miniature: a gold masthead rule, a serif title
- * block, ruled text. Each document draws a different page from its id.
- */
-function PagePreview({ doc }: { doc: DocumentItem }) {
-  const seed = seedOf(doc.id);
-  const lines = Array.from({ length: 12 }, (_, i) => 52 + ((seed * (i + 5)) % 44));
-  const hasTable = doc.type === "Statement" || doc.type === "Valuation";
-  return (
-    <div className="flex h-52 items-end justify-center overflow-hidden border-b border-ink-200 bg-ink-100 px-6">
-      <div className="h-[184px] w-[136px] translate-y-3 border border-ink-200 bg-surface px-3.5 pt-4 transition-transform duration-200 ease-out group-hover:translate-y-1.5">
-        <div className="h-0.5 w-5 bg-gold-500" />
-        <div className="mt-2.5 font-display text-[11px] leading-[1.15] text-navy-900 line-clamp-3">{doc.title}</div>
-        <div className="mt-3 flex flex-col gap-[5px]">
-          {lines.slice(0, hasTable ? 4 : 12).map((w, i) => (
-            <div key={i} className={cn("h-[2px] bg-ink-200", i === 4 && "mt-1.5")} style={{ width: `${w}%` }} />
-          ))}
+function size(bytes: number) {
+  if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+/** A document tile. Opens the stored file, or the memo PDF when a memo has no stored file. */
+export function DocumentCard({ doc, href, subtitle, className }: { doc: DocumentCardData; href?: string | null; subtitle?: string; className?: string }) {
+  const link = href ?? doc.blobUrl;
+  const Body = (
+    <>
+      <div className="flex items-start gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-navy-50 text-navy-900">
+          <FileText className="size-4 stroke-[1.5]" />
+        </span>
+        <div className="min-w-0">
+          <div className="eyebrow">{DOC_TYPE_LABEL[doc.type] ?? doc.type}</div>
+          <h3 className="mt-1 line-clamp-2 text-ui font-medium text-ink-900">{doc.title}</h3>
+          {subtitle && <p className="mt-0.5 truncate text-small text-ink-500">{subtitle}</p>}
         </div>
-        {hasTable && (
-          <div className="mt-3 border-t border-ink-500">
-            {[0, 1, 2, 3, 4].map((r) => (
-              <div key={r} className="flex justify-between border-b border-ink-200 py-[3px]">
-                <span className="h-[2px] w-8 bg-ink-200" />
-                <span className="h-[2px] w-5 bg-ink-500/50" />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-    </div>
+      <div className="num mt-4 flex items-baseline justify-between border-t border-ink-200 pt-3 text-axis text-ink-500">
+        <span>
+          {doc.pages} pp · {size(doc.sizeBytes)}
+        </span>
+        <span>{formatDate(doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt))}</span>
+      </div>
+      {!link && <p className="mt-2 text-[0.75rem] text-ink-500">Record only. File storage is not configured.</p>}
+    </>
   );
-}
-
-export function DocumentCard({ doc, subtitle }: { doc: DocumentItem; subtitle?: string }) {
-  return (
-    <a
-      href="#"
-      className="group block border border-ink-200 transition-[border-color,transform] duration-120 ease-[ease] hover:-translate-y-px hover:border-ink-500"
-      aria-label={`${doc.title}, ${doc.type}, ${doc.pages} pages`}
-    >
-      <PagePreview doc={doc} />
-      <div className="px-4 pt-4 pb-5">
-        <div className="eyebrow text-ink-500">{doc.type}</div>
-        <h3 className="mt-2 line-clamp-2 min-h-[2.8em] text-ui leading-[1.4] text-ink-900">{doc.title}</h3>
-        {subtitle && <p className="mt-1 truncate text-small text-ink-500">{subtitle}</p>}
-        <div className="num mt-4 flex items-baseline justify-between border-t border-ink-200 pt-3 text-small text-ink-500">
-          <span>
-            {doc.pages} pp · {(doc.sizeKb / 1024).toFixed(1)} MB
-          </span>
-          <span>{formatDate(doc.createdAt)}</span>
-        </div>
-      </div>
+  const cls = cn("block rounded-md border border-ink-200 bg-surface p-4 shadow-card", link && "transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400", className);
+  return link ? (
+    <a id={doc.id} href={link} target="_blank" rel="noreferrer" className={cls} aria-label={`${doc.title}, opens in a new tab`}>
+      {Body}
     </a>
+  ) : (
+    <div id={doc.id} className={cls}>
+      {Body}
+    </div>
   );
 }

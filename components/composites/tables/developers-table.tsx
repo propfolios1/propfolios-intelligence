@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { StatusPill } from "@/components/ui/status-pill";
-import type { Developer } from "@/lib/data/types";
+import type { DeveloperListItem as Developer } from "@/lib/queries";
 import { cn, relativeTime } from "@/lib/utils";
 import { DataTable } from "../data-table";
 
@@ -37,7 +37,7 @@ const columns: ColumnDef<Developer, unknown>[] = [
       const v = getValue<number>();
       return (
         <div className="flex items-center gap-4">
-          <span className={cn("num w-7 text-right text-ui", v > 60 ? "text-danger" : "text-ink-900")}>{v}</span>
+          <span className={cn("num w-9 text-right text-ui", v > 60 ? "text-danger" : "text-ink-900")}>{v.toFixed(1)}</span>
           <span className="relative h-3 w-[120px]" role="img" aria-label={`${v} of 100`}>
             <span className="absolute top-1/2 left-0 h-px w-full bg-ink-200" />
             {[25, 50, 75].map((t) => (
@@ -52,6 +52,8 @@ const columns: ColumnDef<Developer, unknown>[] = [
   },
   { accessorKey: "deliveryPct", header: "On time", size: 100, meta: { numeric: true }, cell: ({ getValue }) => `${getValue<number>()}%` },
   { accessorKey: "projectsDelivered", header: "Delivered", size: 104, meta: { numeric: true } },
+  { accessorKey: "financialHealth", header: "Financial", size: 104, meta: { numeric: true } },
+  { accessorKey: "catalogueProjects", header: "In catalogue", size: 112, meta: { numeric: true } },
   {
     accessorKey: "litigationCount",
     header: "Litigation",
@@ -60,9 +62,26 @@ const columns: ColumnDef<Developer, unknown>[] = [
     cell: ({ getValue }) => <span className={getValue<number>() >= 10 ? "text-danger" : undefined}>{getValue<number>()}</span>,
   },
   { accessorKey: "escrowCompliant", header: "Escrow", size: 120, cell: ({ getValue }) => (getValue<boolean>() ? <StatusPill tone="complete">Verified</StatusPill> : <StatusPill tone="error">Unverified</StatusPill>) },
-  { accessorKey: "updatedAt", header: "Scored", size: 104, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500">{relativeTime(getValue<string>())}</span> },
+  { accessorKey: "lastScoredAt", header: "Scored", size: 104, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500">{relativeTime(new Date(getValue<string>()).toISOString())}</span> },
 ];
 
 export function DevelopersTable({ rows }: { rows: Developer[] }) {
-  return <DataTable columns={columns} data={rows} initialSorting={[{ id: "riskScore", desc: true }]} rowActions={[{ label: "Rescore", onSelect: () => {} }]} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={rows}
+      initialSorting={[{ id: "riskScore", desc: true }]}
+      mobileCard={(d) => (
+        <div>
+          <div className="flex items-baseline justify-between">
+            <span className="text-ui font-medium text-ink-900">{d.name}</span>
+            <span className={cn("num text-ui", d.riskScore > 60 ? "text-danger" : "text-ink-900")}>{d.riskScore.toFixed(1)}</span>
+          </div>
+          <div className="text-small text-ink-500">
+            {d.market} · {d.deliveryPct}% on time · {d.litigationCount} litigation
+          </div>
+        </div>
+      )}
+    />
+  );
 }

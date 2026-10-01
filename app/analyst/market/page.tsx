@@ -1,62 +1,92 @@
-import { Heatmap } from "@/components/charts/heatmap";
 import { BarSeries, LineSeries } from "@/components/charts/series";
+import { MarketTiming } from "@/components/composites/market-timing";
 import { PageHeader } from "@/components/composites/page-header";
-import { StatBlock } from "@/components/composites/stat-block";
+import { StatCard } from "@/components/composites/stat-card";
 import { PageContainer } from "@/components/shell/page-container";
-import { heatmap, heatmapClasses, heatmapRegions, marketMonths, priceTrend, supplyPipeline } from "@/lib/data/store";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Table, TD, TH, THead, TR } from "@/components/ui/table";
+import { getDb } from "@/db";
+import { requireRole } from "@/lib/auth";
+import { getMarket } from "@/lib/queries";
 
 export const metadata = { title: "Market" };
+export const dynamic = "force-dynamic";
 
-export default function MarketPage() {
-  const last = marketMonths.at(-1)!;
-  const prev = marketMonths.at(-2)!;
-  const tx = marketMonths.reduce((s, m) => s + m.transactions, 0);
+export default async function MarketPage() {
+  await requireRole(["admin", "analyst"]);
+  const regions = await getMarket(await getDb());
+  const dubai = regions.find((r) => r.region === "Dubai") ?? regions[0]!;
+  const months = dubai.series.map((m) => m.month.slice(0, 7));
+  const indexed = months.map((month, i) => {
+    const row: Record<string, string | number> = { month };
+    for (const r of regions) {
+      const base = r.series[0]!.medianPriceSqft;
+      row[r.region] = +((r.series[i]!.medianPriceSqft / base) * 100).toFixed(1);
+    }
+    return row;
+  });
+  const last = dubai.latest;
   return (
     <PageContainer>
-      <PageHeader eyebrow="Market intelligence" title="Market" subtitle="Dubai and Abu Dhabi residential, 24 months. Refreshed each Monday from DLD and ADREC filings." />
-
-      <section className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
-        <StatBlock className="col-span-2 md:col-span-4" emphasis label="Transactions, 12 months" value={tx.toLocaleString()} delta={21.4} deltaLabel="year on year" />
-        <StatBlock className="md:col-span-3" label="Median AED / sq ft" value={last.medianPriceSqft.toLocaleString()} delta={((last.medianPriceSqft - prev.medianPriceSqft) / prev.medianPriceSqft) * 100} deltaLabel="month on month" />
-        <StatBlock className="md:col-span-3" label="Supply 2027" value={(supplyPipeline[2]!.units / 1000).toFixed(1)} unit="k units" delta={34.6} invert deltaLabel="vs 2026" />
-        <StatBlock className="col-span-2 md:col-span-2" label="Absorption" value="82" unit="%" delta={-3.1} deltaUnit="pp" deltaLabel="vs Q2" />
+      <PageHeader eyebrow="Market intelligence" title="Market" subtitle="Twelve months of residential transactions, pricing, supply and absorption for the four principal emirates. Sources: DLD, ADREC and municipal registers." />
+      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {regions.map((r) => (
+          <StatCard key={r.region} label={r.region} value={Math.round(r.latest.medianPriceSqft).toLocaleString("en-US")} unit="AED / sq ft" delta={r.priceChangePct} deltaLabel="12 months" spark={r.series.map((m) => m.medianPriceSqft)} />
+        ))}
       </section>
-
-      <section className="mt-20">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-section text-navy-900">Price per square foot</h2>
-          <span className="text-small text-ink-500">AED, monthly median</span>
-        </div>
-        <div className="mt-8">
-          <LineSeries
-            data={priceTrend}
-            x="month"
-            series={[
-              { key: "dubai", label: "Dubai" },
-              { key: "abuDhabi", label: "Abu Dhabi" },
-            ]}
-            height={360}
-            format="number"
-            grid
-          />
-        </div>
+      <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <Card className="xl:col-span-8">
+          <CardHeader eyebrow="Indexed to 100 twelve months ago" title="Price per sq ft" />
+          <CardContent>
+            <LineSeries data={indexed} x="month" series={regions.slice(0, 2).map((r) => ({ key: r.region, label: r.region }))} height={300} format="number" grid />
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-4">
+          <CardHeader eyebrow="Agent" title="Market timing" />
+          <CardContent>
+            <MarketTiming regions={regions.map((r) => r.region)} />
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-6">
+          <CardHeader eyebrow="Dubai, monthly" title="Transactions" actions={<span className="num text-small text-ink-500">{last.transactions.toLocaleString("en-US")} latest</span>} />
+          <CardContent>
+            <BarSeries data={dubai.series.map((m) => ({ month: m.month.slice(0, 7), tx: m.transactions }))} x="month" y="tx" name="Transactions" height={220} emphasiseLast format="number" />
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-6">
+          <CardHeader eyebrow="Dubai, monthly" title="Supply handed over" />
+          <CardContent>
+            <BarSeries data={dubai.series.map((m) => ({ month: m.month.slice(0, 7), units: m.supplyUnits }))} x="month" y="units" name="Units" height={220} format="number" />
+          </CardContent>
+        </Card>
       </section>
-
-      <section className="mt-20 grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
-        <div className="xl:col-span-4">
-          <h2 className="font-display text-section text-navy-900">Volume</h2>
-          <p className="mt-2 text-small text-ink-500">Dubai transactions by month. September in navy.</p>
-          <div className="mt-8">
-            <BarSeries data={marketMonths} x="month" y="transactions" name="Transactions" height={300} emphasiseLast />
-          </div>
-        </div>
-        <div className="xl:col-span-7 xl:col-start-6">
-          <h2 className="font-display text-section text-navy-900">Where prices moved</h2>
-          <p className="mt-2 text-small text-ink-500">Year on year change, percent. Darker is stronger.</p>
-          <div className="mt-8">
-            <Heatmap rows={heatmapRegions} cols={heatmapClasses} values={heatmap} />
-          </div>
-        </div>
+      <section className="mt-8">
+        <Table>
+          <THead>
+            <TR>
+              <TH>Emirate</TH>
+              <TH numeric>Transactions</TH>
+              <TH numeric>Median AED / sq ft</TH>
+              <TH numeric>12-month change</TH>
+              <TH numeric>Off-plan share</TH>
+              <TH numeric>Gross yield</TH>
+              <TH numeric>Absorption</TH>
+            </TR>
+          </THead>
+          <tbody>
+            {regions.map((r) => (
+              <TR key={r.region}>
+                <TD className="font-medium">{r.region}</TD>
+                <TD numeric>{r.latest.transactions.toLocaleString("en-US")}</TD>
+                <TD numeric>{Math.round(r.latest.medianPriceSqft).toLocaleString("en-US")}</TD>
+                <TD numeric className="text-success">+{r.priceChangePct.toFixed(1)}%</TD>
+                <TD numeric>{r.latest.offPlanShare.toFixed(1)}%</TD>
+                <TD numeric>{r.latest.rentalYield.toFixed(1)}%</TD>
+                <TD numeric>{r.latest.absorptionRate.toFixed(0)}%</TD>
+              </TR>
+            ))}
+          </tbody>
+        </Table>
       </section>
     </PageContainer>
   );
