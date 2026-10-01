@@ -12,7 +12,9 @@ import { HoldingsTable } from "./tables/holdings-table";
 
 /** The portfolio page body, shared by the client portal and the analyst client view. */
 export function PortfolioView({ p, recommendationsHref }: { p: Portfolio; recommendationsHref: string }) {
-  const cash = p.cashHistory.map((m) => ({ label: m.month, value: m.rent }));
+  let running = 0;
+  const cash = p.cashHistory.map((m) => ({ label: m.month, value: (running += m.rent) }));
+  const singleCity = p.byCity.length < 2;
   const policy = p.client.policy;
   return (
     <>
@@ -20,15 +22,15 @@ export function PortfolioView({ p, recommendationsHref }: { p: Portfolio; recomm
       <div className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-6 xl:col-span-8">
           <Card>
-            <CardHeader eyebrow="AED, last 24 months" title="Rental income received" />
+            <CardHeader eyebrow="AED, cumulative over 24 months" title="Rental income received" actions={<span className="num text-small text-ink-500">{(running / 1e6).toFixed(2)}M</span>} />
             <CardContent>
               <CashFlowChart id="pf" mode="monthly" data={cash} height={240} />
             </CardContent>
           </Card>
           <Card>
-            <CardHeader eyebrow="By city" title="Allocation" actions={<span className="num text-small text-ink-500">Off-plan {p.totals.offPlanPct.toFixed(0)}% (limit {policy.maxOffPlanPct}%)</span>} />
+            <CardHeader eyebrow={singleCity ? "By community" : "By city"} title="Allocation" actions={<span className="num text-small text-ink-500">Off-plan {p.totals.offPlanPct.toFixed(0)}% (limit {policy.maxOffPlanPct}%)</span>} />
             <CardContent>
-              <AllocationBar items={p.byCity.map((c) => ({ label: c.city, value: c.value }))} />
+              <AllocationBar items={(singleCity ? p.byCommunity : p.byCity).map((c) => ({ label: c.city, value: c.value }))} />
             </CardContent>
           </Card>
         </div>

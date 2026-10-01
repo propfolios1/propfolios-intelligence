@@ -16,7 +16,7 @@ export type MandateTab = (typeof MANDATE_TABS)[number][0];
 /** Sticky section bar under the top bar. Numbered tabs, the active one underlined in ink. */
 export function TabBar({ id, active, counts = {} }: { id: string; active: MandateTab; counts?: Partial<Record<MandateTab, number>> }) {
   return (
-    <div className="sticky top-14 z-20 -mx-6 border-b border-ink-200 bg-canvas px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
+    <div data-no-print className="sticky top-14 z-20 -mx-6 border-b border-ink-200 bg-canvas px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
       <nav className="scrollbar-thin -mb-px flex gap-8 overflow-x-auto" aria-label="Mandate sections">
         {MANDATE_TABS.map(([key, label], i) => (
           <Link

@@ -21,7 +21,7 @@ export default async function PortfolioPage() {
   const p = await getPortfolio(await getDb(), user, user.clientId);
   return (
     <PageContainer>
-      <PageHeader eyebrow={`${p.client.type} · ${p.client.residency}`} title={p.client.name} subtitle={`${p.holdings.length} holdings across ${p.byCity.length} cities. Values are independent valuations or the last registered comparable.`} rule={false} />
+      <PageHeader eyebrow={`${p.client.type} · ${p.client.residency}`} title={p.client.name} subtitle={`${p.holdings.length} holdings across ${p.byCity.length === 1 ? `${p.byCommunity.length} ${p.byCity[0]!.city} communities` : `${p.byCity.length} cities`}. Values are independent valuations or the last registered comparable.`} rule={false} />
       <div className="mt-8">
         <PortfolioView p={p} recommendationsHref="/client/recommendations" />
       </div>

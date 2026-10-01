@@ -64,7 +64,7 @@ export function SidebarNav({ area, viewer }: { area: Area; viewer: ShellViewer }
   const home = NAV[area][0]!.items[0]!.href;
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-ink-200 lg:flex">
+    <aside data-no-print className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-ink-200 lg:flex">
       <div className="flex h-14 items-center px-5">
         <Link href={home} aria-label="Home">
           <BrandMark size="sm" />

@@ -38,7 +38,7 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
   }));
 
   return (
-    <header className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-ink-200 bg-canvas px-6 md:px-12 xl:px-20">
+    <header data-no-print className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-ink-200 bg-canvas px-6 md:px-12 xl:px-20">
       <div className="flex min-w-0 items-center gap-3">
         <MobileNav area={area} />
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-baseline gap-2 text-small">

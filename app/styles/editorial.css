@@ -165,11 +165,17 @@
   body {
     background: #fff !important;
   }
-  aside,
-  header,
-  nav,
-  [data-no-print] {
+  [data-no-print],
+  button,
+  nextjs-portal {
     display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .shadow-card,
+  .shadow-float {
+    box-shadow: none !important;
   }
   [data-print-sheet] {
     border: 0 !important;

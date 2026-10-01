@@ -157,7 +157,7 @@ function compose(tool: string, data: unknown, n: number): string {
     case "get_recommendations": {
       const rows = data as { title: string; message: string }[];
       if (!rows.length) return `There are no open recommendations ${cite}.`;
-      return `${rows.length} open recommendation${rows.length > 1 ? "s" : ""} ${cite}. The first priority is ${rows[0]!.title.toLowerCase()}: ${rows[0]!.message}`;
+      return `${rows.length} open recommendation${rows.length > 1 ? "s" : ""} ${cite}. First priority: ${rows[0]!.title}. ${rows[0]!.message}`;
     }
     case "get_market": {
       const m = d as { region: string; transactions: number; medianPriceSqftAed: number; priceChange12mPct: number; offPlanSharePct: number; grossRentalYieldPct: number };

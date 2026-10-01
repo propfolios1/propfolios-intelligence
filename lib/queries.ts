@@ -300,6 +300,7 @@ export async function getPortfolio(db: DB, user: CurrentUser, clientId: string) 
   const rent = holdings.reduce((a, x) => a + x.h.annualRentAed, 0);
   const offPlanValue = holdings.filter((x) => x.p.status !== "ready").reduce((a, x) => a + x.h.currentValueAed, 0);
   const byMarket = (["UAE", "India"] as const).map((m) => ({ market: m, value: holdings.filter((x) => x.p.market === m).reduce((a, x) => a + x.h.currentValueAed, 0) }));
+  const byCommunity = Object.entries(holdings.reduce<Record<string, number>>((acc, x) => ((acc[x.p.community] = (acc[x.p.community] ?? 0) + x.h.currentValueAed), acc), {})).map(([city, v]) => ({ city, value: v }));
   const byCity = Object.entries(holdings.reduce<Record<string, number>>((acc, x) => ((acc[x.p.city] = (acc[x.p.city] ?? 0) + x.h.currentValueAed), acc), {})).map(([city, v]) => ({ city, value: v }));
   // weighted IRR by cost
   const irr = cost ? holdings.reduce((a, x) => a + x.h.irr * x.h.costAed, 0) / cost : 0;
@@ -327,6 +328,7 @@ export async function getPortfolio(db: DB, user: CurrentUser, clientId: string) 
     totals: { value, cost, rent, gainPct: cost ? ((value - cost) / cost) * 100 : 0, irr, cashYield: cost ? (rent / cost) * 100 : 0, offPlanPct: value ? (offPlanValue / value) * 100 : 0 },
     byMarket,
     byCity,
+    byCommunity,
     cashHistory: months,
   };
 }
