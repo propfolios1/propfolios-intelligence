@@ -1,0 +1,12 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { getDb } from "@/db";
+import { handle } from "@/lib/api";
+import { requireApiUser } from "@/lib/auth";
+import { listDevelopers } from "@/lib/queries";
+
+export const GET = handle(async (req: Request) => {
+  await requireApiUser();
+  const f = z.object({ market: z.enum(["UAE", "India"]).optional() }).parse(Object.fromEntries(new URL(req.url).searchParams));
+  return NextResponse.json(await listDevelopers(await getDb(), f));
+});

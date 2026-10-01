@@ -9,8 +9,8 @@ export const holdingFacts = z.object({
   status: z.string(),
   costAed: z.number(),
   valueAed: z.number(),
-  irr: z.number(),
-  cashYield: z.number(),
+  irr: z.number().describe("Since-acquisition IRR, percent"),
+  cashYield: z.number().describe("Net cash yield on cost, percent"),
 });
 
 export const portfolioMonitorInput = z.object({

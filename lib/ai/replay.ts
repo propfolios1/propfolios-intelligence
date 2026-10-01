@@ -30,6 +30,9 @@ type Scenario = z.infer<typeof scenarioRow>;
 const today = () => new Date().toISOString().slice(0, 10);
 const n0 = (v: number) => Math.round(v).toLocaleString("en-US");
 const pct = (v: number, dp = 1) => `${v.toFixed(dp)}%`;
+/** "a" or "an" for the following word or figure. */
+const an = (next: string) => (/^(8|11|18|[aeiou])/i.test(next.trim()) ? "an" : "a");
+const poss = (name: string) => (name.endsWith("s") ? `${name}'` : `${name}'s`);
 
 export function money(v: number, currency = "AED") {
   if (currency === "INR") return `INR ${(v / 10_000_000).toFixed(2)} Cr`;
@@ -104,7 +107,7 @@ export function replayResearch(c: MandateContext, comparablesSummary = "", marke
     },
     {
       heading: "The asset",
-      body: `${p.name} is a ${status} ${p.assetClass.toLowerCase()} project of ${n0(p.units)} units in ${p.community}, ${p.city} [3]. Units are priced from ${money(p.priceMin, p.currency)} to ${money(p.priceMax, p.currency)}, or ${p.currency} ${n0(p.pricePerSqft)} per sq ft.${p.paymentPlan ? ` The developer offers a ${p.paymentPlan.toLowerCase()} payment plan.` : ""} Handover: ${p.handover}.\n\nIndicative gross yield on the asking price is ${pct(p.grossYield)} on current rents [2].`,
+      body: `${p.name} is ${an(status)} ${status} ${p.assetClass.toLowerCase()} project of ${n0(p.units)} units in ${p.community}, ${p.city} [3]. Units are priced from ${money(p.priceMin, p.currency)} to ${money(p.priceMax, p.currency)}, or ${p.currency} ${n0(p.pricePerSqft)} per sq ft.${p.paymentPlan ? ` The developer offers a ${p.paymentPlan.toLowerCase()} payment plan.` : ""} Handover: ${p.handover}.\n\nIndicative gross yield on the asking price is ${pct(p.grossYield)} on current rents [2].`,
     },
     {
       heading: "Developer",
@@ -129,7 +132,7 @@ export function replayResearch(c: MandateContext, comparablesSummary = "", marke
   ];
 
   const risks: ResearchOutput["risks"] = [];
-  if (offPlan(c)) risks.push({ severity: d.deliveryPct < 85 ? "HIGH" : "MEDIUM", title: "Completion and handover risk", detail: `Handover is scheduled for ${p.handover}. ${d.name}'s on-time record of ${pct(d.deliveryPct, 0)} implies a meaningful probability of a delay of one year or more.` });
+  if (offPlan(c)) risks.push({ severity: d.deliveryPct < 85 ? "HIGH" : "MEDIUM", title: "Completion and handover risk", detail: `Handover is scheduled for ${p.handover}. ${poss(d.name)} on-time record of ${pct(d.deliveryPct, 0)} implies a meaningful probability of a delay of one year or more.` });
   if (uae) risks.push({ severity: "MEDIUM", title: "2026 to 2028 supply cycle", detail: "Citywide completions are forecast to peak in 2027. Exposure for this asset is through tenant competition rather than direct supply in the community." });
   else risks.push({ severity: "MEDIUM", title: "Low running yield", detail: `Gross yield of ${pct(p.grossYield)} means total return depends on capital growth; the currency translation from INR to AED adds volatility.` });
   if (d.litigationCount >= 10) risks.push({ severity: "MEDIUM", title: "Developer litigation book", detail: `${d.litigationCount} active matters. None is known to relate to this project, but the book should be reviewed during legal due diligence.` });
@@ -141,7 +144,7 @@ export function replayResearch(c: MandateContext, comparablesSummary = "", marke
   ];
 
   return {
-    summary: `${p.name} is a ${status} ${n0(p.units)}-unit project by ${d.name} in ${p.community}, priced at ${p.currency} ${n0(p.pricePerSqft)} per sq ft [3]. ${uae ? `${p.region} transaction volumes and prices continue to rise, and the community has a liquid resale market [1][2].` : `${p.city} is an end-user-led market with steady registrations and gross yields typical of Indian metros [2].`} The principal risk is ${principal} [4].`,
+    summary: `${p.name} is ${an(status)} ${status} ${n0(p.units)}-unit project by ${d.name} in ${p.community}, priced at ${p.currency} ${n0(p.pricePerSqft)} per sq ft [3]. ${uae ? `${p.region} transaction volumes and prices continue to rise, and the community has a liquid resale market [1][2].` : `${p.city} is an end-user-led market with steady registrations and gross yields typical of Indian metros [2].`} The principal risk is ${principal} [4].`,
     sections,
     risks,
     dataGaps,
@@ -215,7 +218,7 @@ export function replayUnderwriting(c: MandateContext): UnderwritingOutput {
       { assumption: `Capital growth ${pct(capitalGrowth * 100)} a year`, basis: uae ? "Below the trailing twelve-month index change, reflecting the 2026 to 2028 supply cycle." : "In line with the ten-year compound growth of the city's premium residential index." },
       { assumption: `Acquisition costs ${pct(acquisitionCostPct * 100)}`, basis: uae ? "4% DLD transfer fee, 2% agency commission and trustee and title fees." : `State stamp duty and registration${offPlan(c) ? " plus 5% GST on under-construction consideration" : ""}.` },
       { assumption: `Discount rate ${pct(discountRate * 100)}`, basis: `Client hurdle for a ${c.client.riskProfile.toLowerCase()} risk profile.` },
-      ...(offPlan(c) ? [{ assumption: `Delay probability ${pct(delayProbability * 100, 0)}`, basis: `Derived from ${c.developer.name}'s ${pct(c.developer.deliveryPct, 0)} on-time delivery record.` }] : []),
+      ...(offPlan(c) ? [{ assumption: `Delay probability ${pct(delayProbability * 100, 0)}`, basis: `Derived from ${poss(c.developer.name)} ${pct(c.developer.deliveryPct, 0)} on-time delivery record.` }] : []),
     ],
   };
 }
@@ -320,9 +323,9 @@ export function replayDebate(c: MandateContext, scenarios: Scenario[], findings:
 
   return {
     bull: {
-      thesis: `${c.property.name} offers a P50 IRR of ${pct(p50.irr)} ${above ? `against a ${pct(hurdlePct)} hurdle` : `, short of the ${pct(hurdlePct)} hurdle but with P90 upside of ${pct(p90.irr)}`}, with ${offPlan(c) ? "entry pricing ahead of handover" : "immediate income from a completed asset"} and a developer with ${pct(c.developer.deliveryPct, 0)} on-time delivery.`,
+      thesis: `${c.property.name} offers a P50 IRR of ${pct(p50.irr)}${above ? ` against ${an(pct(hurdlePct))} ${pct(hurdlePct)} hurdle` : `, short of the ${pct(hurdlePct)} hurdle but with P90 upside of ${pct(p90.irr)}`}, with ${offPlan(c) ? "entry pricing ahead of handover" : "immediate income from a completed asset"} and a developer with ${pct(c.developer.deliveryPct, 0)} on-time delivery.`,
       points: [
-        { title: "Returns clear the hurdle in the base case", detail: `P50 IRR ${pct(p50.irr)} and equity multiple ${p50.equityMultiple.toFixed(2)}x over the hold.`, evidence: "Monte Carlo simulation, 5,000 iterations." },
+        { title: above ? "Returns clear the hurdle in the base case" : "Base case close to the hurdle", detail: `P50 IRR ${pct(p50.irr)} and equity multiple ${p50.equityMultiple.toFixed(2)}x over the hold.`, evidence: "Monte Carlo simulation, 5,000 iterations." },
         { title: "Location depth", detail: `${c.property.community} has an established resale market, supporting exit liquidity.`, evidence: "Research dossier, comparable transactions." },
         { title: "Developer quality", detail: `${c.developer.name} carries a composite risk score of ${c.developer.riskScore.toFixed(1)}.`, evidence: "Developer risk framework." },
         { title: "Upside case", detail: `P90 IRR of ${pct(p90.irr)} if capital growth tracks the trailing index.`, evidence: "Scenario table." },
@@ -334,7 +337,7 @@ export function replayDebate(c: MandateContext, scenarios: Scenario[], findings:
       thesis: `Returns depend on capital growth; the P10 case of ${pct(p10.irr)} ${p10.irr < hurdlePct ? "falls below" : "only just clears"} the hurdle${serious.length ? `, and ${serious.length} high-rated due diligence findings remain open` : ""}.`,
       points: [
         { title: "Growth dependence", detail: "Sensitivity analysis shows capital growth is the largest driver of IRR.", evidence: "Tornado analysis." },
-        { title: "Downside below hurdle", detail: `P10 IRR ${pct(p10.irr)} against a ${pct(hurdlePct)} hurdle.`, evidence: "Scenario table." },
+        { title: "Downside below hurdle", detail: `P10 IRR ${pct(p10.irr)} against ${an(pct(hurdlePct))} ${pct(hurdlePct)} hurdle.`, evidence: "Scenario table." },
         { title: c.property.market === "UAE" ? "Supply cycle" : "Low running yield", detail: c.property.market === "UAE" ? "2027 completions peak may compress rents in competing communities." : "Income covers little of the required return; FX translation adds volatility.", evidence: "Research dossier, risks." },
         ...serious.slice(0, 2).map((f) => ({ title: f.title, detail: f.description, evidence: `Due diligence ${f.id}.` })),
       ],
@@ -507,10 +510,10 @@ export function replayPortfolioMonitor(input: z.infer<typeof portfolioMonitorInp
   const total = input.holdings.reduce((a, h) => a + h.valueAed, 0) || 1;
   for (const h of input.holdings) {
     const share = h.valueAed / total;
-    if (h.status === "watch") alerts.push({ severity: "HIGH", title: `${h.property} on watch`, detail: `${h.property} is flagged for review: IRR ${pct(h.irr * 100)} against cost of ${money(h.costAed)}.`, holdingId: h.holdingId });
+    if (h.status === "watch") alerts.push({ severity: "HIGH", title: `${h.property} on watch`, detail: `${h.property} is flagged for review: IRR ${pct(h.irr)} against cost of ${money(h.costAed)}.`, holdingId: h.holdingId });
     if (h.status === "under_construction") alerts.push({ severity: "MEDIUM", title: `${h.property}: construction monitoring`, detail: `Under construction with ${h.developer}; confirm progress against the payment schedule.`, holdingId: h.holdingId });
     if (share > 0.25) alerts.push({ severity: "MEDIUM", title: `Concentration in ${h.property}`, detail: `${pct(share * 100, 0)} of portfolio value sits in one asset, above the 25% guideline.`, holdingId: h.holdingId });
-    if (h.irr < 0.04 && h.status !== "under_construction") alerts.push({ severity: "LOW", title: `${h.property} below target return`, detail: `Since-acquisition IRR of ${pct(h.irr * 100)}. Consider exit or re-letting strategy.`, holdingId: h.holdingId });
+    if (h.irr < 4 && h.status !== "under_construction") alerts.push({ severity: "LOW", title: `${h.property} below target return`, detail: `Since-acquisition IRR of ${pct(h.irr)}. Consider exit or re-letting strategy.`, holdingId: h.holdingId });
   }
   for (const e of input.events) alerts.push({ severity: "LOW", title: "Market event", detail: e, holdingId: null });
   return { alerts, summary: `${input.holdings.length} holdings scanned for ${input.client.name}; ${alerts.length} items raised, ${alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL").length} high priority.` };
@@ -521,7 +524,7 @@ export function replayRecommender(input: z.infer<typeof recommenderInput>): Reco
   const total = input.holdings.reduce((a, h) => a + h.valueAed, 0) || 1;
   const best = [...input.holdings].filter((h) => h.status !== "under_construction").sort((a, b) => b.valueAed / b.costAed - a.valueAed / a.costAed)[0];
   if (best && best.valueAed / best.costAed > 1.3) {
-    recs.push({ type: "exit_window", title: `Exit window: ${best.property}`, message: `${best.property} is ${pct((best.valueAed / best.costAed - 1) * 100, 0)} above cost. Forward returns from today's value are lower than the hurdle; consider crystallising the gain.`, rationale: [`Value ${money(best.valueAed)} against cost ${money(best.costAed)}`, `Since-acquisition IRR ${pct(best.irr * 100)}`], propertyId: null, priority: 2 });
+    recs.push({ type: "exit_window", title: `Exit window: ${best.property}`, message: `${best.property} is ${pct((best.valueAed / best.costAed - 1) * 100, 0)} above cost. Forward returns from today's value are lower than the hurdle; consider crystallising the gain.`, rationale: [`Value ${money(best.valueAed)} against cost ${money(best.costAed)}`, `Since-acquisition IRR ${pct(best.irr)}`], propertyId: null, priority: 2 });
   }
   const top = [...input.holdings].sort((a, b) => b.valueAed - a.valueAed)[0];
   if (top && top.valueAed / total > 0.25) {
@@ -531,6 +534,6 @@ export function replayRecommender(input: z.infer<typeof recommenderInput>): Reco
     recs.push({ type: "new_opportunity", title: `Opportunity: ${o.name}`, message: o.summary, rationale: ["Matches the client's market and yield preferences"], propertyId: o.propertyId, priority: 3 });
   }
   const watch = input.holdings.find((h) => h.status === "watch");
-  if (watch) recs.push({ type: "risk", title: `Review ${watch.property}`, message: `${watch.property} is on the watch list; the advisory team recommends a hold-or-sell review.`, rationale: [`IRR ${pct(watch.irr * 100)}`], propertyId: null, priority: 1 });
+  if (watch) recs.push({ type: "risk", title: `Review ${watch.property}`, message: `${watch.property} is on the watch list; the advisory team recommends a hold-or-sell review.`, rationale: [`IRR ${pct(watch.irr)}`], propertyId: null, priority: 1 });
   return { recommendations: recs.slice(0, 6) };
 }

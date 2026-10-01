@@ -90,5 +90,6 @@ export function summariseMarket(rows: Awaited<ReturnType<typeof loadMarketSeries
   const first = rows[0]!;
   const last = rows.at(-1)!;
   const growth = ((last.medianPriceSqft - first.medianPriceSqft) / first.medianPriceSqft) * 100;
-  return `${last.region}, ${last.month}: ${last.transactions.toLocaleString("en-US")} transactions, median AED ${Math.round(last.medianPriceSqft).toLocaleString("en-US")} per sq ft (${growth >= 0 ? "+" : ""}${growth.toFixed(1)}% over ${rows.length} months), off-plan share ${last.offPlanShare.toFixed(1)}%, gross rental yield ${last.rentalYield.toFixed(1)}%, absorption ${last.absorptionRate.toFixed(0)}%.`;
+  const month = new Date(`${last.month}T00:00:00Z`).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  return `${last.region}, ${month}: ${last.transactions.toLocaleString("en-US")} transactions, median AED ${Math.round(last.medianPriceSqft).toLocaleString("en-US")} per sq ft (${growth >= 0 ? "+" : ""}${growth.toFixed(1)}% over ${rows.length} months), off-plan share ${last.offPlanShare.toFixed(1)}%, gross rental yield ${last.rentalYield.toFixed(1)}%, absorption ${last.absorptionRate.toFixed(0)}%.`;
 }
