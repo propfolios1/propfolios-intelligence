@@ -1,26 +1,24 @@
-import { z } from "zod";
-import { defineAgent } from "../define-agent";
-import { severitySchema } from "../legacy-schemas";
-import { FIRM_PREAMBLE } from "./_shared";
+import "server-only";
+import type { z } from "zod";
+import type { AgentContext } from "../client";
+import { MONITOR_PROMPT_VERSION, MONITOR_SYSTEM } from "../prompts/portfolio-monitor_v1";
+import { replayPortfolioMonitor } from "../replay";
+import { portfolioMonitorOutput, type portfolioMonitorInput } from "../schemas";
+import { payload, runAgent } from "./_run";
 
-export const portfolioMonitorAgent = defineAgent({
-  name: "portfolio-monitor",
-  description: "scanned portfolio for alerts",
-  inputSchema: z.object({
-    clientName: z.string(),
-    policy: z.string().describe("Client investment policy constraints."),
-    holdings: z.array(
-      z.object({ property: z.string(), developer: z.string(), status: z.string(), costUsd: z.number(), valueUsd: z.number(), irr: z.number(), cashYield: z.number() }),
-    ),
-    events: z.array(z.string()).describe("Market and developer events since the last scan."),
-  }),
-  outputSchema: z.object({
-    alerts: z.array(z.object({ severity: severitySchema, title: z.string(), detail: z.string(), holding: z.string().optional() })),
-  }),
-  effort: "medium",
-  system: `${FIRM_PREAMBLE}
-
-You are the Portfolio Monitor. Detect events and drifts that a client needs to know about: handover delays, escrow or litigation issues, valuation moves over 5%, yield compression, policy-limit breaches and concentration. Alert only on material, actionable items; one alert per issue.`,
-  prompt: (i) =>
-    `Client: ${i.clientName}\nPolicy: ${i.policy}\n\n<holdings>\n${JSON.stringify(i.holdings)}\n</holdings>\n\n<events>\n${i.events.map((e) => `- ${e}`).join("\n")}\n</events>\n\nProduce alerts.`,
-});
+/** Daily scan of a client's holdings; raises severity-rated alerts. */
+export function portfolioMonitor(input: z.input<typeof portfolioMonitorInput>, ctx: AgentContext) {
+  return runAgent({
+    agent: "portfolio-monitor",
+    action: `portfolio scan (${MONITOR_PROMPT_VERSION})`,
+    model: "fast",
+    system: MONITOR_SYSTEM,
+    user: payload("Scan this portfolio and raise alerts.", input),
+    schema: portfolioMonitorOutput,
+    toolName: "submit_alerts",
+    toolDescription: "Submit alerts for the portfolio, most severe first.",
+    ctx,
+    replay: () => replayPortfolioMonitor({ ...input, events: input.events ?? [] }),
+    replayMs: 1200,
+  });
+}

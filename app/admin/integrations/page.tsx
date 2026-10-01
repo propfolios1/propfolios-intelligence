@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/composites/page-header";
 import { StatusPill } from "@/components/ui/status-pill";
 import { PageContainer } from "@/components/shell/page-container";
-import { isAiConfigured, MODEL } from "@/lib/ai/client";
+import { isAiConfigured, MODELS } from "@/lib/ai/client";
 import { clerkEnabled } from "@/lib/auth";
 
 export const metadata = { title: "Integrations" };
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default function IntegrationsPage() {
   const rows = [
-    ["Anthropic", `Agents and assistant, ${MODEL}`, "ANTHROPIC_API_KEY", isAiConfigured()],
+    ["Anthropic", `Agents and assistant, ${MODELS.primary} and ${MODELS.fast}`, "ANTHROPIC_API_KEY", isAiConfigured()],
     ["Clerk", "Authentication and roles", "CLERK_SECRET_KEY", clerkEnabled],
     ["Mapbox", "Property map tiles", "NEXT_PUBLIC_MAPBOX_TOKEN", Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN)],
     ["Dubai Land Department", "Transaction feed", "DLD_API_KEY", false],

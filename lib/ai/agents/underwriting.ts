@@ -1,24 +1,30 @@
-import { z } from "zod";
-import { defineAgent } from "../define-agent";
-import { mandateContextSchema, researchDossierSchema, underwritingSchema } from "../legacy-schemas";
-import { FIRM_PREAMBLE, describeMandate } from "./_shared";
+import "server-only";
+import type { z } from "zod";
+import type { AgentContext } from "../client";
+import { UNDERWRITING_PROMPT_VERSION, UNDERWRITING_SYSTEM } from "../prompts/underwriting_v1";
+import { replayUnderwriting } from "../replay";
+import { underwritingOutput, type underwritingInput } from "../schemas";
+import { payload, runAgent } from "./_run";
 
-export const underwritingAgent = defineAgent({
-  name: "underwriting",
-  description: "underwrote P10/P50/P90 scenarios",
-  inputSchema: z.object({ context: mandateContextSchema, research: researchDossierSchema }),
-  outputSchema: underwritingSchema,
-  effort: "xhigh",
-  system: `${FIRM_PREAMBLE}
-
-You are the Underwriting agent. Build a probabilistic underwriting for the mandate:
-- Three scenarios labelled P10 (downside), P50 (base), P90 (upside), in that order.
-- Annual cash flows from Y0 (acquisition, negative) to the exit year, in USD. cumulative is the running sum of net.
-- For off-plan assets, no rental income before handover; model the payment plan as outflows.
-- A sensitivity table of 5–7 drivers ranked by IRR impact.
-- A risk radar with six axes: Developer, Market, Liquidity, Regulatory, Currency, Construction (0–10, higher is riskier).
-- State every material assumption.
-Keep arithmetic internally consistent: equity multiple, IRR and cash flows must reconcile.`,
-  prompt: ({ context, research }) =>
-    `${describeMandate(context)}\n\n<research_dossier>\n${JSON.stringify(research)}\n</research_dossier>\n\nProduce the underwriting.`,
-});
+/**
+ * Sets underwriting assumptions. The agent never computes returns: the
+ * financial engine (tools/financial.ts) derives every IRR, NPV and scenario.
+ */
+export async function underwriting(input: z.infer<typeof underwritingInput>, ctx: AgentContext) {
+  const run = await runAgent({
+    agent: "underwriting",
+    action: `underwriting assumptions (${UNDERWRITING_PROMPT_VERSION})`,
+    system: UNDERWRITING_SYSTEM,
+    user: payload("Set the underwriting assumptions for this mandate.", input),
+    schema: underwritingOutput,
+    toolName: "submit_assumptions",
+    toolDescription: "Submit the underwriting assumptions and their basis.",
+    ctx,
+    replay: () => replayUnderwriting(input.context),
+    replayMs: 3000,
+  });
+  // normalise the payment plan so it sums to exactly 1
+  const total = run.output.paymentPlan.reduce((a, s) => a + s.pct, 0) || 1;
+  run.output.paymentPlan = run.output.paymentPlan.map((s) => ({ ...s, pct: s.pct / total }));
+  return run;
+}

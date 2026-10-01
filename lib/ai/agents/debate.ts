@@ -1,64 +1,68 @@
-import { z } from "zod";
-import { defineAgent } from "../define-agent";
-import { ddFindingSchema, debateCaseSchema, judgeSchema, mandateContextSchema, researchDossierSchema, underwritingSchema } from "../legacy-schemas";
-import { FIRM_PREAMBLE, describeMandate } from "./_shared";
+import "server-only";
+import type { z } from "zod";
+import type { AgentContext, AgentRun } from "../client";
+import { addUsage } from "../cost";
+import { BEAR_SYSTEM, BULL_SYSTEM, DEBATE_PROMPT_VERSION, JUDGE_SYSTEM } from "../prompts/debate_v1";
+import { replayDebate } from "../replay";
+import { debateCase, judgeDecision, type DebateOutput, type debateEvidence } from "../schemas";
+import { payload, runAgent } from "./_run";
 
-const evidenceSchema = z.object({
-  context: mandateContextSchema,
-  research: researchDossierSchema,
-  underwriting: underwritingSchema,
-  findings: z.array(ddFindingSchema),
-});
+/**
+ * Adversarial review. Bull and bear argue in parallel from the same evidence;
+ * the judge reads both cases and decides. hurdlePct is the client hurdle in percent.
+ */
+export async function debate(input: z.infer<typeof debateEvidence> & { hurdlePct: number }, ctx: AgentContext): Promise<AgentRun<DebateOutput>> {
+  const fallback = () => replayDebate(input.context, input.scenarios, input.findings, input.hurdlePct);
+  let cached: DebateOutput | undefined;
+  const rp = () => (cached ??= fallback());
+  const evidence = { ...input, hurdle: `${input.hurdlePct.toFixed(1)}%` };
 
-function evidence(i: z.infer<typeof evidenceSchema>) {
-  return `${describeMandate(i.context)}
-
-<research_dossier>
-${JSON.stringify(i.research)}
-</research_dossier>
-
-<underwriting>
-${JSON.stringify(i.underwriting)}
-</underwriting>
-
-<due_diligence_findings>
-${JSON.stringify(i.findings)}
-</due_diligence_findings>`;
+  const [bull, bear] = await Promise.all([
+    runAgent({
+      agent: "debate",
+      action: `bull case (${DEBATE_PROMPT_VERSION})`,
+      system: BULL_SYSTEM,
+      user: payload("Argue the bull case.", evidence),
+      schema: debateCase,
+      toolName: "submit_case",
+      toolDescription: "Submit the argued case.",
+      ctx,
+      replay: () => rp().bull,
+      replayMs: 2600,
+    }),
+    runAgent({
+      agent: "debate",
+      action: `bear case (${DEBATE_PROMPT_VERSION})`,
+      system: BEAR_SYSTEM,
+      user: payload("Argue the bear case.", evidence),
+      schema: debateCase,
+      toolName: "submit_case",
+      toolDescription: "Submit the argued case.",
+      ctx,
+      replay: () => rp().bear,
+      replayMs: 2600,
+    }),
+  ]);
+  const judge = await runAgent({
+    agent: "debate",
+    action: `judge decision (${DEBATE_PROMPT_VERSION})`,
+    system: JUDGE_SYSTEM,
+    user: payload("Decide between the two cases.", { evidence, bull: bull.output, bear: bear.output }),
+    schema: judgeDecision,
+    toolName: "submit_decision",
+    toolDescription: "Submit the committee decision.",
+    ctx,
+    replay: () => rp().judge,
+    replayMs: 1800,
+  });
+  const runs = [bull, bear, judge];
+  return {
+    output: { bull: bull.output, bear: bear.output, judge: judge.output },
+    model: judge.model,
+    usage: runs.map((r) => r.usage).reduce(addUsage),
+    costUsd: runs.reduce((a, r) => a + r.costUsd, 0),
+    durationMs: Math.max(bull.durationMs, bear.durationMs) + judge.durationMs,
+    attempts: Math.max(...runs.map((r) => r.attempts)),
+    replay: judge.replay,
+  };
 }
-
-export const bullAgent = defineAgent({
-  name: "bull",
-  description: "argued bull case",
-  inputSchema: evidenceSchema,
-  outputSchema: debateCaseSchema,
-  effort: "high",
-  system: `${FIRM_PREAMBLE}
-
-You are the Bull advocate in a structured investment debate. Make the strongest honest case FOR the investment using only the evidence provided. Anticipate the bear's best objections and address them. Confidence reflects how strongly the evidence supports your case, not advocacy zeal.`,
-  prompt: (i) => `${evidence(i)}\n\nArgue the bull case.`,
-});
-
-export const bearAgent = defineAgent({
-  name: "bear",
-  description: "argued bear case",
-  inputSchema: evidenceSchema,
-  outputSchema: debateCaseSchema,
-  effort: "high",
-  system: `${FIRM_PREAMBLE}
-
-You are the Bear advocate in a structured investment debate. Make the strongest honest case AGAINST the investment using only the evidence provided: downside scenarios, supply, counterparty and liquidity risk, and anything the underwriting may be too optimistic about. Confidence reflects how strongly the evidence supports your case.`,
-  prompt: (i) => `${evidence(i)}\n\nArgue the bear case.`,
-});
-
-export const judgeAgent = defineAgent({
-  name: "judge",
-  description: "issued debate decision",
-  inputSchema: evidenceSchema.extend({ bull: debateCaseSchema, bear: debateCaseSchema }),
-  outputSchema: judgeSchema,
-  effort: "xhigh",
-  system: `${FIRM_PREAMBLE}
-
-You are the Investment Committee judge. Weigh the bull and bear cases against the evidence and the client's stated objective. Decide Proceed, Proceed with conditions, or Decline, and give an overall risk rating. Conditions must be specific and verifiable (e.g. "payments tied to certified construction milestones"). Explain which arguments were decisive and why.`,
-  prompt: (i) =>
-    `${evidence(i)}\n\n<bull_case>\n${JSON.stringify(i.bull)}\n</bull_case>\n\n<bear_case>\n${JSON.stringify(i.bear)}\n</bear_case>\n\nIssue the committee decision.`,
-});
