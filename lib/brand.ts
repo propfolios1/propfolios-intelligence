@@ -1,4 +1,5 @@
 import "server-only";
+import { headers } from "next/headers";
 import type { CSSProperties } from "react";
 import type { TenantBrand } from "@/components/tenant-provider";
 import { getCurrentUser } from "./auth";
@@ -7,9 +8,14 @@ import { getTenantById, platformBrand, tenantForHost } from "./tenant";
 const HEX = /^#[0-9a-f]{6}$/i;
 
 /** The brand for this request: the signed-in user's tenant, else the custom-domain tenant, else Nakhla. */
+const MARKETING = /^\/($|pricing|onboarding|sign-in|sign-up|suspended)/;
+
 export async function resolveBrand(): Promise<TenantBrand> {
+  const path = (await headers()).get("x-nakhla-path") ?? "";
+  const host = await tenantForHost();
+  if (MARKETING.test(path) && !host) return { tenantId: null, slug: null, name: "Nakhla", plan: null, config: platformBrand() };
   const user = await getCurrentUser().catch(() => null);
-  const tenant = user ? await getTenantById(user.tenantId) : await tenantForHost();
+  const tenant = user ? await getTenantById(user.tenantId) : host;
   if (tenant && !tenant.configJson.platform) {
     return { tenantId: tenant.id, slug: tenant.slug, name: tenant.name, plan: tenant.plan, config: tenant.configJson };
   }

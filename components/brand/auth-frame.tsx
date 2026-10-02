@@ -17,17 +17,17 @@ export function AuthFrame({ eyebrow, title, subtitle, children }: { eyebrow: str
             <div className="mt-10">{children}</div>
           </div>
         </div>
-        <p className="text-small text-ink-500">PropFolios is an advisory firm based in Dubai. Your data is held in the UAE and never used to train models.</p>
+        <p className="text-small text-ink-500">Each firm&apos;s workspace is isolated. Client data is never used to train models.</p>
       </section>
       <section className="relative hidden flex-col justify-between overflow-hidden bg-navy-900 px-16 py-8 lg:col-span-6 lg:flex xl:px-20">
         <div className="flex h-12 items-center justify-end">
           <span className="eyebrow text-surface/60">UAE · India</span>
         </div>
         <blockquote className="max-w-[560px]">
-          <p className="font-display text-[3rem] leading-[1.08] tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches you.</p>
+          <p className="font-display text-[3rem] leading-[1.08] tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches a client.</p>
           <footer className="mt-10 flex items-center gap-4 text-small text-surface/60">
             <span className="h-px w-8 bg-gold-500" />
-            The PropFolios investment committee
+            Research, underwriting and portfolios for advisory firms
           </footer>
         </blockquote>
         <BrandMark inverted size="sm" className="self-start" />
@@ -51,9 +51,10 @@ export const clerkAppearance = {
 
 export function DemoPersonas() {
   const personas = [
-    ["admin", "Amol Bandekar", "Founder and administrator"],
-    ["analyst", "Aisha Rahman", "Senior analyst, UAE"],
-    ["client", "Ahmed Al Mansoori", "Client, AED 25M under advice"],
+    ["admin", "Amol Bandekar", "PropFolios, tenant administrator"],
+    ["analyst", "Aisha Rahman", "PropFolios, senior analyst"],
+    ["client", "Ahmed Al Mansoori", "PropFolios client, AED 25M under advice"],
+    ["platform", "Nakhla Operations", "Platform administrator, all tenants"],
   ] as const;
   return (
     <div>
@@ -70,7 +71,13 @@ export function DemoPersonas() {
           </li>
         ))}
       </ul>
-      <p className="mt-6 text-small text-ink-500">Demonstration mode. Add Clerk keys in Vercel to require real accounts.</p>
+      <p className="mt-6 text-small text-ink-500">
+        Demonstration mode. Add Clerk keys in Vercel to require real accounts, or{" "}
+        <a href="/onboarding" className="text-navy-900 underline decoration-ink-200 underline-offset-4">
+          create a new workspace
+        </a>
+        .
+      </p>
     </div>
   );
 }

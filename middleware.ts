@@ -13,14 +13,26 @@ const isPublic = createRouteMatcher([
   "/icon(.*)",
 ]);
 
+/** Forwards the pathname so server components can choose platform or tenant branding. */
+function withPath(req: NextRequest) {
+  const headers = new Headers(req.headers);
+  headers.set("x-nakhla-path", req.nextUrl.pathname);
+  return NextResponse.next({ request: { headers } });
+}
+
 const withClerk = clerkMiddleware(async (auth, req) => {
   if (!isPublic(req)) await auth.protect();
+  return withPath(req);
 });
 
-/** Clerk protects every non-public route when configured; otherwise the app runs in open demo mode. */
+/**
+ * With Clerk configured, every non-public route requires a session; the
+ * tenant is then resolved from the Clerk organisation on each request
+ * (lib/auth.ts). Without Clerk the app runs in open demonstration mode.
+ */
 export default function middleware(req: NextRequest, ev: NextFetchEvent) {
   if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY) return withClerk(req, ev);
-  return NextResponse.next();
+  return withPath(req);
 }
 
 export const config = {
