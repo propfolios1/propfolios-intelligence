@@ -3,6 +3,8 @@ import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { notFound, redirect } from "next/navigation";
 import { requireRole, type CurrentUser, type Role } from "@/lib/auth";
+import { tenantFeatures } from "@/lib/features";
+import { EmptyState } from "@/components/composites/empty-state";
 import { STAGE_LABEL } from "@/lib/domain";
 import { listMandates } from "@/lib/queries";
 import { relativeTime } from "@/lib/utils";
@@ -59,6 +61,13 @@ export async function AppShell({ area, children }: { area: Area; children: React
   const user = await requireRole(AREA_ROLES[area]);
   if (area === "platform" && !user.platformAdmin) notFound();
   if (area !== "platform" && user.role === "platform_admin") redirect("/platform/dashboard");
+  if (area === "client" && user.role === "client" && !(await tenantFeatures(user.tenantId)).clientPortal) {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-[960px] items-center px-6">
+        <EmptyState glyph="documents" headline="Your advisory firm has not enabled the client portal." note="Statements and memos continue to reach you from your relationship manager. Contact them to request portal access." />
+      </div>
+    );
+  }
   const [items, alerts] = await Promise.all([searchIndex(user, area), notifications(user, area)]);
   let previewing: string | null = null;
   if (area === "client" && user.role !== "client" && user.clientId) {

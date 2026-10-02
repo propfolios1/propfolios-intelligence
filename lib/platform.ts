@@ -49,7 +49,8 @@ export type PlatformTenant = Awaited<ReturnType<typeof listTenants>>[number];
 
 /** MRR by month for the last twelve months, reconstructed from subscription start and cancellation dates. */
 export async function mrrHistory(db: DB) {
-  const subs = await db.select().from(s.subscriptions);
+  const platformIds = new Set((await db.select({ id: s.tenants.id, cfg: s.tenants.configJson }).from(s.tenants)).filter((x) => x.cfg.platform).map((x) => x.id));
+  const subs = (await db.select().from(s.subscriptions)).filter((x) => !platformIds.has(x.tenantId));
   const now = new Date();
   return Array.from({ length: 12 }, (_, i) => {
     const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (11 - i) + 1, 0));

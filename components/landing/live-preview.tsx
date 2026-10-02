@@ -21,7 +21,7 @@ export function LivePreview() {
   return (
     <div className="border border-ink-200 bg-canvas p-8">
       <div className="flex items-center justify-between">
-        <span className="eyebrow">Al Noor Family Office</span>
+        <span className="eyebrow">Private client portfolio</span>
         <span className="flex items-center gap-2 text-small text-ink-700">
           <LiveDot /> Live
         </span>

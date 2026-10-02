@@ -28,7 +28,7 @@ interface Invite {
  * team invitations (checked against the plan's seats) and review. Submitting
  * creates the workspace and signs the administrator in.
  */
-export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultPlan }: { askAdmin: boolean; defaultName: string; defaultEmail: string; defaultPlan: PlanId }) {
+export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultPlan, endpoint = "/api/onboarding", submitLabel = "Create workspace" }: { askAdmin: boolean; defaultName: string; defaultEmail: string; defaultPlan: PlanId; endpoint?: string; submitLabel?: string }) {
   const [step, setStep] = React.useState(0);
   const [firm, setFirm] = React.useState("");
   const [adminName, setAdminName] = React.useState(defaultName);
@@ -88,7 +88,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
       }
     }
     setBusy(true);
-    const res = await fetch("/api/onboarding", {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -107,7 +107,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
       return void toast.error("Workspace not created", { description: json.error });
     }
     toast.success(`${firm.trim()} is ready`, { description: seed ? "Demonstration data has been loaded." : undefined });
-    window.location.href = json.redirect;
+    window.location.href = json.redirect ?? `/platform/tenants/${json.tenant.id}`;
   }
 
   return (
@@ -314,7 +314,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
               </Button>
             ) : (
               <Button type="button" onClick={submit} disabled={busy}>
-                {busy ? "Creating workspace" : "Create workspace"}
+                {busy ? "Creating workspace" : submitLabel}
               </Button>
             )}
           </div>

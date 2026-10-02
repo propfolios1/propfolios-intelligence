@@ -5,7 +5,8 @@ import * as s from "@/db/schema";
 import { nlQuery } from "@/lib/ai/agents";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { handle, parseBody } from "@/lib/api";
-import { requireApiUser } from "@/lib/auth";
+import { HttpError, requireApiUser } from "@/lib/auth";
+import { tenantFeatures } from "@/lib/features";
 
 export const maxDuration = 120;
 
@@ -18,6 +19,7 @@ const body = z.object({
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser();
   await enforceRateLimit(user, "assistant");
+  if (!(await tenantFeatures(user.tenantId)).assistant) throw new HttpError(403, "The assistant is not enabled for this workspace.");
   const { question, history } = await parseBody(req, body);
   const db = await getDb();
   const staff = user.role !== "client";

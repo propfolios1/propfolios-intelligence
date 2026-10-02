@@ -26,6 +26,7 @@ export interface UserRow {
   clientName: string | null;
   lastActiveAt: string | null;
   linked: boolean;
+  invited: boolean;
 }
 
 export function UsersTable({
@@ -92,10 +93,10 @@ export function UsersTable({
     {
       accessorKey: "linked",
       header: "Sign-in",
-      size: 110,
-      cell: ({ getValue }) => (
+      size: 140,
+      cell: ({ row }) => (
         <span className="text-small text-ink-500">
-          {getValue<boolean>() ? "Clerk linked" : "Invited"}
+          {row.original.invited ? "Invitation sent" : row.original.linked ? "Active" : "Demonstration"}
         </span>
       ),
     },
@@ -173,6 +174,17 @@ export function UsersTable({
               u.id === selfId
                 ? toast.error("You cannot remove your own administrator role.")
                 : setLinking(u),
+          },
+          {
+            label: "Remove from workspace",
+            destructive: true,
+            onSelect: async (u) => {
+              if (u.id === selfId) return void toast.error("You cannot remove your own account.");
+              const res = await fetch(`/api/admin/users?id=${u.id}`, { method: "DELETE" });
+              if (!res.ok) return void toast.error("Not removed", { description: (await res.json().catch(() => ({}))).error });
+              toast.success(`${u.name} removed`);
+              router.refresh();
+            },
           },
         ]}
         mobileCard={(u) => (
