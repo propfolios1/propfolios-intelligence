@@ -1,23 +1,27 @@
-# PropFolios Intelligence: build report
+# Nakhla: build report
 
-Release v1.0 · branch `claude/adoring-brown-6qrqag` · 1 October 2026
+Release v1.0 · branch `claude/adoring-brown-6qrqag` · 2 October 2026
+
+Nakhla is a multi-tenant AI operating system for real estate advisory firms. Tenant number one is PropFolios.ae. It builds on the PropFolios Intelligence v1.0 codebase in the same repository.
 
 ## 1. Size
 
 | Measure | Count |
 | --- | --- |
-| Files in the repository | 286 |
-| Source files (TypeScript, TSX, CSS, SQL) | 246 |
-| Lines of source | 16,390 |
-| of which `app/` (pages and API routes) | 3,322 |
-| of which `components/` | 6,505 |
-| of which `lib/` (AI agents, prompts, orchestrator, queries, auth) | 4,312 |
-| of which `db/` (schema, seed, seed data) | 1,818 |
-| Pages | 32 |
-| API route handlers | 28 |
-| Database tables | 16 (pgvector HNSW index on documents) |
-| AI agents | 12 (11 structured + streaming NL query) |
-| Versioned prompts | 13 files, all `_v1` |
+| Files in the repository | 352 |
+| Source files (TypeScript, TSX, CSS, SQL) | 295 |
+| Lines of source | 20,338 |
+| of which `app/` (pages and API routes) | 4,708 |
+| of which `components/` | 7,590 |
+| of which `lib/` (agents, prompts, orchestrator, auth, tenancy, plans, queries) | 5,381 |
+| of which `db/` (schema, seed, seed data) | 2,046 |
+| of which `drizzle/` (SQL migrations, including row-level security) | 550 |
+| Pages | 44 |
+| API route handlers | 36 |
+| Database tables | 19, every tenant-owned table carrying `tenant_id` |
+| Row-level security policies | 19 |
+| AI agents | 12 |
+| Versioned prompts | 15 files: thirteen `_v1`, plus `market-timing_v2` and `cross-border_v2` (v1 kept) |
 
 ## 2. Build status
 
@@ -27,89 +31,83 @@ Release v1.0 · branch `claude/adoring-brown-6qrqag` · 1 October 2026
 | `npm run lint` | Pass, 0 errors, 0 warnings |
 | `npm run build` (Next.js production) | Pass |
 | `npm test` (financial engine: IRR, XIRR against Excel, NPV, Monte Carlo, sensitivity) | 10 of 10 pass |
-| Page sweep on the production server, admin and client personas | 30 pages, 0 browser errors |
-| Mandate flow in the browser: Create Mandate, live SSE timeline, review, approve and deliver | Pass, about 20 seconds in replay mode |
-| Memo PDF export | Pass, A4, two pages, HTTP 200 `application/pdf` |
-| Assistant, five questions (portfolio, attention items, recommendations, Abu Dhabi market, mandates in review) | Pass, each answer cites its sources |
-| Role isolation (client cannot reach analyst or admin areas; analyst cannot reach admin) | Pass, 404 |
-| Seed idempotency (second run makes no changes) | Pass |
+| Page sweep on the production server, four personas (platform, firm administrator, analyst, client) | 43 pages, all HTTP 200, 0 browser errors |
+| Three-tenant isolation (PropFolios, Gulf Crest Capital, Meridian Family Office): mandates, properties and clients disjoint; each tenant's mandates return 404 to the other two; a cross-tenant upload against another firm's mandate returns 404 | Pass |
+| Plan enforcement: sixth seat on Starter returns 402; Starter branding returns 402; custom domain without White-label returns 402 | Pass |
+| Self-serve onboarding: new firm created with trial subscription, administrator and demonstration data | Pass |
+| Mandate flow over server-sent events: Intake, Research, Underwriting, Due Diligence, Debate, Memo, Review | Pass in replay mode |
+| Memo PDF export in the tenant's house style (brand name, colours, sign-off, disclaimer) | Pass, HTTP 200 `application/pdf` |
+| Seed idempotency: `/api/setup` run twice; second run reports no changes; wrong secret returns 401 | Pass |
+| Migration on a database holding pre-Nakhla data: columns backfilled, `admin` role converted to `tenant_admin`, 19 policies created | Pass |
 
-## 3. Known limitations
+## 3. Known limitations and deviations
 
-1. **Next.js 15, not 14.** The project uses Next.js 15.5 (App Router, React 19), the current supported line. Everything specified for 14 applies; route params are asynchronous.
-2. **Model names.** `claude-sonnet-4-20250514` is deprecated by Anthropic. It remains the default to match the specification; set `ANTHROPIC_MODEL_PRIMARY=claude-sonnet-5-5` in Vercel to use the current model. "claude-haiku-4" maps to `claude-haiku-4-5`.
-3. **Replay mode.** Without `ANTHROPIC_API_KEY`, agents return deterministic rule-based output from the same inputs and schemas. It demonstrates every flow, but the prose is templated rather than written by a model.
-4. **Seed data is illustrative.** The thirty projects, developers and price ranges are real names with representative figures; RERA numbers, transactions, market series and client portfolios are synthetic.
-5. **Developer catalogue.** Eighteen developers are seeded (the eight named UAE developers plus ten Indian developers needed for the ten India projects).
-6. **Embeddings.** Document search uses a local 1,536-dimension hashing embedding stored in pgvector, so it needs no extra API key. It matches on vocabulary rather than meaning; swap in a hosted embedding model for semantic recall.
-7. **Embedded database.** Without `DATABASE_URL` the app runs on in-memory PGlite, which resets when the server instance restarts. Neon is required for persistence.
-8. **Long agent runs.** Each pipeline invocation works within a 300-second budget and persists after every stage; if a run would exceed it, the stream reports a pause and the browser resumes automatically. On the Vercel Hobby plan (60-second functions without Fluid Compute) live runs resume more often.
-9. **Live streaming granularity.** The timeline is driven by the database (polled each second) so it works across serverless instances; character-level progress appears only when the stream and the run share an instance.
-10. **PDF page numbers.** The PDF footer shows the mandate reference and version rather than "page x of y"; the react-pdf render callback does not run inside the Next.js server bundle.
-11. **Not built, by instruction:** Python services, Docker, Redis, WhatsApp, payments, DocuSign and CRM integrations. Email digests are stored as preferences but not sent.
+1. **Repository and branch.** The specification asks for a fresh repository named `nakhla-intel` pushed to `main`. This session can write only to `propfolios-intelligence` on branch `claude/adoring-brown-6qrqag`, so Nakhla is built there. Merge the branch to `main` (or import the branch in Vercel) to deploy.
+2. **Next.js 15, not 14.** The project uses Next.js 15.5 (React 19), the current supported line. Route params are asynchronous; everything else specified for 14 applies.
+3. **Model names.** `claude-sonnet-4-20250514` is deprecated by Anthropic. It remains the default to match the specification; set `ANTHROPIC_MODEL_PRIMARY=claude-sonnet-5-5` to use the current model. "claude-haiku-4" maps to `claude-haiku-4-5`.
+4. **Row-level security is defence in depth.** Policies are enabled, not forced, so the table owner (the role the app connects as) bypasses them. Isolation is enforced in code: every query passes through `scope()` or `tenantDb()`, which throw when the tenant is missing. The policies protect any other database role, such as a reporting user.
+5. **One firm per user.** A person belongs to one tenant. A platform administrator reaches other firms through **Open as administrator**; each visit is audited in that firm's log.
+6. **Billing.** Plans, seats and custom-domain rights are enforced, and invoices with 5% VAT are computed and displayed, but no payment processor is connected.
+7. **Brand fonts.** Firms choose Playfair Display or Inter for headings; other typefaces are not loaded.
+8. **Replay mode.** Without `ANTHROPIC_API_KEY`, agents return deterministic, rule-based output from the same inputs and schemas. Every flow works, but the prose is templated. The market table's BUY, HOLD and SELL column uses this deterministic signal; the timing agent card runs the live agent.
+9. **Embeddings.** pgvector comparables and document search use a local 1,536-dimension hashing embedding, so no extra key is needed. It matches on vocabulary rather than meaning.
+10. **Rate limiting** is shared across servers only when Upstash or Vercel KV is connected; otherwise each instance limits in memory.
+11. **Embedded database.** Without `DATABASE_URL` the app runs on in-memory PGlite, which resets on restart. Neon is required for persistence.
+12. **Long agent runs** work within a 300-second budget and resume automatically; on Vercel Hobby (60-second functions) they resume more often.
+13. **Not found pages under loading states** are served with status 200 and the not-found content, a Next.js streaming behaviour. No data is rendered.
+14. **Seed data is illustrative.** Project and developer names are real; figures, transactions, clients and the three sample firms are synthetic.
+15. **Not built, by instruction:** Python services, Docker, Redis beyond Upstash/KV, WhatsApp, DocuSign, CRM, mobile apps, a public API, fine-tuning, SOC 2 and multi-region hosting. Weekly digests are stored as messages, not emailed.
 
-## 4. Deployment in ten steps
+## 4. Deployment
 
 Full click-by-click instructions are in `README.md`.
 
-1. Vercel → Add New → Project → import `propfolios-intelligence`; add `SETUP_SECRET`; Deploy.
-2. Vercel → Storage → Create Database → Neon → Connect (sets `DATABASE_URL`).
-3. Redeploy.
-4. Visit `/api/setup?secret=YOUR_SETUP_SECRET` to create tables and load the demonstration data.
-5. Clerk → create application, enable Organizations, copy keys into `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`; add webhook `/api/webhooks/clerk` for `user.created` and set `CLERK_WEBHOOK_SECRET`.
-6. Anthropic console → create API key → `ANTHROPIC_API_KEY` (and optionally `ANTHROPIC_MODEL_PRIMARY=claude-sonnet-5-5`).
-7. Add `CRON_SECRET`; optionally connect Vercel Blob and add `NEXT_PUBLIC_MAPBOX_TOKEN`.
-8. Redeploy.
-9. Sign up as amol@propfolios.ae; the account links to the seeded administrator.
-10. Create Mandate, watch the timeline, approve and deliver, download the PDF.
+1. GitHub: confirm the repository is in your account.
+2. Vercel: Add New → Project → import; add `SETUP_SECRET`; Deploy.
+3. Neon: Vercel → Storage → Create Database → Neon → Connect.
+4. Clerk: create the application, enable Organizations, customise the session token with `{"metadata": "{{user.public_metadata}}"}`, add the webhook for `user.created` and `user.updated`.
+5. Anthropic: create an API key.
+6. Environment variables: Clerk keys, webhook secret, Anthropic key, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`; optionally Blob, Upstash/KV, model override, Mapbox.
+7. Redeploy.
+8. Visit `/api/setup?secret=YOUR_SETUP_SECRET`.
+9. Sign up, then in Clerk set your public metadata to `{"role":"platform_admin"}`; sign in again.
+10. In `/platform`, review the PropFolios tenant (or create a firm with Tenants → Create tenant).
+11. Send Amol the sign-up link for `amol@propfolios.ae`.
 
-## 5. Monthly cost estimate
+## 5. Monthly running cost
 
-Assumes a boutique advisory: 40 mandates a month, 1,000 assistant questions, five to fifty clients.
-
-| Item | Basis | Monthly (USD) |
-| --- | --- | --- |
-| Vercel Pro | One seat; needed for 300-second functions and team use | 20 |
-| Neon Launch | 10 GB storage, autoscaling compute (Free tier works for the demonstration) | 19 |
-| Clerk | Free up to 10,000 monthly active users | 0 |
-| Vercel Blob | Under 5 GB of documents | 0 to 2 |
-| Mapbox | Under 50,000 map loads | 0 |
-| Anthropic, mandate pipeline | About USD 1.40 per mandate on Sonnet 4 pricing (six agent calls including bull, bear and judge) × 40 | 56 |
-| Anthropic, assistant | About USD 0.01 per question on Haiku 4.5 × 1,000 | 10 |
-| Anthropic, scheduled jobs | Daily portfolio scan and weekly developer scoring | 2 |
-| **Total** | | **about 107 to 109** |
-
-A demonstration deployment on the free tiers (Vercel Hobby, Neon Free, Clerk Free) with light AI use costs under USD 10 a month. Agent spend is visible per run in the audit log and in the 30-day figure on the dashboard.
+Per firm of about 40 mandates and 1,000 assistant questions a month: Anthropic about USD 68 (mandate pipeline USD 56, assistant USD 10, scheduled jobs USD 2). Shared platform cost: Vercel Pro USD 20, Neon Launch USD 19, Clerk free to 10,000 monthly users, Blob and Upstash within free tiers at low volume. Agent spend per firm appears in `/platform/metrics` and each firm's audit log.
 
 ## 6. Screenshots
 
-All in `docs/screenshots`, captured at 1440 × 900 unless noted (some on the development server, which shows the small Next.js indicator at bottom left).
+In `docs/screenshots`, captured on the production build at 1440 × 900 (full page) unless noted, demonstration mode, replay agents.
 
 | File | Screen |
 | --- | --- |
-| 01-landing.jpg | Public landing page |
-| 02-sign-in.jpg | Sign-in (demonstration personas) |
-| 03-analyst-dashboard.jpg | Analyst dashboard: stat cards, pipeline, activity, alerts, market pulse |
-| 04-mandates-board.jpg | Mandates kanban board |
-| 05-create-mandate.jpg | Create Mandate |
-| 06-mandate-overview.jpg | Mandate overview: recommendation, scenarios, live pipeline, risk radar |
-| 07-mandate-research.jpg | Research dossier with citations and risks |
-| 08-mandate-underwriting.jpg | Scenarios, cash flows, IRR distribution, sensitivity, assumptions |
-| 09-mandate-due-diligence.jpg | Due Diligence Findings by severity |
-| 10-mandate-debate.jpg | Bull, bear and judge |
-| 11-mandate-memo.jpg | Allocation Memo editor with fact check and citations |
-| 12-properties.jpg | Property catalogue |
-| 13-property-detail.jpg | Property detail: comparables, market, developer risk |
-| 14-developers.jpg | Developer risk scores |
-| 15-market.jpg | Market intelligence and timing agent |
-| 16-clients.jpg | Client list |
-| 17-audit-log.jpg | Audit log with agent cost and tokens |
-| 18-seed-data.jpg | Seed data administration |
-| 19-client-portfolio.jpg | Client portfolio |
-| 20-client-opportunities.jpg | Client opportunities |
-| 21-client-recommendations.jpg | Client recommendations |
-| 22-client-documents.jpg | Client documents with upload |
-| 23-client-messages.jpg | Client and advisory team messages |
-| 24-client-assistant.jpg | Assistant answering with citations |
-| 25-mobile-mandates.jpg | Mandates on a 390px phone (vertical board) |
-| 26-mobile-portfolio.jpg | Client portfolio on a 390px phone |
+| 01-landing.jpg | Nakhla landing page |
+| 02-pricing.jpg | Pricing: four plans |
+| 03-onboarding.jpg | Self-serve onboarding with live brand preview |
+| 04-sign-in.jpg | Sign-in with demonstration personas |
+| 05-platform-dashboard.jpg | Platform dashboard: MRR, ARR, firms, churn, AI cost |
+| 06-platform-tenants.jpg | Tenant list |
+| 07-platform-tenant-detail.jpg | Tenant detail: plan, status, feature switches, billing, open as administrator |
+| 08-platform-new-tenant.jpg | Create tenant |
+| 09-platform-metrics.jpg | Agent quality and cost by agent, tenant and model |
+| 10-admin-dashboard.jpg | Firm administration overview |
+| 11-admin-users.jpg | Users, seats and invitations |
+| 12-admin-branding.jpg | Branding: logo, colours, fonts, memo house style, domain |
+| 13-admin-billing.jpg | Plan, seats and invoices |
+| 14-admin-audit.jpg | Audit log |
+| 15-admin-seed.jpg | Demonstration data |
+| 16-analyst-dashboard.jpg | Analyst dashboard |
+| 17-mandates.jpg | Mandates board |
+| 18-mandate-overview.jpg to 25-mandate-audit.jpg | Mandate tabs: Overview (with timeline), Research, Underwriting (scenarios, cash flow, risk radar, tornado), Due Diligence, Debate, Memo, Documents, Audit |
+| 26-create-mandate.jpg | Create Mandate |
+| 27-properties.jpg | Property catalogue |
+| 28-property-detail.jpg | Property detail with ten pgvector comparables |
+| 29-developers.jpg | Developer risk |
+| 30-market.jpg | Market: heatmap, BUY/HOLD/SELL table, timing agent, UAE versus India |
+| 31-clients.jpg | Clients |
+| 32-memos.jpg | Memos |
+| 33-client-portfolio.jpg to 38-client-assistant.jpg | Client portal: portfolio, opportunities, recommendations, documents, messages, assistant |
+| 39-mobile-landing.jpg, 40-mobile-portfolio.jpg | 390 px phone (viewport only) |

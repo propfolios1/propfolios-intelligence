@@ -1,158 +1,223 @@
-# PropFolios Intelligence
+# Nakhla
 
-Institutional real estate advisory platform for PropFolios.ae. Analysts open mandates; twelve AI agents research, underwrite, diligence, debate and draft an Allocation Memo; the investment committee approves; the client receives the memo in a private portal with their portfolio, alerts, recommendations, documents, messages and a cited assistant.
+Nakhla is an AI operating system for real estate advisory firms. Each firm (a tenant) gets its own branded workspace: mandates run through twelve AI agents (research, underwriting with a 10,000-path Monte Carlo, due diligence, a bull and bear debate, and a committee memo in the firm's house style), a market desk with BUY, HOLD and SELL signals per emirate, a UAE and India comparison, and a private portal for the firm's clients.
 
-This guide deploys it using only web dashboards. No terminal is needed.
+Tenant number one is PropFolios.ae. Further firms sign up themselves at `/onboarding` or are created by you in the platform console at `/platform`.
 
----
+The instructions below assume no technical background. Each step happens in a web browser. Allow about 45 minutes.
 
 ## What you need
 
-| Service | Why | Cost to start |
+| Account | Cost | Used for |
 | --- | --- | --- |
-| GitHub account | Holds the code (`propfolios1/propfolios-intelligence`) | Free |
-| Vercel account | Hosts the app, runs scheduled jobs | Free (Hobby) or Pro |
-| Neon (via Vercel) | Postgres database with pgvector | Free tier |
-| Clerk | Sign-in, organisations, roles | Free up to 10,000 users |
-| Anthropic | Runs the AI agents | Pay per use |
-| Vercel Blob (optional) | Stores uploaded KYC and documents | Free tier |
-| Mapbox (optional) | Street-level property map | Free tier |
+| GitHub | Free | Holds the code |
+| Vercel | Free to start, Pro (USD 20 a month) recommended | Runs the website |
+| Neon | Free to start | The database |
+| Clerk | Free up to 10,000 monthly users | Sign-in and firm workspaces |
+| Anthropic | Pay as you use, about USD 1.40 per mandate | The AI agents |
 
-The app works before Clerk and Anthropic are added: it runs in **demonstration mode** (persona switching, no sign-in) and the agents run in **replay mode** (deterministic output built from the same data, so every screen and flow works). Add the keys when you are ready to go live.
+Keep a notes file open. You will copy several keys into it.
 
----
+## Deploy in eleven steps
 
-## Deploy in ten steps
+### 1. GitHub
 
-### 1. Import the project into Vercel
+1. Sign in at github.com.
+2. Confirm the repository `propfolios-intelligence` is in your account (or your organisation's). If someone shared it with you, click **Fork** at the top right to copy it into your own account.
 
-1. Go to **vercel.com** and sign in with GitHub.
-2. Click **Add New…** then **Project**.
-3. Find **propfolios-intelligence** and click **Import**. If it is not listed, click **Adjust GitHub App Permissions** and grant access to the repository.
-4. Leave Framework Preset as **Next.js** and every build setting at its default.
-5. Open **Environment Variables** and add one variable now:
-   - `SETUP_SECRET`: any long random phrase, for example `pf-setup-7f3k9q2m`. Keep it; you need it in step 4.
-6. Click **Deploy**. Wait for the confetti (about two minutes).
+### 2. Import into Vercel
 
-At this point the site is live in demonstration mode on an embedded database that resets when Vercel restarts the server. Open the URL Vercel shows you and click **Analyst desk** to look around.
+1. Sign in at vercel.com with your GitHub account.
+2. Click **Add New → Project**.
+3. Find `propfolios-intelligence` and click **Import**.
+4. Leave every build setting as it is. Open **Environment Variables** and add one now:
+   - Name `SETUP_SECRET`, value: any long random phrase, for example `river-cedar-falcon-7193-harbour`. Write it in your notes file.
+5. Click **Deploy** and wait about three minutes. The site works at this point on a temporary built-in database, in demonstration mode.
 
-### 2. Add the database (Neon)
+### 3. Neon (the database)
 
-1. In your Vercel project, open the **Storage** tab.
-2. Click **Create Database**, choose **Neon (Serverless Postgres)**, then **Continue**.
-3. Accept the defaults (choose the region closest to your users, for example Frankfurt or Mumbai), click **Create**, then **Connect** to this project for all environments.
-4. Vercel adds `DATABASE_URL` automatically. Confirm under **Settings → Environment Variables**.
+1. In your Vercel project open **Storage → Create Database**.
+2. Choose **Neon** (Serverless Postgres), accept the terms, choose the region closest to the Gulf (Frankfurt or Mumbai), and click **Create**.
+3. Click **Connect Project**, choose all environments, and confirm. Vercel adds `DATABASE_URL` automatically.
 
-### 3. Redeploy
+### 4. Clerk (sign-in and firm workspaces)
 
-1. Open the **Deployments** tab.
-2. On the latest deployment, click the three dots, then **Redeploy**, then **Redeploy** again.
+1. Sign up at clerk.com and click **Create application**. Name it `Nakhla`. Leave **Email** ticked as the sign-in method. Click **Create**.
+2. Copy the two keys shown, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`, into your notes file.
+3. Turn on Organizations: left menu **Configure → Organizations → Enable organizations**. Each firm on Nakhla is one Clerk organisation.
+4. Put the role into the sign-in token: **Configure → Sessions → Customize session token → Edit**, paste the line below, and click **Save**.
 
-### 4. Create tables and load the demonstration data
+   ```json
+   { "metadata": "{{user.public_metadata}}" }
+   ```
 
-In your browser, visit:
+5. Add the webhook so new sign-ups are linked to their firm: **Configure → Webhooks → Add Endpoint**.
+   - Endpoint URL: `https://YOUR-SITE.vercel.app/api/webhooks/clerk` (your Vercel address, shown on the project page).
+   - Events: tick `user.created` and `user.updated`.
+   - Click **Create**, then copy the **Signing Secret** (starts `whsec_`) into your notes file.
+
+### 5. Anthropic (the AI agents)
+
+1. Sign in at console.anthropic.com.
+2. Open **Billing** and add a payment method with at least USD 20 of credit.
+3. Open **API Keys → Create Key**, name it `Nakhla`, and copy the key (starts `sk-ant-`) into your notes file. It is shown once.
+
+### 6. Environment variables
+
+In Vercel open your project → **Settings → Environment Variables** and add each of these for all environments:
+
+| Name | Value |
+| --- | --- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | from step 4 |
+| `CLERK_SECRET_KEY` | from step 4 |
+| `CLERK_WEBHOOK_SECRET` | from step 4 |
+| `ANTHROPIC_API_KEY` | from step 5 |
+| `CRON_SECRET` | any long random phrase |
+| `NEXT_PUBLIC_APP_URL` | your site address, for example `https://nakhla.vercel.app` |
+
+Optional, recommended:
+
+- **File storage:** **Storage → Create → Blob → Connect**. Vercel adds `BLOB_READ_WRITE_TOKEN`; uploaded documents and delivered memo PDFs are then stored.
+- **Rate limiting across servers:** **Storage → Marketplace → Upstash Redis → Connect**. Vercel adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`. Without it each server limits requests on its own, which is adequate for a small number of firms.
+- **Current model:** `ANTHROPIC_MODEL_PRIMARY` = `claude-sonnet-5-5`. The default, `claude-sonnet-4-20250514`, is deprecated by Anthropic.
+- **Street map:** `NEXT_PUBLIC_MAPBOX_TOKEN` from mapbox.com.
+
+### 7. Deploy
+
+Open **Deployments**, click the three dots on the latest one, and choose **Redeploy**. Wait until it shows **Ready**.
+
+### 8. Create the tables
+
+Visit this address in your browser, replacing the two parts in capitals:
 
 ```
-https://YOUR-PROJECT.vercel.app/api/setup?secret=YOUR_SETUP_SECRET
+https://YOUR-SITE.vercel.app/api/setup?secret=YOUR_SETUP_SECRET
 ```
 
-You should see `"ok": true` and `"seeded": true`. The setup enables pgvector, creates all sixteen tables and loads five clients, thirty UAE and India projects, eighteen developers, twelve months of market data per emirate and three mandates (one delivered, one in research, one at memo stage). It is safe to run again: it never duplicates data. To wipe and start over, add `&reset=1`.
+You should see `"ok": true` and `"seeded": true`. This creates the tables and the starting data: the PropFolios workspace with its demonstration mandates and clients, and three sample firms (Gulf Crest Capital, Meridian Family Office and Al Noor Realty Advisors) so the platform console has something to show. Visiting the address again changes nothing. To wipe and reload everything add `&reset=1`.
 
-### 5. Turn on sign-in (Clerk)
+### 9. Make yourself the platform administrator
 
-1. Go to **clerk.com**, sign up, and click **Create application**. Name it *PropFolios Intelligence*; enable **Email** (and Google if wanted). Click **Create application**.
-2. In the Clerk dashboard, open **Configure → Organizations** and switch **Enable organizations** on.
-3. Open **API Keys**. Copy the **Publishable key** and the **Secret key**.
-4. In Vercel, **Settings → Environment Variables**, add:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: the publishable key
-   - `CLERK_SECRET_KEY`: the secret key
-5. Back in Clerk, open **Configure → Webhooks**, click **Add Endpoint**:
-   - Endpoint URL: `https://YOUR-PROJECT.vercel.app/api/webhooks/clerk`
-   - Subscribe to `user.created`
-   - Click **Create**, then copy the **Signing Secret**.
-6. In Vercel add `CLERK_WEBHOOK_SECRET` with that signing secret.
+1. Open your site and click **Sign in → Sign up**. Register with your own email address.
+2. In Clerk open **Users**, click your name, scroll to **Public metadata**, click **Edit**, paste the line below and click **Save**.
 
-### 6. Turn on the AI agents (Anthropic)
+   ```json
+   { "role": "platform_admin" }
+   ```
 
-1. Go to **console.anthropic.com**, sign in, open **Settings → Billing** and add credit (USD 20 is plenty for a demonstration).
-2. Open **API Keys**, click **Create Key**, name it *propfolios-vercel*, copy it.
-3. In Vercel add `ANTHROPIC_API_KEY` with the key.
-4. Recommended: add `ANTHROPIC_MODEL_PRIMARY` = `claude-sonnet-5-5` and `ANTHROPIC_MODEL_FAST` = `claude-haiku-4-5`. Without these the app uses `claude-sonnet-4-20250514` and `claude-haiku-4-5`.
+3. Sign out of your site and sign in again. You arrive at **/platform/dashboard**, the Nakhla console: monthly revenue, firms, seats, AI cost and agent quality.
 
-### 7. Scheduled jobs and file storage
+### 10. Create the PropFolios workspace
 
-1. In Vercel add `CRON_SECRET`: any random string. Vercel uses it to authorise the two scheduled jobs defined in `vercel.json` (daily portfolio monitor at 04:00 UTC, weekly developer re-scoring on Mondays at 05:00 UTC). See them under **Settings → Cron Jobs**.
-2. Optional, for real document storage: **Storage → Create Database → Blob → Create**, then **Connect** to the project. Vercel adds `BLOB_READ_WRITE_TOKEN`. Without it, uploads are recorded but files are not stored.
-3. Optional, for a street-level map: create a free token at **account.mapbox.com** and add `NEXT_PUBLIC_MAPBOX_TOKEN`.
+The seeded PropFolios workspace already exists and holds the demonstration data. To give Amol his own login:
 
-### 8. Redeploy
+1. In the console open **Tenants → PropFolios.ae**.
+2. Check the plan (Professional, 20 seats) and the feature switches.
+3. Amol's administrator record (`amol@propfolios.ae`) is already in the workspace and waiting for him. Nothing more to create. To add colleagues later, click **Open as administrator**, then **Administration → Users → Invite people**.
 
-**Deployments → three dots → Redeploy.** Environment variables take effect only after a redeploy.
+To create a brand-new firm instead, open **Tenants → Create tenant**, fill in the five steps (firm, brand, plan, administrator, team) and click **Create tenant**. The administrator receives an invitation by email.
 
-### 9. Create the administrator account
+### 11. Send Amol his login
 
-1. Open `https://YOUR-PROJECT.vercel.app/sign-up`.
-2. Sign up as Amol with **amol@propfolios.ae**. The seeded administrator record has this email, so the account links to it and lands on the analyst dashboard as administrator. (The first account to sign up in a new workspace always becomes administrator.)
-3. Colleagues who sign up with an `@propfolios.ae` address become analysts. Everyone else becomes a client. Seeded clients (for example ahmed@almansoori.ae) are linked to their portfolio automatically; link any new client account in **Administration → Users → row menu → Link to client record**.
-4. Roles can be changed at any time in **Administration → Users** (account menu, bottom left).
+Send Amol a short note:
 
-### 10. Run a mandate end to end
+> Your PropFolios workspace on Nakhla is ready. Open https://YOUR-SITE.vercel.app/sign-up, register with amol@propfolios.ae and choose a password. You will land on the analyst desk. Administration (users, branding, billing) is in the left menu.
 
-1. Click **Create Mandate**.
-2. Choose a client and a property, write a one-line objective and a brief, set the ticket size, then click **Create Mandate and run agents**.
-3. Watch the **Timeline** tab: intake, research, underwriting, due diligence, debate and memo complete in sequence, streamed live.
-4. Open the **Memo** tab, edit if needed (it saves automatically), then click **Approve and deliver**.
-5. Click **Download memo** for the PDF. The client sees it immediately under **Documents** in their portal.
+When he registers with that address, his account is linked to the seeded administrator record, and he sees the PropFolios brand, data and clients.
 
----
+## Plans
 
-## Using the product
+Enforced in code (`lib/plans.ts`). Seats count administrators and analysts; client logins are free.
 
-- **Cmd+K** (Ctrl+K on Windows) searches mandates, properties, clients and pages.
-- **Cmd+/** lists keyboard shortcuts; **G** then a letter jumps between pages; **N** creates a mandate.
-- **Clients → a client → Preview client portal** shows exactly what that client sees.
-- **Administration → Seed data → Reset to seed data** restores the demonstration dataset.
-- **Administration → Audit log** records every user action and every agent run with its model, tokens, duration and cost.
+| Plan | Monthly, AED | Seats | Notes |
+| --- | --- | --- | --- |
+| Starter | 3,000 | 5 | Nakhla styling |
+| Professional | 8,000 | 20 | Own logo and colours |
+| Enterprise | 25,000 | Unlimited | Own logo and colours |
+| White-label | 50,000 | Unlimited | Own domain, Nakhla branding removed |
+
+A firm on White-label adds its domain in **Administration → Branding**, then points the domain at Vercel (**Settings → Domains → Add**). Invoices are computed and shown on **Administration → Billing** (VAT 5%); card collection is not connected.
+
+## Roles
+
+| Role | Sees |
+| --- | --- |
+| Platform administrator | `/platform`: every firm, revenue, AI metrics, feature switches. **Open as administrator** opens a firm's workspace as its administrator; each visit is recorded in that firm's audit log. |
+| Firm administrator | Analyst desk plus Administration: users, branding, billing, audit log, demonstration data |
+| Analyst | Analyst desk: mandates, properties, developers, market, clients, memos, assistant |
+| Client | Own portfolio, opportunities, recommendations, documents, messages, assistant |
+
+## Troubleshooting
+
+**Build errors**
+
+| Symptom | Fix |
+| --- | --- |
+| Vercel build fails at *Installing dependencies* | Redeploy once; the npm registry occasionally times out. |
+| Build fails with a type or lint error | The code on your branch was changed. Redeploy the last deployment that showed **Ready** (three dots → **Promote to Production**) and send the error log to your developer. |
+| *Function exceeded maximum duration* during a mandate | On the Hobby plan functions stop at 60 seconds. The run resumes automatically; upgrade to Pro for uninterrupted runs. |
+
+**Database connection**
+
+| Symptom | Fix |
+| --- | --- |
+| `/api/setup` says *SETUP_SECRET is not set* | Add the variable (step 2) and redeploy. |
+| `/api/setup` says *Invalid setup secret* | The `secret=` value must match exactly, including capitals. |
+| Data disappears after a while | `DATABASE_URL` is missing, so the temporary built-in database is in use. Complete step 3 and redeploy. |
+| *Connection refused* or *password authentication failed* | In Neon, open the project, **Connection Details**, copy the **pooled** connection string, and replace `DATABASE_URL` in Vercel. Redeploy. |
+| *Endpoint is disabled* | Neon pauses free databases when idle. Open the Neon dashboard once; it wakes within seconds. |
+
+**Clerk and firm setup**
+
+| Symptom | Fix |
+| --- | --- |
+| Sign-in page shows demonstration personas | The Clerk keys are missing or the project was not redeployed. |
+| After sign-up you see *Set up your firm* | Your account is not linked to a firm. Either complete the form (it creates a firm on a 14-day trial) or ask the platform administrator to invite your email. |
+| You set `platform_admin` but still see a firm | Check the session token step (4.4), then sign out and in again. |
+| Invitations are not sent | Organizations are not enabled (step 4.3), or the firm has no free seat (**Administration → Billing** shows seat use). |
+| New users are not linked to their firm | The webhook (step 4.5) is missing, or `CLERK_WEBHOOK_SECRET` does not match. Clerk → Webhooks shows failed deliveries. |
+| A firm sees *This workspace is suspended* | Its status is Suspended or Cancelled. Change it in **/platform → Tenants → the firm**. |
+
+**Anthropic rate limits**
+
+| Symptom | Fix |
+| --- | --- |
+| Timeline shows *replay mode* | `ANTHROPIC_API_KEY` is missing or the project was not redeployed. Replay mode returns rule-based output so every screen still works. |
+| An agent stage failed with *rate limit* or *overloaded* | Agents already retry five times with increasing waits. Wait a minute, then open the mandate and click **More → Re-run from stage**. For many firms, raise your usage tier in the Anthropic console under **Limits**. |
+| *Too many requests* from Nakhla itself | Each user may run 30 agent requests and 20 assistant questions a minute. Wait a minute. |
+| *Credit balance is too low* | Add credit in the Anthropic console under **Billing**. |
 
 ## Environment variables
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes for persistence | Neon connection string (set by the Vercel Neon integration) |
+| `DATABASE_URL` | Yes for persistence | Neon connection string |
 | `SETUP_SECRET` | Yes | Protects `/api/setup` |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | For sign-in | Without them the app runs in demonstration mode |
-| `CLERK_WEBHOOK_SECRET` | With Clerk | Verifies the user-created webhook |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | For sign-in | Without them the app runs in demonstration mode with persona switching |
+| `CLERK_WEBHOOK_SECRET` | With Clerk | Verifies the `user.created` and `user.updated` webhook |
 | `ANTHROPIC_API_KEY` | For live agents | Without it agents run in replay mode |
 | `ANTHROPIC_MODEL_PRIMARY`, `ANTHROPIC_MODEL_FAST` | No | Model overrides |
-| `CRON_SECRET` | For scheduled jobs | Authorises Vercel Cron |
-| `BLOB_READ_WRITE_TOKEN` | No | Stores uploaded files |
+| `CRON_SECRET` | For scheduled jobs | Authorises Vercel Cron (daily portfolio monitor, weekly digest on Mondays, weekly developer risk) |
+| `BLOB_READ_WRITE_TOKEN` | No | Stores uploads and delivered memo PDFs |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) | No | Shared rate limiting |
 | `NEXT_PUBLIC_MAPBOX_TOKEN` | No | Street-level map |
-
-## Troubleshooting
-
-| Symptom | Fix |
-| --- | --- |
-| `/api/setup` says *SETUP_SECRET is not set* | Add the variable in Vercel and redeploy. |
-| `/api/setup` says *Invalid setup secret* | The `secret=` value in the URL must match exactly. |
-| Data disappears after a while | `DATABASE_URL` is missing, so the embedded database is in use. Complete step 2 and redeploy. |
-| Sign-in page shows demonstration personas | Clerk keys are missing or the project was not redeployed. |
-| Timeline shows *replay mode* | `ANTHROPIC_API_KEY` is missing or the project was not redeployed. |
-| An agent stage failed | Open the mandate, click **More → Re-run from stage**. The error is in the audit log. |
-| A signed-up client sees an empty portfolio | Their account is not linked to a client yet. **Administration → Users → row menu → Link to client record**. |
+| `NEXT_PUBLIC_APP_URL` | Recommended | Links in invitations |
 
 ## For developers
 
-Next.js 15 App Router, TypeScript strict, Tailwind 4, Drizzle ORM on Neon (pgvector) with an embedded PGlite fallback, Clerk, Anthropic SDK with tool-calling structured output, TanStack Query, Zustand, Recharts, TipTap, dnd-kit, cmdk, Zod and @react-pdf/renderer.
+Next.js 15 App Router, TypeScript strict, Tailwind 4, Drizzle ORM on Neon with pgvector (embedded PGlite fallback), Clerk Organizations, Anthropic SDK with tool-calling structured output, TanStack Query, Zustand, Recharts, TipTap, dnd-kit, cmdk, Zod and @react-pdf/renderer.
+
+Multi-tenancy: every table carries `tenant_id`; every query goes through `scope()` or `tenantDb()` in `lib/tenant-db.ts`, which throw when the tenant is missing; Postgres row-level security policies (`drizzle/0001_nakhla_multitenancy.sql`) apply to any role other than the table owner.
 
 ```
-app/            routes: public, analyst, client, admin, api
-components/     ui primitives, composites, charts, shell
-db/             schema, migrations runner, seed
+app/            routes: public, platform, admin, analyst, client, api
+components/     ui primitives, composites, charts, shell, platform, admin, marketing
+db/             schema, migrations runner, seed (per tenant)
 drizzle/        SQL migrations
-lib/ai/         agents, prompts (versioned _v1), schemas, orchestrator, replay, financial engine
-lib/queries.ts  tenant-scoped read models
+lib/ai/         agents, prompts (versioned _v1, _v2), schemas, orchestrator, replay, financial engine
+lib/            auth, tenant, plans, provisioning, rate limit, queries
 ```
 
-Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run type-check`, `npm test` (financial engine), `npm run db:generate`.
+Scripts: `npm run dev`, `npm run build`, `npm run lint`, `npm run type-check`, `npm test`, `npm run db:generate`.
 
-See `DESIGN.md` for the design system and `docs/BUILD_REPORT.md` for the build report.
+See `CLAUDE.md` for the specification, `DESIGN.md` for the design system and `docs/BUILD_REPORT.md` for the build report.
