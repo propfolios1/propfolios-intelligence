@@ -4,5 +4,5 @@ export default defineConfig({
   schema: "./db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
-  dbCredentials: { url: process.env.DATABASE_URL ?? "postgres://localhost/propfolios" },
+  dbCredentials: { url: process.env.DATABASE_URL_DIRECT ?? process.env.POSTGRES_URL_NON_POOLING ?? process.env.DATABASE_URL ?? "postgres://localhost/nakhla" },
 });

@@ -15,6 +15,13 @@
       "when": 1790900270646,
       "tag": "0001_nakhla_multitenancy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790942652446,
+      "tag": "0002_supabase_hardening",
+      "breakpoints": true
     }
   ]
 }

@@ -15,7 +15,9 @@ This is a $2M-craft product. Every pixel matters. Ship it end to end.
 - This repository began as PropFolios Intelligence (single tenant) and was
   evolved into Nakhla in place. Work on branch `claude/adoring-brown-6qrqag`.
 - Next.js 15 App Router (not 14): route `params` and `searchParams` are Promises.
-- Database: Neon Postgres via `DATABASE_URL`; without it an embedded PGlite
+- Database: Supabase Postgres via `DATABASE_URL` (or `POSTGRES_URL` from the Vercel
+  Supabase integration), postgres-js driver with `prepare: false` for the
+  transaction pooler; without it an embedded PGlite
   database migrates and seeds itself (demo only). Migrations live in `drizzle/`.
 - Without Clerk keys the app runs in demonstration mode (persona switching).
   Without `ANTHROPIC_API_KEY` the agents run in deterministic replay mode.
@@ -42,7 +44,7 @@ This is a $2M-craft product. Every pixel matters. Ship it end to end.
 - Next.js App Router + TypeScript strict
 - Tailwind + shadcn/ui (heavily customized)
 - Clerk auth with Organizations (multi-tenant)
-- Neon Postgres + Drizzle ORM, pgvector
+- Supabase Postgres + Drizzle ORM, pgvector
 - Anthropic SDK: claude-sonnet-4-20250514 + claude-haiku-4 (env overridable)
 - TanStack Query + Zustand, Recharts, TipTap, @dnd-kit, cmdk, Zod
 - @react-pdf/renderer, Vercel Blob, Vercel Cron, Framer Motion (sparingly)

@@ -12,7 +12,7 @@ The instructions below assume no technical background. Each step happens in a we
 | --- | --- | --- |
 | GitHub | Free | Holds the code |
 | Vercel | Free to start, Pro (USD 20 a month) recommended | Runs the website |
-| Neon | Free to start | The database |
+| Supabase | Free to start, Pro (USD 25 a month) recommended | The database |
 | Clerk | Free up to 10,000 monthly users | Sign-in and firm workspaces |
 | Anthropic | Pay as you use, about USD 1.40 per mandate | The AI agents |
 
@@ -34,11 +34,26 @@ Keep a notes file open. You will copy several keys into it.
    - Name `SETUP_SECRET`, value: any long random phrase, for example `river-cedar-falcon-7193-harbour`. Write it in your notes file.
 5. Click **Deploy** and wait about three minutes. The site works at this point on a temporary built-in database, in demonstration mode.
 
-### 3. Neon (the database)
+### 3. Supabase (the database)
+
+Choose one of the two ways below. Way A is quicker; way B suits you if you already have a Supabase account.
+
+**Way A, from inside Vercel (recommended)**
 
 1. In your Vercel project open **Storage → Create Database**.
-2. Choose **Neon** (Serverless Postgres), accept the terms, choose the region closest to the Gulf (Frankfurt or Mumbai), and click **Create**.
-3. Click **Connect Project**, choose all environments, and confirm. Vercel adds `DATABASE_URL` automatically.
+2. Choose **Supabase** and click **Continue**. Accept the terms.
+3. Region: choose **Mumbai** (closest to the Gulf) or **Frankfurt**. Plan: Free to start. Click **Create**.
+4. Click **Connect Project**, tick all environments, and confirm. Vercel adds the database settings (`POSTGRES_URL` and others) automatically. Nakhla reads them; you do not need to copy anything.
+
+**Way B, from supabase.com**
+
+1. Sign in at supabase.com and click **New project**.
+2. Name it `nakhla`. Click **Generate a password** and copy the password into your notes file. Region: **Mumbai** or **Frankfurt**. Click **Create new project** and wait about two minutes.
+3. Click **Connect** at the top of the project page. Under **Connection string**, choose **Transaction pooler** and copy the address. It looks like `postgresql://postgres.abcd:[YOUR-PASSWORD]@aws-0-ap-south-1.pooler.supabase.com:6543/postgres`.
+4. In your notes file, replace `[YOUR-PASSWORD]` (including the square brackets) with the password from step 2.
+5. In Vercel open **Settings → Environment Variables** and add `DATABASE_URL` with that full address.
+
+You do not need to create any tables in Supabase or switch anything on. Step 8 creates the tables, and the pgvector extension the agents use is switched on at the same time.
 
 ### 4. Clerk (sign-in and firm workspaces)
 
@@ -163,9 +178,12 @@ A firm on White-label adds its domain in **Administration → Branding**, then p
 | --- | --- |
 | `/api/setup` says *SETUP_SECRET is not set* | Add the variable (step 2) and redeploy. |
 | `/api/setup` says *Invalid setup secret* | The `secret=` value must match exactly, including capitals. |
-| Data disappears after a while | `DATABASE_URL` is missing, so the temporary built-in database is in use. Complete step 3 and redeploy. |
-| *Connection refused* or *password authentication failed* | In Neon, open the project, **Connection Details**, copy the **pooled** connection string, and replace `DATABASE_URL` in Vercel. Redeploy. |
-| *Endpoint is disabled* | Neon pauses free databases when idle. Open the Neon dashboard once; it wakes within seconds. |
+| Data disappears after a while, or **Administration → Demonstration data** says *Embedded Postgres* | No database is connected, so the temporary built-in one is in use. Complete step 3 and redeploy. |
+| *password authentication failed* | The password in `DATABASE_URL` is wrong, or the square brackets around `[YOUR-PASSWORD]` were left in. In Supabase, **Project Settings → Database → Reset database password**, then update `DATABASE_URL` and redeploy. |
+| *Invalid URL* or *getaddrinfo ENOTFOUND* | The password contains a symbol such as `@`, `#` or `/`. Reset it in Supabase to letters and numbers only, update `DATABASE_URL`, redeploy. |
+| *Connection terminated* or *timeout* | Use the **Transaction pooler** address (port 6543), not the direct one (port 5432), which Vercel cannot always reach. |
+| *Project is paused* | Supabase pauses free projects after a week without use. Open the project in Supabase and click **Restore project**; the Pro plan never pauses. |
+| Both `DATABASE_URL` and the Vercel Supabase settings exist | `DATABASE_URL` wins. Remove whichever you do not intend to use. |
 
 **Clerk and firm setup**
 
@@ -191,7 +209,7 @@ A firm on White-label adds its domain in **Administration → Branding**, then p
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes for persistence | Neon connection string |
+| `DATABASE_URL` or `POSTGRES_URL` | Yes for persistence | Supabase transaction pooler address. `POSTGRES_URL` (and `POSTGRES_URL_NON_POOLING`, used for creating tables) are set by the Vercel Supabase integration |
 | `SETUP_SECRET` | Yes | Protects `/api/setup` |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | For sign-in | Without them the app runs in demonstration mode with persona switching |
 | `CLERK_WEBHOOK_SECRET` | With Clerk | Verifies the `user.created` and `user.updated` webhook |
@@ -205,9 +223,9 @@ A firm on White-label adds its domain in **Administration → Branding**, then p
 
 ## For developers
 
-Next.js 15 App Router, TypeScript strict, Tailwind 4, Drizzle ORM on Neon with pgvector (embedded PGlite fallback), Clerk Organizations, Anthropic SDK with tool-calling structured output, TanStack Query, Zustand, Recharts, TipTap, dnd-kit, cmdk, Zod and @react-pdf/renderer.
+Next.js 15 App Router, TypeScript strict, Tailwind 4, Drizzle ORM (postgres-js driver) on Supabase Postgres with pgvector (embedded PGlite fallback), Clerk Organizations, Anthropic SDK with tool-calling structured output, TanStack Query, Zustand, Recharts, TipTap, dnd-kit, cmdk, Zod and @react-pdf/renderer.
 
-Multi-tenancy: every table carries `tenant_id`; every query goes through `scope()` or `tenantDb()` in `lib/tenant-db.ts`, which throw when the tenant is missing; Postgres row-level security policies (`drizzle/0001_nakhla_multitenancy.sql`) apply to any role other than the table owner.
+Multi-tenancy: every table carries `tenant_id`; every query goes through `scope()` or `tenantDb()` in `lib/tenant-db.ts`, which throw when the tenant is missing; Postgres row-level security policies (`drizzle/0001_nakhla_multitenancy.sql`) apply to any role other than the table owner, and `drizzle/0002_supabase_hardening.sql` removes all access for Supabase's public `anon` and `authenticated` roles, so the Supabase Data API cannot read Nakhla's tables.
 
 ```
 app/            routes: public, platform, admin, analyst, client, api

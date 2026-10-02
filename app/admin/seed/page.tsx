@@ -40,11 +40,11 @@ export default async function SeedPage() {
         ))}
       </section>
       <Card className="mt-8">
-        <CardHeader eyebrow="Database" title={kind === "neon" ? "Neon Postgres" : "Embedded Postgres (PGlite)"} />
+        <CardHeader eyebrow="Database" title={kind === "supabase" ? "Supabase Postgres" : kind === "postgres" ? "Postgres" : "Embedded Postgres (PGlite)"} />
         <CardContent className="max-w-[72ch] text-small text-ink-700">
-          {kind === "neon"
-            ? "Connected through DATABASE_URL. Migrations and the seed run from /api/setup with your SETUP_SECRET; the seed is idempotent and safe to run more than once."
-            : "No DATABASE_URL is configured, so this deployment uses an in-memory Postgres that migrates and seeds itself on start. Data resets when the server instance restarts. Add a Neon DATABASE_URL in Vercel for persistence."}
+          {kind !== "embedded"
+            ? "Connected through DATABASE_URL (or the POSTGRES_URL set by the Vercel Supabase integration). Migrations and the seed run from /api/setup with your SETUP_SECRET; the seed is idempotent and safe to run more than once."
+            : "No DATABASE_URL is configured, so this deployment uses an in-memory Postgres that migrates and seeds itself on start. Data resets when the server instance restarts. Connect Supabase in Vercel for persistence."}
         </CardContent>
       </Card>
     </PageContainer>

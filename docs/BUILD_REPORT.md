@@ -19,7 +19,7 @@ Nakhla is a multi-tenant AI operating system for real estate advisory firms. Ten
 | Pages | 44 |
 | API route handlers | 36 |
 | Database tables | 19, every tenant-owned table carrying `tenant_id` |
-| Row-level security policies | 19 |
+| Row-level security policies | 19, plus Supabase Data API lockdown (migration 0002) |
 | AI agents | 12 |
 | Versioned prompts | 15 files: thirteen `_v1`, plus `market-timing_v2` and `cross-border_v2` (v1 kept) |
 
@@ -38,6 +38,8 @@ Nakhla is a multi-tenant AI operating system for real estate advisory firms. Ten
 | Mandate flow over server-sent events: Intake, Research, Underwriting, Due Diligence, Debate, Memo, Review | Pass in replay mode |
 | Memo PDF export in the tenant's house style (brand name, colours, sign-off, disclaimer) | Pass, HTTP 200 `application/pdf` |
 | Seed idempotency: `/api/setup` run twice; second run reports no changes; wrong secret returns 401 | Pass |
+| Supabase compatibility, on PostgreSQL 16 with pgvector and Supabase's `anon` and `authenticated` roles, connected through a Supabase-format pooler address (`?sslmode=require&supa=base-pooler.x`) as `POSTGRES_URL`: migrations, seed, second run unchanged, 43-page sweep with 0 browser errors, three-tenant isolation, SSE mandate run to Review, PDF export, both cron jobs, tenant provisioning, pgvector comparables, reset and reseed | Pass |
+| Supabase Data API lockdown: `anon` and `authenticated` hold no table privileges after migration; a non-owner role sees 0 rows without a tenant and only that tenant's rows with one (row-level security) | Pass |
 | Migration on a database holding pre-Nakhla data: columns backfilled, `admin` role converted to `tenant_admin`, 19 policies created | Pass |
 
 ## 3. Known limitations and deviations
@@ -52,7 +54,7 @@ Nakhla is a multi-tenant AI operating system for real estate advisory firms. Ten
 8. **Replay mode.** Without `ANTHROPIC_API_KEY`, agents return deterministic, rule-based output from the same inputs and schemas. Every flow works, but the prose is templated. The market table's BUY, HOLD and SELL column uses this deterministic signal; the timing agent card runs the live agent.
 9. **Embeddings.** pgvector comparables and document search use a local 1,536-dimension hashing embedding, so no extra key is needed. It matches on vocabulary rather than meaning.
 10. **Rate limiting** is shared across servers only when Upstash or Vercel KV is connected; otherwise each instance limits in memory.
-11. **Embedded database.** Without `DATABASE_URL` the app runs on in-memory PGlite, which resets on restart. Neon is required for persistence.
+11. **Embedded database.** Without `DATABASE_URL` the app runs on in-memory PGlite, which resets on restart. Supabase (or any Postgres with pgvector) is required for persistence.
 12. **Long agent runs** work within a 300-second budget and resume automatically; on Vercel Hobby (60-second functions) they resume more often.
 13. **Not found pages under loading states** are served with status 200 and the not-found content, a Next.js streaming behaviour. No data is rendered.
 14. **Seed data is illustrative.** Project and developer names are real; figures, transactions, clients and the three sample firms are synthetic.
@@ -64,7 +66,7 @@ Full click-by-click instructions are in `README.md`.
 
 1. GitHub: confirm the repository is in your account.
 2. Vercel: Add New → Project → import; add `SETUP_SECRET`; Deploy.
-3. Neon: Vercel → Storage → Create Database → Neon → Connect.
+3. Supabase: Vercel → Storage → Create Database → Supabase → Connect (or paste the transaction pooler address as `DATABASE_URL`).
 4. Clerk: create the application, enable Organizations, customise the session token with `{"metadata": "{{user.public_metadata}}"}`, add the webhook for `user.created` and `user.updated`.
 5. Anthropic: create an API key.
 6. Environment variables: Clerk keys, webhook secret, Anthropic key, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`; optionally Blob, Upstash/KV, model override, Mapbox.
@@ -76,7 +78,7 @@ Full click-by-click instructions are in `README.md`.
 
 ## 5. Monthly running cost
 
-Per firm of about 40 mandates and 1,000 assistant questions a month: Anthropic about USD 68 (mandate pipeline USD 56, assistant USD 10, scheduled jobs USD 2). Shared platform cost: Vercel Pro USD 20, Neon Launch USD 19, Clerk free to 10,000 monthly users, Blob and Upstash within free tiers at low volume. Agent spend per firm appears in `/platform/metrics` and each firm's audit log.
+Per firm of about 40 mandates and 1,000 assistant questions a month: Anthropic about USD 68 (mandate pipeline USD 56, assistant USD 10, scheduled jobs USD 2). Shared platform cost: Vercel Pro USD 20, Supabase Pro USD 25, Clerk free to 10,000 monthly users, Blob and Upstash within free tiers at low volume. Agent spend per firm appears in `/platform/metrics` and each firm's audit log.
 
 ## 6. Screenshots
 

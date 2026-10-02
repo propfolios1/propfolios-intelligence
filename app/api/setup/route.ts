@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { dbKind, getDb, isNeon, migrateNeon } from "@/db";
+import { dbKind, getDb, hasExternalDb, migrateExternal } from "@/db";
 import { isSeeded, seed } from "@/db/seed";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ async function run(req: Request) {
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.reason }, { status: 401 });
   const reset = new URL(req.url).searchParams.get("reset") === "1";
   const started = Date.now();
-  if (isNeon()) await migrateNeon();
+  if (hasExternalDb()) await migrateExternal();
   const db = await getDb();
   const already = await isSeeded(db);
   const result = await seed(db, { force: reset });
