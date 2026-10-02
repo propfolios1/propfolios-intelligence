@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { nlQuery } from "@/lib/ai/agents";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { handle, parseBody } from "@/lib/api";
 import { requireApiUser } from "@/lib/auth";
 
@@ -16,6 +17,7 @@ const body = z.object({
 /** Streams an assistant answer as newline-delimited JSON (text, tool, sources, done). */
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser();
+  await enforceRateLimit(user, "assistant");
   const { question, history } = await parseBody(req, body);
   const db = await getDb();
   const staff = user.role !== "client";

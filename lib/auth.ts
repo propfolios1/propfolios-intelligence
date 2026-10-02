@@ -30,7 +30,11 @@ export interface CurrentUser {
   demo: boolean;
 }
 
-export type AuthState = { status: "signed_out" } | { status: "needs_onboarding"; email: string; name: string } | { status: "ok"; user: CurrentUser };
+export type AuthState =
+  | { status: "signed_out" }
+  | { status: "needs_onboarding"; email: string; name: string }
+  | { status: "suspended"; tenantName: string; tenantStatus: string }
+  | { status: "ok"; user: CurrentUser };
 
 export const PERSONA_COOKIE = "pf_persona";
 export const USER_COOKIE = "pf_user";
@@ -109,6 +113,17 @@ async function previewClientId(tenantId: string) {
   return first?.id ?? null;
 }
 
+/** Suspended and cancelled workspaces are closed to their users; platform administrators keep access. */
+async function gate(user: CurrentUser | null): Promise<AuthState> {
+  if (!user) return { status: "signed_out" };
+  if (!user.platformAdmin) {
+    const db = await getDb();
+    const [t] = await db.select({ name: tenants.name, status: tenants.status }).from(tenants).where(eq(tenants.id, user.tenantId));
+    if (t && (t.status === "suspended" || t.status === "cancelled")) return { status: "suspended", tenantName: t.name, tenantStatus: t.status };
+  }
+  return { status: "ok", user };
+}
+
 async function toCurrentUser(row: typeof users.$inferSelect, demo: boolean): Promise<CurrentUser | null> {
   const db = await getDb();
   const [home] = await db.select({ id: tenants.id, slug: tenants.slug }).from(tenants).where(eq(tenants.id, row.tenantId));
@@ -171,8 +186,7 @@ export const getAuthState = cache(async (): Promise<AuthState> => {
     if (row.lastActiveAt === null || Date.now() - row.lastActiveAt.getTime() > 15 * 60_000) {
       await db.update(users).set({ lastActiveAt: new Date() }).where(eq(users.id, row.id));
     }
-    const user = await toCurrentUser(row, false);
-    return user ? { status: "ok", user } : { status: "signed_out" };
+    return gate(await toCurrentUser(row, false));
   }
 
   // Demonstration mode: a persona or a specific user chosen in the account menu.
@@ -190,8 +204,7 @@ export const getAuthState = cache(async (): Promise<AuthState> => {
       .then((r) => r.map((x) => x.u));
   }
   if (!row) return { status: "signed_out" };
-  const user = await toCurrentUser(row, true);
-  return user ? { status: "ok", user } : { status: "signed_out" };
+  return gate(await toCurrentUser(row, true));
 });
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -204,6 +217,7 @@ export async function requireRole(roles: Role[]): Promise<CurrentUser> {
   const s = await getAuthState();
   if (s.status === "signed_out") redirect("/sign-in");
   if (s.status === "needs_onboarding") redirect("/onboarding");
+  if (s.status === "suspended") redirect("/suspended");
   if (!roles.includes(s.user.role)) {
     if (s.user.role === "platform_admin") redirect("/platform/dashboard");
     notFound();
@@ -225,6 +239,7 @@ export async function requireApiUser(roles?: Role[]): Promise<CurrentUser> {
   const s = await getAuthState();
   if (s.status === "signed_out") throw new HttpError(401, "Sign in required.");
   if (s.status === "needs_onboarding") throw new HttpError(409, "Create your firm's workspace first.");
+  if (s.status === "suspended") throw new HttpError(403, `The ${s.tenantName} workspace is ${s.tenantStatus}. Contact Nakhla support.`);
   if (roles && !roles.includes(s.user.role)) throw new HttpError(403, "Your role does not permit this action.");
   return s.user;
 }

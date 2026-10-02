@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { mandateForUser } from "@/lib/ai/guard";
 import { advanceMandate, PIPELINE, rerunFrom } from "@/lib/ai/orchestrator";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { audit, handle } from "@/lib/api";
 import { requireApiUser } from "@/lib/auth";
 
@@ -17,6 +18,7 @@ const body = z.object({ from: z.enum(PIPELINE.filter((p) => p.automated).map((p)
  */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const user = await requireApiUser(["tenant_admin", "analyst"]);
+  await enforceRateLimit(user, "agents");
   const { id } = await params;
   const db = await getDb();
   const m = await mandateForUser(db, user, id);

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { embed } from "@/lib/ai/embed";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { audit, handle } from "@/lib/api";
 import { HttpError, requireApiUser } from "@/lib/auth";
 import { assertClientAccess, listDocuments } from "@/lib/queries";
@@ -26,6 +27,7 @@ export const GET = handle(async (req: Request) => {
  */
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser();
+  await enforceRateLimit(user, "upload");
   const form = await req.formData().catch(() => {
     throw new HttpError(400, "Expected a multipart form.");
   });

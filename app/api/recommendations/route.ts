@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -19,6 +20,7 @@ export const GET = handle(async (req: Request) => {
 /** Runs the recommender agent for a client and stores new recommendations. Staff only. */
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin", "analyst"]);
+  await enforceRateLimit(user, "agents");
   const { clientId } = await parseBody(req, z.object({ clientId: z.uuid() }));
   const db = await getDb();
   const p = await getPortfolio(db, user, clientId);

@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
@@ -16,6 +17,7 @@ export const GET = handle(async (req: Request) => {
   const regions = q.region ? all.filter((r) => r.region.toLowerCase() === q.region!.toLowerCase()) : all;
   if (q.region && !regions.length) throw new HttpError(404, `No market data for ${q.region}.`);
   if (q.signal === "1" && regions.length === 1) {
+    await enforceRateLimit(user, "agents");
     const r = regions[0]!;
     const run = await marketTiming(
       { region: r.region, months: r.series.map((m) => ({ month: m.month, transactions: m.transactions, medianPriceSqft: m.medianPriceSqft, offPlanShare: m.offPlanShare, rentalYield: m.rentalYield, supplyUnits: m.supplyUnits, absorptionRate: m.absorptionRate })) },
