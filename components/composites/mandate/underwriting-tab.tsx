@@ -1,7 +1,9 @@
 import { CashFlowChart } from "@/components/charts/cash-flow-chart";
 import { RiskRadar } from "@/components/charts/risk-radar";
-import { BarSeries } from "@/components/charts/series";
 import { Tornado } from "@/components/charts/tornado";
+import { FederatedBaselineCard } from "@/components/intelligence/baseline-card";
+import { MonteCarloHistogram } from "@/components/intelligence/monte-carlo-histogram";
+import { ValuationCard } from "@/components/intelligence/valuation-card";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatLocal } from "@/lib/domain";
 import type { SimulationView } from "@/lib/queries";
@@ -30,6 +32,12 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
       {sim.commentary && <p className="max-w-[72ch] font-display text-read text-navy-900">{sim.commentary}</p>}
       <ScenarioCards scenarios={sim.scenarios} currency={currency} hurdlePct={hurdle} />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-7">{sim.valuation ? <ValuationCard v={sim.valuation} /> : null}</div>
+        <div className="xl:col-span-5">
+          <FederatedBaselineCard baseline={sim.baseline} assumptions={a as Record<string, number>} />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <Card className="xl:col-span-7">
           <CardHeader eyebrow="Base case" title="Annual cash flows" />
           <CardContent>
@@ -51,10 +59,7 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
         <Card className="xl:col-span-5">
           <CardHeader eyebrow={`${sim.distribution.iterations.toLocaleString("en-US")} simulated paths`} title="IRR distribution" />
           <CardContent>
-            <BarSeries data={sim.distribution.histogram} x="bucket" y="count" name="Paths" height={220} format="number" />
-            <p className="mt-3 text-small text-ink-500">
-              {(sim.distribution.probBelowHurdle * 100).toFixed(0)}% of paths fall below the {hurdle.toFixed(1)}% hurdle. Mean IRR {(sim.distribution.mean * 100).toFixed(1)}%.
-            </p>
+            <MonteCarloHistogram distribution={sim.distribution} hurdlePct={hurdle} />
           </CardContent>
         </Card>
         <Card className="xl:col-span-12">

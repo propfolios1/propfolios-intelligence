@@ -1,10 +1,10 @@
 "use client";
 
+import { RelativeTime } from "@/components/ui/relative-time";
 import Link from "next/link";
 import * as React from "react";
 import { toast } from "@/components/ui/toaster";
 import { REC_TYPE_LABEL } from "@/lib/domain";
-import { relativeTime } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
 
 export interface RecommendationView {
@@ -76,7 +76,7 @@ export function RecommendationsList({ items, assistantHref = "/client/assistant"
               </button>
             </div>
           </div>
-          <span className="num hidden pt-1 text-right text-small text-ink-500 md:block">{relativeTime(r.createdAt)}</span>
+          <span className="num hidden pt-1 text-right text-small text-ink-500 md:block"><RelativeTime iso={r.createdAt} /></span>
         </li>
       ))}
     </ol>

@@ -1,3 +1,4 @@
+import { seedFederation, seedTenantIntelligence } from "./seed-intelligence";
 import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { embed } from "@/lib/ai/embed";
@@ -30,11 +31,11 @@ export async function isSeeded(db: DB) {
   return rows.length > 0;
 }
 
-const CHILD_TABLES = [s.auditLogs, s.messages, s.alerts, s.recommendations, s.documents, s.memos, s.debates, s.simulations, s.mandates, s.portfolios, s.clients, s.transactions, s.launches, s.marketData, s.properties, s.developers] as const;
+const CHILD_TABLES = [s.insights, s.actions, s.crossValidations, s.signatureEnvelopes, s.shareLinks, s.auditLogs, s.messages, s.alerts, s.recommendations, s.documents, s.memos, s.debates, s.simulations, s.mandates, s.portfolios, s.clients, s.transactions, s.launches, s.marketData, s.properties, s.developers] as const;
 
 /** Removes every row on the platform, children first. */
 export async function wipe(db: DB) {
-  for (const t of [...CHILD_TABLES, s.users, s.subscriptions, s.tenants]) await db.delete(t);
+  for (const t of [...CHILD_TABLES, s.apiKeys, s.users, s.subscriptions, s.tenants, s.federationLearnings, s.federationBaselines, s.federationRuns]) await db.delete(t);
 }
 
 /** Removes one tenant's business data, keeping the tenant, its staff and its subscription. */
@@ -674,6 +675,8 @@ export async function seedTenantData(db: DB, target: SeedTarget) {
   );
   await db.insert(s.auditLogs).values(auditRows).onConflictDoNothing();
 
+  await seedTenantIntelligence(db, tenantId);
+
   return { seeded: true, counts: { properties: PROPERTIES.length, developers: DEVELOPERS.length, clients: CLIENTS.length, holdings: holdingRows.length, mandates: 3, transactions: txRows.length, marketMonths: marketRows.length, documents: docRows.length } };
 }
 
@@ -719,7 +722,8 @@ async function addAdmin(db: DB, tenantId: string, key: string, u: { name: string
 /**
  * Seeds the whole platform: the Nakhla operator tenant, PropFolios (tenant #1,
  * full dataset and logins), and three further tenants that give the platform
- * console real figures: Gulf Crest Capital (Professional, demonstration data),
+ * console real figures: Gulf Realty Advisors and Bombay Property Intelligence
+ * (Professional, demonstration data),
  * Meridian Family Office (Starter, on trial) and Al Noor Realty Advisors
  * (cancelled). Idempotent; `force` wipes and reloads.
  */
@@ -751,22 +755,39 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   });
   const result = await seedTenantData(db, { tenantId: TENANT_ID, slug: "propfolios", staff: true });
 
-  const gulfId = uid("tenant:gulfcrest");
+  const gulfId = uid("tenant:gulfrealty");
   await addTenant(db, {
     id: gulfId,
-    name: "Gulf Crest Capital",
-    slug: "gulfcrest",
+    name: "Gulf Realty Advisors",
+    slug: "gulfrealty",
     plan: "professional",
     status: "active",
-    config: defaultTenantConfig("Gulf Crest Intelligence", {
+    config: defaultTenantConfig("Gulf Realty Intelligence", {
       primary_color: "#13392F",
       accent_color: "#B08D57",
-      memo_style: { tone: "Concise and direct. Recommendation first, then the three numbers that matter.", signoff: "Gulf Crest Capital, Investment Committee", disclaimer: "Prepared for the addressee only. Not an offer or solicitation." },
+      memo_style: { tone: "Concise and direct. Recommendation first, then the three numbers that matter.", signoff: "Gulf Realty Advisors, Investment Committee", disclaimer: "Prepared for the addressee only. Not an offer or solicitation." },
     }),
     startedMonthsAgo: 5,
   });
-  const gulfAdmin = await addAdmin(db, gulfId, "gulfcrest-admin", { name: "Omar Haddad", email: "omar@gulfcrest.ae", title: "Managing Director" });
-  await seedTenantData(db, { tenantId: gulfId, slug: "gulfcrest", staff: false, adminUserId: gulfAdmin, adminName: "Omar Haddad" });
+  const gulfAdmin = await addAdmin(db, gulfId, "gulfrealty-admin", { name: "Omar Haddad", email: "omar@gulfrealty.ae", title: "Managing Director" });
+  await seedTenantData(db, { tenantId: gulfId, slug: "gulfrealty", staff: false, adminUserId: gulfAdmin, adminName: "Omar Haddad" });
+
+  const bombayId = uid("tenant:bombay");
+  await addTenant(db, {
+    id: bombayId,
+    name: "Bombay Property Intelligence",
+    slug: "bombay",
+    plan: "professional",
+    status: "active",
+    config: defaultTenantConfig("Bombay Property Intelligence", {
+      primary_color: "#3B1F2B",
+      accent_color: "#C7944B",
+      memo_style: { tone: "Measured and thorough. Lead with the cross-border case for NRI families: FEMA, repatriation and currency before returns.", signoff: "Bombay Property Intelligence, Advisory Board", disclaimer: "For the named client only. Indian tax and FEMA positions are general and must be confirmed with a chartered accountant." },
+    }),
+    startedMonthsAgo: 3,
+  });
+  const bombayAdmin = await addAdmin(db, bombayId, "bombay-admin", { name: "Priya Desai", email: "priya@bombaypi.in", title: "Founding Partner" });
+  await seedTenantData(db, { tenantId: bombayId, slug: "bombay", staff: false, adminUserId: bombayAdmin, adminName: "Priya Desai" });
 
   const meridianId = uid("tenant:meridian");
   await addTenant(db, { id: meridianId, name: "Meridian Family Office", slug: "meridian", plan: "starter", status: "trial", config: defaultTenantConfig("Meridian Family Office", { primary_color: "#2B2A4C", accent_color: "#C2A15A" }), startedMonthsAgo: 0.3 });
@@ -776,5 +797,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   await addTenant(db, { id: alnoorId, name: "Al Noor Realty Advisors", slug: "alnoor", plan: "starter", status: "cancelled", config: defaultTenantConfig("Al Noor Realty Advisors"), startedMonthsAgo: 7, cancelledMonthsAgo: 2 });
   await addAdmin(db, alnoorId, "alnoor-admin", { name: "Yousef Al Hashimi", email: "yousef@alnoor.ae", title: "Partner" });
 
-  return { ...result, tenants: 5 };
+  // Layer 6: PropFolios, Gulf Realty and Bombay contribute; Al Noor contributed before leaving.
+  const federation = await seedFederation(db, [TENANT_ID, gulfId, bombayId], alnoorId);
+
+  return { ...result, tenants: 6, federation: { learnings: federation.learnings, baselines: federation.baselines } };
 }

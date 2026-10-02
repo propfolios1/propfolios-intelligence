@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { LineSeries } from "@/components/charts/series";
 import { ActivityFeed } from "@/components/composites/activity-feed";
 import { KanbanBoard } from "@/components/composites/kanban-board";
 import { PageHeader } from "@/components/composites/page-header";
 import { StatCard } from "@/components/composites/stat-card";
 import { SeverityBadge } from "@/components/composites/status";
+import { FederationStats } from "@/components/intelligence/federation-stats";
+import { InsightsFeed } from "@/components/intelligence/insight-card";
 import { PageContainer } from "@/components/shell/page-container";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,7 +15,9 @@ import { getDb } from "@/db";
 import { requireRole } from "@/lib/auth";
 import { formatAed } from "@/lib/domain";
 import { getDashboard, getMarket } from "@/lib/queries";
-import { mandateRows } from "@/lib/serialize";
+import { insightViews, mandateRows } from "@/lib/serialize";
+import { federationStats } from "@/lib/federation";
+import { listInsights, refreshIfStale } from "@/lib/insights";
 import { formatDate, relativeTime } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
@@ -21,7 +26,8 @@ export const dynamic = "force-dynamic";
 export default async function Dashboard() {
   const user = await requireRole(["tenant_admin", "analyst"]);
   const db = await getDb();
-  const [d, market] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId)]);
+  const [d, market, insights, fed] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId), listInsights(db, user, { limit: 6 }), federationStats(db)]);
+  after(() => refreshIfStale(db, user.tenantId).then(() => undefined, () => undefined));
   const dubai = market.find((m) => m.region === "Dubai");
   const rows = mandateRows(d.mandates);
   const pulse = (dubai?.series ?? []).map((m) => ({ month: m.month.slice(0, 7), psf: m.medianPriceSqft, tx: m.transactions }));
@@ -33,6 +39,7 @@ export default async function Dashboard() {
         eyebrow={formatDate(new Date(), "long")}
         title={`Good ${new Date().getUTCHours() + 4 < 12 ? "morning" : "afternoon"}, ${first}`}
         subtitle={`${d.active} mandates in progress; ${d.inReview} awaiting committee review.`}
+        meta={<FederationStats stats={fed} />}
         actions={
           <Button asChild>
             <Link href="/analyst/mandates/new">Create Mandate</Link>
@@ -45,6 +52,15 @@ export default async function Dashboard() {
         <StatCard label="Active mandates" value={String(d.active)} note={`${d.delivered30} delivered in 30 days`} href="/analyst/mandates" />
         <StatCard label="Awaiting review" value={String(d.inReview)} note="Investment committee" href="/analyst/mandates?status=REVIEW" />
         <StatCard label="Agent spend, 30 days" value={`$${d.agentSpend30.toFixed(2)}`} spark={d.spendSpark} note="Anthropic API" />
+      </section>
+
+      <section className="mt-10">
+        <Card>
+          <CardHeader eyebrow="Layer 4 · proactive intelligence" title="What changed" actions={<Link href="/analyst/insights" className="text-small text-ink-700 hover:text-ink-900">All insights</Link>} />
+          <CardContent>
+            <InsightsFeed insights={insightViews(insights)} staff compact limit={6} />
+          </CardContent>
+        </Card>
       </section>
 
       <section className="mt-14">

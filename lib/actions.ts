@@ -29,7 +29,7 @@ type Plan = z.infer<typeof actionPlanOutput>;
 type PlanInput = z.infer<typeof actionPlanInput>;
 
 /** Replay operations lead: the rules in the prompt, applied in order. */
-function replayPlan(i: PlanInput): Plan {
+export function replayPlan(i: PlanInput): Plan {
   const actions: Plan["actions"] = [];
   if (i.mandate.requiresReview) {
     actions.push({ kind: "escalate", title: "Escalate the model disagreement", rationale: "Cross-validation did not reach a unanimous verdict; a senior analyst should decide before the memo is approved.", params: {} });

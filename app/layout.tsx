@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className={`${playfair.variable} ${inter.variable} ${jetbrains.variable}`} style={brandStyle(brand)}>
       <body>
         <TenantProvider brand={brand}>
-          <Providers>{children}</Providers>
+          <Providers clerk={clerkEnabled}>{children}</Providers>
         </TenantProvider>
       </body>
     </html>

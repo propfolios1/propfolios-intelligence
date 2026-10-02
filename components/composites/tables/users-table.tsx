@@ -13,7 +13,7 @@ import {
 import { Select } from "@/components/ui/form";
 import { StatusPill } from "@/components/ui/status-pill";
 import { toast } from "@/components/ui/toaster";
-import { relativeTime } from "@/lib/utils";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { DataTable } from "../data-table";
 
 export interface UserRow {
@@ -107,9 +107,7 @@ export function UsersTable({
       meta: { numeric: true },
       cell: ({ getValue }) => (
         <span className="text-ink-500">
-          {getValue<string | null>()
-            ? relativeTime(getValue<string>())
-            : "Never"}
+          {getValue<string | null>() ? <RelativeTime iso={getValue<string>()} /> : "Never"}
         </span>
       ),
     },

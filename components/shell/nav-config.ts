@@ -20,6 +20,7 @@ export const NAV: Record<Area, NavSection[]> = {
     {
       items: [
         { href: "/analyst/dashboard", label: "Dashboard", key: "d" },
+        { href: "/analyst/insights", label: "Insights", key: "i" },
         { href: "/analyst/mandates", label: "Mandates", key: "m" },
         { href: "/analyst/memos", label: "Memos", key: "o" },
         { href: "/analyst/clients", label: "Clients", key: "c" },
@@ -31,6 +32,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/properties", label: "Properties", key: "p" },
         { href: "/analyst/developers", label: "Developers", key: "v" },
         { href: "/analyst/market", label: "Market", key: "k" },
+        { href: "/analyst/federation", label: "Federation", key: "f" },
         { href: "/analyst/assistant", label: "Assistant", key: "a", feature: "assistant" },
       ],
     },
@@ -40,6 +42,7 @@ export const NAV: Record<Area, NavSection[]> = {
     {
       items: [
         { href: "/client/portfolio", label: "Portfolio", key: "p" },
+        { href: "/client/insights", label: "Insights", key: "i" },
         { href: "/client/opportunities", label: "Opportunities", key: "o" },
         { href: "/client/recommendations", label: "Recommendations", key: "r" },
       ],
@@ -67,6 +70,7 @@ export const NAV: Record<Area, NavSection[]> = {
       title: "Governance",
       items: [
         { href: "/admin/audit", label: "Audit log", key: "l" },
+        { href: "/admin/insights-config", label: "Intelligence", key: "t" },
         { href: "/admin/integrations", label: "Integrations", key: "n" },
         { href: "/admin/seed", label: "Demonstration data", key: "s" },
       ],
@@ -78,6 +82,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/platform/dashboard", label: "Dashboard", key: "d" },
         { href: "/platform/tenants", label: "Tenants", key: "t" },
         { href: "/platform/metrics", label: "Metrics", key: "m" },
+        { href: "/platform/federation", label: "Federation", key: "f" },
       ],
     },
   ],
@@ -111,6 +116,9 @@ export const SEGMENT_LABEL: Record<string, string> = {
   platform: "Platform",
   tenants: "Tenants",
   metrics: "Metrics",
+  insights: "Insights",
+  federation: "Federation",
+  "insights-config": "Intelligence",
 };
 
 export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };

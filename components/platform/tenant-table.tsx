@@ -1,11 +1,11 @@
 "use client";
 
+import { RelativeTime } from "@/components/ui/relative-time";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/composites/data-table";
 import { StatusPill } from "@/components/ui/status-pill";
 import { formatAed } from "@/lib/domain";
-import { relativeTime } from "@/lib/utils";
 
 export interface TenantRow {
   id: string;
@@ -52,7 +52,7 @@ const columns: ColumnDef<TenantRow, unknown>[] = [
   { accessorKey: "clients", header: "Clients", size: 90, meta: { numeric: true } },
   { accessorKey: "mandates", header: "Mandates", size: 100, meta: { numeric: true } },
   { accessorKey: "aiCost30", header: "AI cost, 30d", size: 120, meta: { numeric: true }, cell: ({ getValue }) => `$${getValue<number>().toFixed(2)}` },
-  { accessorKey: "createdAt", header: "Since", size: 110, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500">{relativeTime(getValue<string>())}</span> },
+  { accessorKey: "createdAt", header: "Since", size: 110, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500"><RelativeTime iso={getValue<string>()} /></span> },
 ];
 
 export function TenantTable({ rows }: { rows: TenantRow[] }) {

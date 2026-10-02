@@ -24,7 +24,7 @@ const PANEL: { role: CrossValidationResult["role"]; tier: ModelTier }[] = [
  * as models of different depth do: the deep reviewer wants a margin over the
  * hurdle, the fast one accepts any positive margin.
  */
-function replayVerdict(input: Input, role: CrossValidationResult["role"]): Verdict {
+export function replayVerdict(input: Input, role: CrossValidationResult["role"]): Verdict {
   const p50 = input.scenarios.find((x) => x.label === "P50")?.irr ?? 0;
   const margin = p50 - input.hurdlePct;
   const critical = input.findings.filter((f) => f.severity === "CRITICAL").length;

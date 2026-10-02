@@ -1,9 +1,10 @@
 "use client";
 
+import { RelativeTime } from "@/components/ui/relative-time";
 import type { ColumnDef } from "@tanstack/react-table";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { DeveloperListItem as Developer } from "@/lib/queries";
-import { cn, relativeTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { DataTable } from "../data-table";
 
 function band(v: number) {
@@ -62,7 +63,7 @@ const columns: ColumnDef<Developer, unknown>[] = [
     cell: ({ getValue }) => <span className={getValue<number>() >= 10 ? "text-danger" : undefined}>{getValue<number>()}</span>,
   },
   { accessorKey: "escrowCompliant", header: "Escrow", size: 120, cell: ({ getValue }) => (getValue<boolean>() ? <StatusPill tone="complete">Verified</StatusPill> : <StatusPill tone="error">Unverified</StatusPill>) },
-  { accessorKey: "lastScoredAt", header: "Scored", size: 104, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500">{relativeTime(new Date(getValue<string>()).toISOString())}</span> },
+  { accessorKey: "lastScoredAt", header: "Scored", size: 104, meta: { numeric: true }, cell: ({ getValue }) => <span className="text-ink-500"><RelativeTime iso={new Date(getValue<string>()).toISOString()} /></span> },
 ];
 
 export function DevelopersTable({ rows }: { rows: Developer[] }) {

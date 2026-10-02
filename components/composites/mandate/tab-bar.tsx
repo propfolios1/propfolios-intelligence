@@ -9,6 +9,7 @@ export const MANDATE_TABS = [
   ["debate", "Debate"],
   ["memo", "Memo"],
   ["documents", "Documents"],
+  ["actions", "Actions"],
   ["audit", "Audit"],
 ] as const;
 export type MandateTab = (typeof MANDATE_TABS)[number][0];

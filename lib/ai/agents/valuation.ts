@@ -8,7 +8,7 @@ import { payload, runAgent } from "./_run";
 const KEY = { "Direct comparison": "directComparison", "Income capitalisation": "incomeCapitalisation", "Discounted cash flow": "discountedCashFlow", "Monte Carlo": "monteCarlo" } as const;
 
 /** Replay valuer: the default weights, a conclusion from the 3% band and a dispersion-based confidence. */
-function replayValuation(input: z.infer<typeof valuationInput>): z.infer<typeof valuationOutput> {
+export function replayValuation(input: z.infer<typeof valuationInput>): z.infer<typeof valuationOutput> {
   const w = input.defaultWeights;
   const weights = { directComparison: w["Direct comparison"] ?? 0, incomeCapitalisation: w["Income capitalisation"] ?? 0, discountedCashFlow: w["Discounted cash flow"] ?? 0, monteCarlo: w["Monte Carlo"] ?? 0 };
   const total = input.methods.reduce((a, m) => a + m.value * (weights[KEY[m.method as keyof typeof KEY]] ?? 0), 0) / Math.max(1e-9, Object.values(weights).reduce((a, b) => a + b, 0));

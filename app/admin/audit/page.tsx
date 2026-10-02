@@ -30,7 +30,7 @@ export default async function AuditPage() {
     <PageContainer>
       <PageHeader eyebrow="Administration" title="Audit log" subtitle={`${events.length} most recent events. Every agent run records its model, tokens, duration and cost; every user action records its actor.`} />
       <div className="mt-8">
-        <AuditList events={events} showMandate dense />
+        <AuditList events={events} showMandate dense advanced />
       </div>
     </PageContainer>
   );

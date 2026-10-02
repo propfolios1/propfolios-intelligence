@@ -138,9 +138,8 @@ function replayNarrative(signals: Signal[]) {
  * Layer 4: scans one tenant, writes new insights and refreshes open ones
  * (one per signal, by dedupe key). Dismissed insights stay dismissed.
  */
-export async function scanTenant(db: DB, tenantId: string, ctx?: Partial<AgentContext>) {
-  const tenant = await getTenantById(tenantId);
-  const cfg = { ...DEFAULT_INSIGHT_CONFIG, ...(tenant?.configJson.insights ?? {}) };
+export async function scanTenant(db: DB, tenantId: string, ctx?: Partial<AgentContext> & { narrate?: boolean; config?: InsightConfig }) {
+  const cfg = ctx?.config ?? { ...DEFAULT_INSIGHT_CONFIG, ...((await getTenantById(tenantId))?.configJson.insights ?? {}) };
   const signals = await detect(db, tenantId, cfg);
   const existing = await db.select({ key: s.insights.dedupeKey, status: s.insights.status }).from(s.insights).where(scope(s.insights, tenantId, ne(s.insights.kind, "follow_up")));
   const status = new Map(existing.map((e) => [e.key, e.status]));
@@ -148,7 +147,7 @@ export async function scanTenant(db: DB, tenantId: string, ctx?: Partial<AgentCo
   let written = 0;
   if (fresh.length) {
     const narrative = new Map<string, { title: string; body: string }>();
-    for (let i = 0; i < fresh.length; i += 20) {
+    for (let i = 0; i < fresh.length && ctx?.narrate !== false; i += 20) {
       const batch = fresh.slice(i, i + 20);
       const run = await runAgent({
         agent: "insight",

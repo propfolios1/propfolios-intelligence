@@ -135,7 +135,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
           {step === 0 && (
             <div className="grid gap-6">
               <FormField label="Firm name" htmlFor="firm" hint="As it appears on your trade licence.">
-                <Input id="firm" value={firm} onChange={(e) => setFirm(e.target.value)} placeholder="Gulf Crest Capital" autoFocus />
+                <Input id="firm" value={firm} onChange={(e) => setFirm(e.target.value)} placeholder="Harbour Point Advisory" autoFocus />
               </FormField>
               {askAdmin && (
                 <div className="grid gap-6 md:grid-cols-2">

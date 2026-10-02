@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { FederationStats } from "@/components/intelligence/federation-stats";
+import { getDb } from "@/db";
+import { federationStats } from "@/lib/federation";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { DubaiCoastline } from "@/components/illustrations/dubai-coastline";
 import { LivePreview } from "@/components/landing/live-preview";
@@ -55,10 +58,18 @@ async function TenantLanding({ name }: { name: string }) {
   );
 }
 
+const FEDERATION: [string, string][] = [
+  ["Anonymised by construction", "Property, developer, mandate and firm become salted one-way hashes before anything leaves a workspace. No client, price or text is shared."],
+  ["Published only at scale", "A baseline appears only when it covers at least three deals from two firms, so no single advisory's book can be inferred."],
+  ["Calibrates every model", "Underwriting assumptions are checked against the federated median for their segment; developer scores absorb what other committees found."],
+  ["Opt in, opt out", "Firms choose whether to contribute. Withdrawing removes every learning at once; every firm benefits from the published baselines."],
+];
+
 export default async function Landing() {
   const tenant = await tenantForHost();
   if (tenant) return <TenantLanding name={tenant.configJson.brand_name} />;
   const demo = !clerkEnabled;
+  const fed = await federationStats(await getDb()).catch(() => ({ deals: 0, advisories: 0, baselines: 0, lastRunAt: null }));
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
@@ -80,7 +91,13 @@ export default async function Landing() {
                 <Link href={demo ? "/api/demo/persona?as=admin" : "/sign-in"}>{demo ? "Open the PropFolios demonstration" : "Sign in"}</Link>
               </Button>
             </div>
-            <p className="mt-4 text-small text-ink-500">From AED 3,000 a month. No card required for the trial.</p>
+            <p className="mt-4 text-small text-ink-500">
+              From AED 3,000 a month. No card required for the trial.{" "}
+              <Link href="/demo" className="text-ink-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
+                Run the committee on a sample asset
+              </Link>
+              , no sign-up.
+            </p>
           </div>
           <aside className="relative mt-16 lg:col-span-5 lg:mt-0" aria-label="Product preview">
             <DubaiCoastline className="pointer-events-none absolute -top-6 right-0 hidden h-[600px] w-auto lg:block" />
@@ -117,6 +134,25 @@ export default async function Landing() {
                 </li>
               ))}
             </ol>
+          </div>
+        </section>
+
+        <section className="border-t border-ink-200 bg-surface">
+          <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-12 px-6 py-24 md:px-12 lg:grid-cols-12 xl:px-20">
+            <div className="lg:col-span-5">
+              <div className="eyebrow">Federated intelligence</div>
+              <h2 className="mt-5 font-display text-section text-navy-900">Every completed deal makes every firm sharper.</h2>
+              <p className="mt-5 text-body text-ink-700">When an advisory delivers a mandate, Nakhla can learn from it without seeing it: segment, assumptions, outcome and the risks that mattered, with every identity replaced by a one-way hash. Underwriting and developer risk in every workspace are calibrated against what the market as a whole has learned.</p>
+              <FederationStats stats={fed} className="mt-6" />
+            </div>
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-6 lg:col-start-7">
+              {FEDERATION.map(([title, body]) => (
+                <li key={title} className="rounded-md border border-ink-200 p-6">
+                  <h3 className="text-read font-medium text-ink-900">{title}</h3>
+                  <p className="mt-2 text-ui text-ink-700">{body}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 

@@ -2,6 +2,8 @@ import { desc, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 import { ActivityFeed } from "@/components/composites/activity-feed";
 import { PageHeader } from "@/components/composites/page-header";
+import { FederationStats } from "@/components/intelligence/federation-stats";
+import { federationStats } from "@/lib/federation";
 import { StatCard } from "@/components/composites/stat-card";
 import { PageContainer } from "@/components/shell/page-container";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,7 @@ export default async function AdminDashboard() {
     db.select().from(s.auditLogs).where(scope(s.auditLogs, user.tenantId, eq(s.auditLogs.actorType, "user"))).orderBy(desc(s.auditLogs.createdAt)).limit(10),
     db.select({ invited: sql<number>`count(*) filter (where ${s.users.invitedAt} is not null)::int` }).from(s.users).where(scope(s.users, user.tenantId)),
   ]);
+  const fed = await federationStats(db);
   const trialDays = sub?.status === "trialing" ? Math.max(0, Math.ceil((sub.currentPeriodEnd.getTime() - Date.now()) / 86_400_000)) : null;
   return (
     <PageContainer>
@@ -49,7 +52,12 @@ export default async function AdminDashboard() {
             </Button>
           </>
         }
-        meta={<StatusPill tone={tenant.status === "active" ? "complete" : "progress"}>{tenant.status}</StatusPill>}
+        meta={
+          <>
+            <StatusPill tone={tenant.status === "active" ? "complete" : "progress"}>{tenant.status}</StatusPill>
+            <FederationStats stats={fed} />
+          </>
+        }
       />
       <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Staff seats" value={`${seats.used} / ${seats.limit ?? "∞"}`} note={users?.invited ? `${users.invited} invitations pending` : "All accepted"} href="/admin/users" />

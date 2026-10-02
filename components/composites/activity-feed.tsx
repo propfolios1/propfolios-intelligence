@@ -1,5 +1,6 @@
+import { RelativeTime } from "@/components/ui/relative-time";
 import Link from "next/link";
-import { cn, relativeTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export interface ActivityItem {
   id: string;
@@ -38,7 +39,7 @@ export function ActivityFeed({ items, linkMandates = true, className }: { items:
             ) : null}
           </div>
           <time className="num shrink-0 text-axis text-ink-500" dateTime={new Date(a.createdAt).toISOString()}>
-            {relativeTime(new Date(a.createdAt).toISOString())}
+            <RelativeTime iso={new Date(a.createdAt).toISOString()} />
           </time>
         </li>
       ))}

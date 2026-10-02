@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { DateRangePicker, type DateRange } from "@/components/ui/date-range-picker";
 import { Input } from "@/components/ui/form";
+import { ExportMenu } from "./export-menu";
+import { FilterBuilder, type FilterValue } from "./filter-builder";
 import { Segmented } from "@/components/ui/segmented";
 export interface AuditEvent {
   id: string;
@@ -33,12 +36,25 @@ function stamp(iso: string) {
  * A chronological ledger. Time sits in its own mono column on the left; agent
  * runs carry their cost and tokens as a second line.
  */
-export function AuditList({ events, showMandate = false, dense = false }: { events: AuditEvent[]; showMandate?: boolean; dense?: boolean }) {
+export function AuditList({ events, showMandate = false, dense = false, advanced = false }: { events: AuditEvent[]; showMandate?: boolean; dense?: boolean; advanced?: boolean }) {
   const [q, setQ] = React.useState("");
   const [type, setType] = React.useState<"all" | AuditEvent["actorType"]>("all");
-  const filtered = events.filter(
-    (e) => (type === "all" || e.actorType === type) && (!q || `${e.actor} ${e.action} ${e.detail ?? ""} ${e.reference ?? ""}`.toLowerCase().includes(q.toLowerCase())),
-  );
+  const [range, setRange] = React.useState<DateRange>({ from: null, to: null });
+  const [filters, setFilters] = React.useState<FilterValue>({});
+  const models = [...new Set(events.map((e) => e.model).filter((m): m is string => Boolean(m)))];
+  const filtered = events.filter((e) => {
+    const day = e.at.slice(0, 10);
+    return (
+      (type === "all" || e.actorType === type) &&
+      (!q || `${e.actor} ${e.action} ${e.detail ?? ""} ${e.reference ?? ""}`.toLowerCase().includes(q.toLowerCase())) &&
+      (!range.from || day >= range.from) &&
+      (!range.to || day <= range.to) &&
+      (!filters.model || e.model === filters.model) &&
+      (!filters.actor || e.actor.toLowerCase().includes(filters.actor.toLowerCase())) &&
+      (!filters.minCost || (e.costUsd ?? 0) >= Number(filters.minCost)) &&
+      (!filters.reference || (e.reference ?? "").toLowerCase().includes(filters.reference.toLowerCase()))
+    );
+  });
   const cost = filtered.reduce((s, e) => s + (e.costUsd ?? 0), 0);
   const count = (t: AuditEvent["actorType"]) => events.filter((e) => e.actorType === t).length;
 
@@ -57,8 +73,41 @@ export function AuditList({ events, showMandate = false, dense = false }: { even
             { value: "system", label: "System", count: count("system") },
           ]}
         />
+        {advanced && <DateRangePicker value={range} onChange={setRange} />}
         <span className="num ml-auto text-small text-ink-500">{formatUsdCost(cost)} agent spend</span>
+        {advanced && (
+          <ExportMenu
+            rows={filtered}
+            filename="audit-log"
+            columns={[
+              { key: "at", header: "Time (UTC)", value: (e) => e.at },
+              { key: "actor", header: "Actor", value: (e) => e.actor },
+              { key: "actorType", header: "Type", value: (e) => e.actorType },
+              { key: "action", header: "Action", value: (e) => e.action },
+              { key: "reference", header: "Mandate", value: (e) => e.reference },
+              { key: "model", header: "Model", value: (e) => e.model },
+              { key: "inputTokens", header: "Input tokens", value: (e) => e.inputTokens },
+              { key: "outputTokens", header: "Output tokens", value: (e) => e.outputTokens },
+              { key: "costUsd", header: "Cost (USD)", value: (e) => e.costUsd },
+              { key: "durationMs", header: "Duration (ms)", value: (e) => e.durationMs },
+            ]}
+          />
+        )}
       </div>
+      {advanced && (
+        <div className="-mt-3 mb-6">
+          <FilterBuilder
+            value={filters}
+            onChange={setFilters}
+            fields={[
+              { key: "model", label: "Model", type: "select", options: models.map((m) => ({ value: m, label: m === "replay" ? "Replay mode" : m })) },
+              { key: "actor", label: "Actor", type: "text" },
+              { key: "reference", label: "Mandate", type: "text" },
+              { key: "minCost", label: "Cost (USD)", type: "number", op: ">=" },
+            ]}
+          />
+        </div>
+      )}
       {filtered.length === 0 ? (
         <EmptyState glyph="documents" headline="No events match this filter." />
       ) : (

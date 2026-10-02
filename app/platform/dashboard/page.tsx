@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { LineSeries } from "@/components/charts/series";
 import { PageHeader } from "@/components/composites/page-header";
+import { FederationStats } from "@/components/intelligence/federation-stats";
+import { federationStats } from "@/lib/federation";
 import { StatCard } from "@/components/composites/stat-card";
 import { TenantTable } from "@/components/platform/tenant-table";
 import { PageContainer } from "@/components/shell/page-container";
@@ -18,7 +20,8 @@ export const dynamic = "force-dynamic";
 
 export default async function PlatformDashboard() {
   await requirePlatformAdmin();
-  const d = await platformDashboard(await getDb());
+  const db = await getDb();
+  const [d, fed] = await Promise.all([platformDashboard(db), federationStats(db)]);
   const last = d.history.at(-1)?.mrr ?? 0;
   const prev = d.history.at(-2)?.mrr ?? 0;
   const byPlan = PLANS.map((p) => ({ plan: p.name, n: d.tenants.filter((t) => t.plan === p.id && t.status !== "cancelled").length, mrr: d.tenants.filter((t) => t.plan === p.id).reduce((a, t) => a + t.mrrAed, 0) }));
@@ -28,6 +31,7 @@ export default async function PlatformDashboard() {
         eyebrow="Nakhla platform"
         title="Platform dashboard"
         subtitle={`${d.active} paying tenants and ${d.trials} on trial. Revenue, usage and churn across every workspace.`}
+        meta={<FederationStats stats={fed} />}
         actions={
           <Button asChild>
             <Link href="/platform/tenants/new">Create tenant</Link>

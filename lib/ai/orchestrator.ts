@@ -325,7 +325,7 @@ export type AdvanceResult = { ran: MandateStage[]; status: MandateStage; outcome
  * stage, so any instance can resume. A row-level lock (running_since)
  * prevents two invocations from running the same mandate.
  */
-export async function advanceMandate(mandateId: string, opts: { tenantId: string; actor: string; budgetMs?: number }): Promise<AdvanceResult> {
+export async function advanceMandate(mandateId: string, opts: { tenantId: string; actor: string; budgetMs?: number; until?: MandateStage }): Promise<AdvanceResult> {
   const db = await getDb();
   const deadline = Date.now() + (opts.budgetMs ?? 270_000);
   if (!(await acquireLock(db, mandateId, opts.tenantId))) {
@@ -340,6 +340,10 @@ export async function advanceMandate(mandateId: string, opts: { tenantId: string
       if (!b) throw new Error("Mandate not found.");
       status = b.mandate.status;
       const fn = STAGE_FN[status];
+      if (opts.until && status === opts.until && ran.length > 0) {
+        emit({ type: "paused", mandateId, nextStage: status });
+        return { ran, status, outcome: "paused" };
+      }
       if (!fn) {
         emit({ type: "done", mandateId, status, totalCostUsd: b.mandate.totalCostUsd });
         return { ran, status, outcome: "review" };

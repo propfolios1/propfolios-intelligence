@@ -1,4 +1,6 @@
 import "server-only";
+import type { BaselineView } from "@/components/intelligence/baseline-card";
+import type { ValuationView } from "@/components/intelligence/valuation-card";
 import { and, asc, count, desc, eq, gte, ilike, inArray, lte, ne, or, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { DB } from "@/db";
@@ -76,6 +78,8 @@ export interface SimulationView {
   risk: { axis: string; score: number }[];
   distribution: Distribution;
   commentary: string | null;
+  valuation: ValuationView | null;
+  baseline: BaselineView | null;
 }
 
 export async function getMandateDetail(db: DB, user: CurrentUser, id: string) {
@@ -92,12 +96,14 @@ export async function getMandateDetail(db: DB, user: CurrentUser, id: string) {
     .limit(1);
   if (!row) throw new HttpError(404, "Mandate not found.");
   assertClientAccess(user, row.client.id);
-  const [[sim], [deb], [memo], audit, docs] = await Promise.all([
+  const [[sim], [deb], [memo], audit, docs, [cv], actions] = await Promise.all([
     db.select().from(s.simulations).where(scope(s.simulations, user.tenantId, eq(s.simulations.mandateId, id))).limit(1),
     db.select().from(s.debates).where(scope(s.debates, user.tenantId, eq(s.debates.mandateId, id))).limit(1),
     db.select().from(s.memos).where(eq(s.memos.mandateId, id)).limit(1),
     db.select().from(s.auditLogs).where(eq(s.auditLogs.mandateId, id)).orderBy(desc(s.auditLogs.createdAt)).limit(80),
     db.select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, storagePath: s.documents.storagePath, createdAt: s.documents.createdAt }).from(s.documents).where(scope(s.documents, user.tenantId, eq(s.documents.mandateId, id))).orderBy(desc(s.documents.createdAt)),
+    db.select().from(s.crossValidations).where(scope(s.crossValidations, user.tenantId, eq(s.crossValidations.mandateId, id))).orderBy(desc(s.crossValidations.createdAt)).limit(1),
+    user.role === "client" ? Promise.resolve([]) : db.select().from(s.actions).where(scope(s.actions, user.tenantId, eq(s.actions.mandateId, id))).orderBy(desc(s.actions.createdAt)),
   ]);
   return {
     ...row,
@@ -108,6 +114,8 @@ export async function getMandateDetail(db: DB, user: CurrentUser, id: string) {
     memo: memo ?? null,
     audit,
     documents: docs,
+    crossValidation: cv ?? null,
+    actions,
   };
 }
 export type MandateDetail = Awaited<ReturnType<typeof getMandateDetail>>;
@@ -162,7 +170,7 @@ export async function getMemo(db: DB, user: CurrentUser, id: string) {
     .limit(1);
   if (!row) throw new HttpError(404, "Memo not found.");
   assertClientAccess(user, row.client.id);
-  if (user.role === "client" && !["approved", "delivered"].includes(row.memo.status)) throw new HttpError(404, "Memo not found.");
+  if (user.role === "client" && !(row.memo.status === "delivered" || (row.memo.status === "approved" && row.memo.sharedAt))) throw new HttpError(404, "Memo not found.");
   return row;
 }
 export type MemoDetail = Awaited<ReturnType<typeof getMemo>>;

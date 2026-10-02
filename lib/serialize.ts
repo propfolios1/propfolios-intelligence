@@ -21,3 +21,8 @@ export function mandateRows(rows: MandateListItem[]) {
     analystName: m.analystName,
   }));
 }
+
+/** Insight rows to the client component's view (dates as ISO strings). */
+export function insightViews(rows: { id: string; kind: "price_movement" | "developer_distress" | "undervalued" | "exit_window" | "follow_up"; severity: string; audience: string; title: string; body: string; metrics: { label: string; value: string }[]; status: "new" | "read" | "dismissed"; dueAt: Date | null; createdAt: Date }[]) {
+  return rows.map((r) => ({ id: r.id, kind: r.kind, severity: r.severity, audience: r.audience, title: r.title, body: r.body, metrics: r.metrics, status: r.status, dueAt: r.dueAt?.toISOString() ?? null, createdAt: r.createdAt.toISOString() }));
+}

@@ -14,6 +14,9 @@ export function SiteHeader({ brandName }: { brandName?: string }) {
         <BrandMark name={brandName} />
       </Link>
       <nav className="flex items-center gap-6 text-small md:gap-8" aria-label="Site">
+        <Link href="/demo" className="hidden text-ink-700 transition-colors duration-150 hover:text-ink-900 sm:inline">
+          Demonstration
+        </Link>
         <Link href="/pricing" className="hidden text-ink-700 transition-colors duration-150 hover:text-ink-900 sm:inline">
           Pricing
         </Link>

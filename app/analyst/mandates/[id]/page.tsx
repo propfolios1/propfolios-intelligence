@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ActivityFeed } from "@/components/composites/activity-feed";
+import { ActionsPanel, ProposeActionDialog } from "@/components/intelligence/action-button";
+import { CrossValidationBadge, CrossValidationPanel } from "@/components/intelligence/cross-validation";
 import { DocumentCard } from "@/components/composites/document-card";
 import { DocumentUpload } from "@/components/composites/document-upload";
 import { EmptyState } from "@/components/composites/empty-state";
@@ -73,6 +75,7 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
               <span className="num text-small text-ink-500">{m.reference}</span>
               <StagePill status={m.status} />
               {m.priority === "priority" && <span className="eyebrow text-gold-600">Priority</span>}
+              {d.crossValidation && <CrossValidationBadge agreement={d.crossValidation.agreement} consensus={d.crossValidation.consensus} flagged={m.requiresReview} />}
             </div>
             <h1 className="mt-3 font-display text-section text-navy-900 md:text-title">{m.title}</h1>
             <p className="mt-2 text-body text-ink-700">
@@ -85,7 +88,7 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
           <RunControls mandateId={m.id} reference={m.reference} memoId={d.memo?.id ?? null} memoStatus={d.memo?.status ?? null} canDelete={user.role === "tenant_admin" || m.status !== "DELIVERED"} />
         </header>
 
-        <TabBar id={m.id} active={tab} counts={{ dd: d.findings.length, documents: d.documents.length, audit: d.audit.length }} />
+        <TabBar id={m.id} active={tab} counts={{ dd: d.findings.length, documents: d.documents.length, actions: d.actions.filter((a) => a.status === "proposed").length, audit: d.audit.length }} />
 
         <div className="pt-8">
           {tab === "overview" && <OverviewTab d={d} />}
@@ -108,7 +111,15 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
           {tab === "research" && (d.research ? <ResearchTab research={d.research} /> : <Pending stage={STAGE_LABEL.RESEARCH} />)}
           {tab === "underwriting" && (d.simulation ? <UnderwritingTab sim={d.simulation} currency={p.currency} /> : <Pending stage={STAGE_LABEL.UNDERWRITING} />)}
           {tab === "dd" && (d.findings.length ? <DDTab findings={d.findings} /> : <Pending stage={STAGE_LABEL.DUE_DILIGENCE} />)}
-          {tab === "debate" && (d.debate ? <DebateTab bull={d.debate.bull} bear={d.debate.bear} judge={d.debate.judge} /> : <Pending stage={STAGE_LABEL.DEBATE} />)}
+          {tab === "debate" &&
+            (d.debate ? (
+              <div className="flex flex-col gap-8">
+                <DebateTab bull={d.debate.bull} bear={d.debate.bear} judge={d.debate.judge} />
+                <CrossValidationPanel mandateId={m.id} cv={d.crossValidation ? { ...d.crossValidation, createdAt: d.crossValidation.createdAt.toISOString() } : null} />
+              </div>
+            ) : (
+              <Pending stage={STAGE_LABEL.DEBATE} />
+            ))}
           {tab === "memo" &&
             (d.memo ? (
               <div>
@@ -157,6 +168,18 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
               <div className="xl:col-span-4">
                 <DocumentUpload mandateId={m.id} defaultType="research" types={["research", "spa", "title_deed", "valuation", "statement", "other"]} />
               </div>
+            </div>
+          )}
+          {tab === "actions" && (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <div className="eyebrow">Layer 5 · agentic actions</div>
+                  <p className="mt-1 max-w-[72ch] text-small text-ink-700">The action agent proposes follow-ups; nothing runs until someone approves it, and every executed action can be reversed.</p>
+                </div>
+                <ProposeActionDialog mandateId={m.id} clientId={m.clientId} />
+              </div>
+              <ActionsPanel actions={d.actions.map((a) => ({ ...a, createdAt: a.createdAt.toISOString(), executedAt: a.executedAt?.toISOString() ?? null }))} />
             </div>
           )}
           {tab === "audit" && (
