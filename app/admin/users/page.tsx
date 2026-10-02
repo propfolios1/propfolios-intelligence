@@ -10,7 +10,7 @@ export const metadata = { title: "Users" };
 export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
-  const user = await requireRole(["admin"]);
+  const user = await requireRole(["tenant_admin"]);
   const db = await getDb();
   const clientList = await db.select({ id: s.clients.id, name: s.clients.name }).from(s.clients).where(eq(s.clients.tenantId, user.tenantId));
   const rows = await db.select({ u: s.users, clientName: s.clients.name }).from(s.users).leftJoin(s.clients, eq(s.clients.id, s.users.clientId)).where(eq(s.users.tenantId, user.tenantId)).orderBy(s.users.role, s.users.name);
@@ -29,7 +29,7 @@ export default async function UsersPage() {
         <UsersTable
           selfId={user.id}
           clients={clientList}
-          rows={rows.map(({ u, clientName }) => ({ id: u.id, name: u.name, email: u.email, title: u.title, role: u.role, clientId: u.clientId, clientName, lastActiveAt: u.lastActiveAt?.toISOString() ?? null, linked: Boolean(u.clerkUserId) }))}
+          rows={rows.filter(({ u }) => u.role !== "platform_admin").map(({ u, clientName }) => ({ id: u.id, name: u.name, email: u.email, title: u.title, role: u.role as "tenant_admin" | "analyst" | "client", clientId: u.clientId, clientName, lastActiveAt: u.lastActiveAt?.toISOString() ?? null, linked: Boolean(u.clerkUserId) }))}
         />
       </div>
     </PageContainer>

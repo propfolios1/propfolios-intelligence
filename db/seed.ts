@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { embed } from "@/lib/ai/embed";
 import { defaultDrivers, monteCarlo, scenarioTable, sensitivity, underwrite, xirr, type UnderwritingParams } from "@/lib/ai/tools/financial";
 import type { DB } from "./index";
 import * as s from "./schema";
-import { AVG_TICKET_AED, CLIENTS, DEVELOPERS, INR_PER_AED, MARKET_SERIES, PROPERTIES, scoreDeveloper, STAFF, TENANT } from "./seed-data";
+import { defaultTenantConfig } from "@/lib/tenant";
+import { planById, type PlanId } from "@/lib/plans";
+import { AVG_TICKET_AED, CLIENTS, DEVELOPERS, INR_PER_AED, MARKET_SERIES, PROPERTIES, scoreDeveloper, STAFF } from "./seed-data";
 import { DOWNTOWN, downtownMemoHtml, INDIA, PALM, palmMemoHtml } from "./seed-mandates";
 
 /** Deterministic UUID from a key so re-seeding never duplicates. */
@@ -18,19 +20,27 @@ const daysAgo = (n: number, from = Date.now()) => new Date(from - n * DAY);
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 const toAed = (amount: number, currency: string) => (currency === "INR" ? amount / INR_PER_AED : amount);
 
+/** PropFolios, tenant #1. Its ids are stable across releases. */
 export const TENANT_ID = uid("tenant");
+export const PLATFORM_TENANT_ID = uid("tenant:nakhla");
 
-/** True when the demo tenant exists. */
+/** True when the platform has been seeded. */
 export async function isSeeded(db: DB) {
   const rows = await db.select({ id: s.tenants.id }).from(s.tenants).where(sql`${s.tenants.id} = ${TENANT_ID}`);
   return rows.length > 0;
 }
 
-/** Removes every row, children first. Used by the admin reset. */
+const CHILD_TABLES = [s.auditLogs, s.messages, s.alerts, s.recommendations, s.documents, s.memos, s.debates, s.simulations, s.mandates, s.portfolios, s.clients, s.transactions, s.launches, s.marketData, s.properties, s.developers] as const;
+
+/** Removes every row on the platform, children first. */
 export async function wipe(db: DB) {
-  for (const t of [s.auditLogs, s.messages, s.alerts, s.recommendations, s.documents, s.memos, s.debates, s.simulations, s.mandates, s.portfolios, s.users, s.clients, s.transactions, s.launches, s.marketData, s.properties, s.developers, s.tenants]) {
-    await db.delete(t);
-  }
+  for (const t of [...CHILD_TABLES, s.users, s.subscriptions, s.tenants]) await db.delete(t);
+}
+
+/** Removes one tenant's business data, keeping the tenant, its staff and its subscription. */
+export async function resetTenantData(db: DB, tenantId: string) {
+  for (const t of CHILD_TABLES) await db.delete(t).where(eq(t.tenantId, tenantId));
+  await db.delete(s.users).where(and(eq(s.users.tenantId, tenantId), eq(s.users.role, "client")));
 }
 
 function underwritingFrom(a: typeof DOWNTOWN.assumptions): UnderwritingParams {
@@ -40,24 +50,37 @@ function underwritingFrom(a: typeof DOWNTOWN.assumptions): UnderwritingParams {
 
 function simulate(a: typeof DOWNTOWN.assumptions, seed: number) {
   const base = underwritingFrom(a);
-  const dist = monteCarlo(base, { iterations: 5000, seed, ...a.volatility });
+  const dist = monteCarlo(base, { iterations: 10_000, seed, ...a.volatility });
   const scenarios = scenarioTable(base, dist);
   const sens = sensitivity(base, defaultDrivers(base));
   const baseCase = underwrite(base);
   return { base, dist, scenarios, sens, baseCase };
 }
 
-export async function seed(db: DB, opts: { force?: boolean } = {}) {
-  if (!opts.force && (await isSeeded(db))) return { seeded: false };
-  if (opts.force) await wipe(db);
+export interface SeedTarget {
+  tenantId: string;
+  slug: string;
+  /** Seed the PropFolios staff and client logins. Other tenants use their own administrator. */
+  staff: boolean;
+  adminUserId?: string;
+  adminName?: string;
+}
 
+/**
+ * Loads the demonstration dataset into one tenant: developers, the thirty
+ * named projects, transactions, twelve months of market data, five clients
+ * with holdings, three mandates, memos, documents, alerts and messages.
+ * Deterministic ids per tenant make it idempotent.
+ */
+export async function seedTenantData(db: DB, target: SeedTarget) {
+  const { tenantId } = target;
+  const ns = target.slug === "propfolios" ? "" : `${target.slug}:`;
+  const id = (key: string) => uid(`${ns}${key}`);
+  const staffName = (name: string) => (target.staff ? name : (target.adminName ?? "Advisory team"));
   const now = Date.now();
 
-  /* tenant & staff */
-  await db.insert(s.tenants).values({ id: TENANT_ID, name: TENANT.name, slug: TENANT.slug }).onConflictDoNothing();
-
   /* developers */
-  const devId = (k: string) => uid(`dev:${k}`);
+  const devId = (k: string) => id(`dev:${k}`);
   await db
     .insert(s.developers)
     .values(
@@ -65,6 +88,7 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
         const { breakdown, riskScore } = scoreDeveloper(d);
         return {
           id: devId(d.key),
+          tenantId,
           name: d.name,
           market: d.market,
           hq: d.hq,
@@ -87,13 +111,14 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
     .onConflictDoNothing();
 
   /* properties */
-  const propId = (slug: string) => uid(`prop:${slug}`);
+  const propId = (slug: string) => id(`prop:${slug}`);
   const statusMap = { off_plan: "off_plan", under_construction: "under_construction", ready: "ready" } as const;
   await db
     .insert(s.properties)
     .values(
       PROPERTIES.map((p) => ({
         id: propId(p.slug),
+        tenantId,
         slug: p.slug,
         name: p.name,
         developerId: devId(p.developer),
@@ -128,7 +153,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
       launchSlugs.map((slug, i) => {
         const p = prop(slug);
         return {
-          id: uid(`launch:${slug}`),
+          id: id(`launch:${slug}`),
+          tenantId,
           propertyId: propId(slug),
           developerId: devId(p.developer),
           launchDate: isoDate(daysAgo(60 + i * 41, now)),
@@ -149,7 +175,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
       const area = Math.round((p.assetClass === "Villa" ? 3200 : p.market === "India" ? 1350 : 1100) * (0.8 + ((k * 7 + pi) % 5) * 0.12));
       const psf = Math.round(p.pricePerSqft * (1 + drift));
       txRows.push({
-        id: uid(`tx:${p.slug}:${k}`),
+        id: id(`tx:${p.slug}:${k}`),
+        tenantId,
         propertyId: propId(p.slug),
         region: p.region,
         community: p.community,
@@ -174,7 +201,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
     for (let i = 0; i < 12; i++) {
       const month = new Date(Date.UTC(thisMonth.getUTCFullYear(), thisMonth.getUTCMonth() - (12 - i), 1));
       marketRows.push({
-        id: uid(`mkt:${region}:${i}`),
+        id: id(`mkt:${region}:${i}`),
+        tenantId,
         region,
         month: isoDate(month),
         transactions: series.tx[i]!,
@@ -190,14 +218,15 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   await db.insert(s.marketData).values(marketRows).onConflictDoNothing();
 
   /* clients, staff and client users */
-  const clientId = (k: string) => uid(`client:${k}`);
-  const userId = (k: string) => uid(`user:${k}`);
+  const clientId = (k: string) => id(`client:${k}`);
+  const userId = (k: string) => (target.staff || k.startsWith("client:") ? id(`user:${k}`) : target.adminUserId!);
+  if (target.staff)
   await db
     .insert(s.users)
     .values(
       STAFF.map((u, i) => ({
         id: userId(u.key),
-        tenantId: TENANT_ID,
+        tenantId: tenantId,
         email: u.email,
         name: u.name,
         title: u.title,
@@ -212,7 +241,7 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
     .values(
       CLIENTS.map((c) => ({
         id: clientId(c.key),
-        tenantId: TENANT_ID,
+        tenantId: tenantId,
         name: c.name,
         type: c.type,
         nationality: c.nationality,
@@ -220,18 +249,19 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
         domicile: c.domicile,
         aumAed: c.aumAed,
         riskProfile: c.riskProfile,
-        relationshipManagerId: userId(c.rm),
+        relationshipManagerId: target.staff ? userId(c.rm) : (target.adminUserId ?? null),
         kycStatus: "verified",
         policy: c.policy,
       })),
     )
     .onConflictDoNothing();
+  if (target.staff)
   await db
     .insert(s.users)
     .values(
       CLIENTS.map((c, i) => ({
         id: userId(`client:${c.key}`),
-        tenantId: TENANT_ID,
+        tenantId: tenantId,
         email: c.email,
         name: c.name,
         title: c.type,
@@ -268,8 +298,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
       const r = xirr(flows.map((f) => ({ date: f.date, amount: f.amount })));
       const status = !income ? "under_construction" : value < cost * 1.05 ? "watch" : "performing";
       holdingRows.push({
-        id: uid(`holding:${c.key}:${i}`),
-        tenantId: TENANT_ID,
+        id: id(`holding:${c.key}:${i}`),
+        tenantId: tenantId,
         clientId: clientId(c.key),
         propertyId: propId(h.property),
         unitLabel: h.unit,
@@ -324,8 +354,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
 
   const mandateRows: (typeof s.mandates.$inferInsert)[] = [
     {
-      id: uid("mandate:downtown"),
-      tenantId: TENANT_ID,
+      id: id("mandate:downtown"),
+      tenantId: tenantId,
       reference: DOWNTOWN.reference,
       title: DOWNTOWN.title,
       clientId: clientId(DOWNTOWN.client),
@@ -348,8 +378,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
       createdAt: daysAgo(26, now),
     },
     {
-      id: uid("mandate:india"),
-      tenantId: TENANT_ID,
+      id: id("mandate:india"),
+      tenantId: tenantId,
       reference: INDIA.reference,
       title: INDIA.title,
       clientId: clientId(INDIA.client),
@@ -367,8 +397,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
       createdAt: daysAgo(0.25, now),
     },
     {
-      id: uid("mandate:palm"),
-      tenantId: TENANT_ID,
+      id: id("mandate:palm"),
+      tenantId: tenantId,
       reference: PALM.reference,
       title: PALM.title,
       clientId: clientId(PALM.client),
@@ -397,8 +427,9 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
     .insert(s.simulations)
     .values([
       {
-        id: uid("sim:downtown"),
-        mandateId: uid("mandate:downtown"),
+        id: id("sim:downtown"),
+        tenantId,
+        mandateId: id("mandate:downtown"),
         assumptions: { ...dt.base, rationale: DOWNTOWN.assumptions.rationale, volatility: DOWNTOWN.assumptions.volatility },
         scenarios: dt.scenarios,
         cashflows: dt.baseCase.cashflows,
@@ -408,8 +439,9 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
         commentary: "Completed, let and liquid. Returns depend on capital growth more than any other driver.",
       },
       {
-        id: uid("sim:palm"),
-        mandateId: uid("mandate:palm"),
+        id: id("sim:palm"),
+        tenantId,
+        mandateId: id("mandate:palm"),
         assumptions: { ...pm.base, rationale: PALM.assumptions.rationale, volatility: PALM.assumptions.volatility },
         scenarios: pm.scenarios,
         cashflows: pm.baseCase.cashflows,
@@ -424,8 +456,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   await db
     .insert(s.debates)
     .values([
-      { id: uid("debate:downtown"), mandateId: uid("mandate:downtown"), ...DOWNTOWN.debate },
-      { id: uid("debate:palm"), mandateId: uid("mandate:palm"), ...PALM.debate },
+      { id: id("debate:downtown"), tenantId, mandateId: id("mandate:downtown"), ...DOWNTOWN.debate },
+      { id: id("debate:palm"), tenantId, mandateId: id("mandate:palm"), ...PALM.debate },
     ])
     .onConflictDoNothing();
 
@@ -435,9 +467,9 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
     .insert(s.memos)
     .values([
       {
-        id: uid("memo:downtown"),
-        tenantId: TENANT_ID,
-        mandateId: uid("mandate:downtown"),
+        id: id("memo:downtown"),
+        tenantId: tenantId,
+        mandateId: id("mandate:downtown"),
         title: "Allocation Memo: Burj Crown, Downtown Dubai",
         status: "delivered",
         contentHtml: downtownMemoHtml({ p10: dtS("P10").irr, p50: dtS("P50").irr, p90: dtS("P90").irr, multiple: dtS("P50").equityMultiple, exit: dtS("P50").exitValue, cashYield: dtS("P50").cashYield }),
@@ -450,15 +482,15 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
         ],
         factCheck: { flags: [{ claim: `${dtS("P50").irr.toFixed(1)}%`, issue: "calculation", severity: "low", suggestion: "Matches the P50 simulation." }], verifiedClaims: 14 },
         version: 4,
-        lastEditedBy: "Aisha Rahman",
-        approvedBy: "Amol Bandekar",
+        lastEditedBy: staffName("Aisha Rahman"),
+        approvedBy: staffName("Amol Bandekar"),
         approvedAt: daysAgo(15, now),
         createdAt: daysAgo(17, now),
       },
       {
-        id: uid("memo:palm"),
-        tenantId: TENANT_ID,
-        mandateId: uid("mandate:palm"),
+        id: id("memo:palm"),
+        tenantId: tenantId,
+        mandateId: id("mandate:palm"),
         title: "Exit Memo: Palm Beach Towers Penthouse",
         status: "draft",
         contentHtml: palmMemoHtml({ p10: pmS("P10").irr, p50: pmS("P50").irr, p90: pmS("P90").irr, exit: pmS("P50").exitValue }),
@@ -469,7 +501,7 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
           { label: "Gain since 2020", value: "77%" },
         ],
         version: 2,
-        lastEditedBy: "Aisha Rahman",
+        lastEditedBy: staffName("Aisha Rahman"),
         createdAt: daysAgo(0.5, now),
       },
     ])
@@ -478,11 +510,11 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   /* documents with embeddings */
   const docRows: (typeof s.documents.$inferInsert)[] = [];
   const addDoc = (key: string, d: Omit<typeof s.documents.$inferInsert, "id" | "tenantId" | "embedding">) =>
-    docRows.push({ id: uid(`doc:${key}`), tenantId: TENANT_ID, ...d, embedding: embed(`${d.title}\n${d.contentText}`) });
-  addDoc("memo:downtown", { clientId: clientId("ahmed"), mandateId: uid("mandate:downtown"), title: "Allocation Memo, Burj Crown", type: "memo", pages: 9, sizeBytes: 412_000, contentText: DOWNTOWN.research.summary, createdAt: daysAgo(14, now) });
-  addDoc("research:downtown", { clientId: clientId("ahmed"), mandateId: uid("mandate:downtown"), title: "Research Dossier, Burj Crown", type: "research", pages: 14, sizeBytes: 688_000, contentText: DOWNTOWN.research.sections.map((x) => `${x.heading}. ${x.body}`).join("\n"), createdAt: daysAgo(22, now) });
-  addDoc("research:palm", { clientId: clientId("khalid"), mandateId: uid("mandate:palm"), title: "Research Dossier, Palm Beach Towers", type: "research", pages: 11, sizeBytes: 541_000, contentText: PALM.research.sections.map((x) => `${x.heading}. ${x.body}`).join("\n"), createdAt: daysAgo(3, now) });
-  addDoc("brief:india", { clientId: clientId("priya"), mandateId: uid("mandate:india"), title: "Mandate Brief, India Commercial Allocation", type: "research", pages: 2, sizeBytes: 96_000, contentText: INDIA.brief, createdAt: daysAgo(0.25, now) });
+    docRows.push({ id: id(`doc:${key}`), tenantId: tenantId, ...d, embedding: embed(`${d.title}\n${d.contentText}`) });
+  addDoc("memo:downtown", { clientId: clientId("ahmed"), mandateId: id("mandate:downtown"), title: "Allocation Memo, Burj Crown", type: "memo", pages: 9, sizeBytes: 412_000, contentText: DOWNTOWN.research.summary, createdAt: daysAgo(14, now) });
+  addDoc("research:downtown", { clientId: clientId("ahmed"), mandateId: id("mandate:downtown"), title: "Research Dossier, Burj Crown", type: "research", pages: 14, sizeBytes: 688_000, contentText: DOWNTOWN.research.sections.map((x) => `${x.heading}. ${x.body}`).join("\n"), createdAt: daysAgo(22, now) });
+  addDoc("research:palm", { clientId: clientId("khalid"), mandateId: id("mandate:palm"), title: "Research Dossier, Palm Beach Towers", type: "research", pages: 11, sizeBytes: 541_000, contentText: PALM.research.sections.map((x) => `${x.heading}. ${x.body}`).join("\n"), createdAt: daysAgo(3, now) });
+  addDoc("brief:india", { clientId: clientId("priya"), mandateId: id("mandate:india"), title: "Mandate Brief, India Commercial Allocation", type: "research", pages: 2, sizeBytes: 96_000, contentText: INDIA.brief, createdAt: daysAgo(0.25, now) });
   for (const c of CLIENTS) {
     addDoc(`statement:${c.key}`, { clientId: clientId(c.key), title: `Quarterly Portfolio Statement, Q3, ${c.name}`, type: "statement", pages: 6, sizeBytes: 228_000, contentText: `Quarterly statement for ${c.name}. Holdings: ${c.holdings.map((h) => prop(h.property).name).join(", ")}.`, createdAt: daysAgo(3, now) });
     c.holdings.forEach((h, i) => {
@@ -509,31 +541,49 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
         });
     });
   }
+  /* property profiles: one embedded document per project, used for pgvector comparables */
+  const devName = (k: string) => DEVELOPERS.find((d) => d.key === k)!.name;
+  for (const p of PROPERTIES) {
+    const psfAed = toAed(p.pricePerSqft, p.currency);
+    const tier = psfAed >= 2600 ? "ultra-prime luxury" : psfAed >= 1700 ? "prime" : psfAed >= 900 ? "mid-market" : "affordable";
+    const yieldBand = p.grossYield >= 6.5 ? "high-yield income" : p.grossYield >= 5 ? "core income" : "growth-led low-yield";
+    const stage = p.status === "ready" ? "completed ready" : "off-plan under-construction";
+    addDoc(`profile:${p.slug}`, {
+      propertyId: propId(p.slug),
+      title: `Property profile, ${p.name}`,
+      type: "property_profile",
+      pages: 1,
+      sizeBytes: 6_000,
+      contentText: `${p.name}. ${p.community}, ${p.city}, ${p.region}, ${p.market}. ${p.assetClass}. ${tier}. ${yieldBand}. ${stage}. Developer ${devName(p.developer)}. ${p.description}`,
+      extractedData: { tier, yieldBand, stage, pricePerSqftAed: Math.round(psfAed), grossYield: p.grossYield },
+      createdAt: daysAgo(30, now),
+    });
+  }
   await db.insert(s.documents).values(docRows).onConflictDoNothing();
 
   /* recommendations */
   const recs: (typeof s.recommendations.$inferInsert)[] = [
-    { id: uid("rec:khalid-exit"), tenantId: TENANT_ID, clientId: clientId("khalid"), propertyId: propId("palm-beach-towers"), type: "exit_window", title: "Exit window on the Palm penthouse", message: "Indicative value of AED 16.8M is 77% above cost. The three-year hold case returns below your 7% hurdle on today's value.", rationale: ["Hold P50 IRR below hurdle", "Ultra-prime volumes down 11% year on year", "Asset exceeds the 20% single-asset limit"], priority: 1, createdAt: daysAgo(0.4, now) },
-    { id: uid("rec:ahmed-mamsha"), tenantId: TENANT_ID, clientId: clientId("ahmed"), propertyId: propId("mamsha-al-saadiyat"), type: "new_opportunity", title: "Diversify into Saadiyat beachfront", message: "Your portfolio is entirely in Dubai. Mamsha Al Saadiyat offers a 5.6% gross yield from Aldar, with Abu Dhabi prime growth accelerating.", rationale: ["100% Dubai concentration", "Abu Dhabi prime growth ahead of Dubai over two quarters"], priority: 2, createdAt: daysAgo(2, now) },
-    { id: uid("rec:priya-rebalance"), tenantId: TENANT_ID, clientId: clientId("priya"), propertyId: propId("sobha-dream-acres"), type: "rebalance", title: "Lift rupee income toward target", message: "India assets yield 3.1% to 3.4% gross against your 5.5% target. A Bengaluru rental asset on the ORR corridor would raise rupee income without new FEMA complexity.", rationale: ["Rupee income below family commitment", "Existing NRO account supports rent receipt"], priority: 2, createdAt: daysAgo(3, now) },
-    { id: uid("rec:rajesh-refi"), tenantId: TENANT_ID, clientId: clientId("rajesh"), propertyId: propId("business-bay-heights"), type: "refinance", title: "Release equity on Business Bay Heights", message: "The two units are unencumbered and 27% above cost. A 40% LTV facility at current UAE rates would fund the Ellington House completion payment without selling.", rationale: ["Completion payment due on Ellington House in Q1 2027", "Rental cover above 1.6x at 40% LTV"], priority: 3, createdAt: daysAgo(5, now) },
-    { id: uid("rec:fatima-risk"), tenantId: TENANT_ID, clientId: clientId("fatima"), propertyId: propId("sobha-creek-vistas"), type: "risk", title: "Off-plan share above policy", message: "Off-plan holdings are 26% of portfolio value against a 20% limit. Hold Sobha Creek Vistas to handover but defer new off-plan commitments.", rationale: ["Policy limit 20% off-plan", "Income mandate prioritises completed assets"], priority: 2, createdAt: daysAgo(6, now) },
+    { id: id("rec:khalid-exit"), tenantId: tenantId, clientId: clientId("khalid"), propertyId: propId("palm-beach-towers"), type: "exit_window", title: "Exit window on the Palm penthouse", message: "Indicative value of AED 16.8M is 77% above cost. The three-year hold case returns below your 7% hurdle on today's value.", rationale: ["Hold P50 IRR below hurdle", "Ultra-prime volumes down 11% year on year", "Asset exceeds the 20% single-asset limit"], priority: 1, createdAt: daysAgo(0.4, now) },
+    { id: id("rec:ahmed-mamsha"), tenantId: tenantId, clientId: clientId("ahmed"), propertyId: propId("mamsha-al-saadiyat"), type: "new_opportunity", title: "Diversify into Saadiyat beachfront", message: "Your portfolio is entirely in Dubai. Mamsha Al Saadiyat offers a 5.6% gross yield from Aldar, with Abu Dhabi prime growth accelerating.", rationale: ["100% Dubai concentration", "Abu Dhabi prime growth ahead of Dubai over two quarters"], priority: 2, createdAt: daysAgo(2, now) },
+    { id: id("rec:priya-rebalance"), tenantId: tenantId, clientId: clientId("priya"), propertyId: propId("sobha-dream-acres"), type: "rebalance", title: "Lift rupee income toward target", message: "India assets yield 3.1% to 3.4% gross against your 5.5% target. A Bengaluru rental asset on the ORR corridor would raise rupee income without new FEMA complexity.", rationale: ["Rupee income below family commitment", "Existing NRO account supports rent receipt"], priority: 2, createdAt: daysAgo(3, now) },
+    { id: id("rec:rajesh-refi"), tenantId: tenantId, clientId: clientId("rajesh"), propertyId: propId("business-bay-heights"), type: "refinance", title: "Release equity on Business Bay Heights", message: "The two units are unencumbered and 27% above cost. A 40% LTV facility at current UAE rates would fund the Ellington House completion payment without selling.", rationale: ["Completion payment due on Ellington House in Q1 2027", "Rental cover above 1.6x at 40% LTV"], priority: 3, createdAt: daysAgo(5, now) },
+    { id: id("rec:fatima-risk"), tenantId: tenantId, clientId: clientId("fatima"), propertyId: propId("sobha-creek-vistas"), type: "risk", title: "Off-plan share above policy", message: "Off-plan holdings are 26% of portfolio value against a 20% limit. Hold Sobha Creek Vistas to handover but defer new off-plan commitments.", rationale: ["Policy limit 20% off-plan", "Income mandate prioritises completed assets"], priority: 2, createdAt: daysAgo(6, now) },
   ];
   await db.insert(s.recommendations).values(recs).onConflictDoNothing();
 
   /* alerts */
-  const hid = (client: string, i: number) => uid(`holding:${client}:${i}`);
+  const hid = (client: string, i: number) => id(`holding:${client}:${i}`);
   await db
     .insert(s.alerts)
     .values([
-      { id: uid("alert:1"), tenantId: TENANT_ID, clientId: clientId("ahmed"), portfolioId: hid("ahmed", 1), severity: "MEDIUM", title: "Marina Shores facade works behind plan", detail: "Construction progress report shows facade at 61% against 70% planned. Handover guidance remains Q4 2026.", createdAt: daysAgo(1, now) },
-      { id: uid("alert:2"), tenantId: TENANT_ID, clientId: clientId("ahmed"), portfolioId: hid("ahmed", 0), severity: "LOW", title: "Downtown Views lease renewed", detail: "Tenant renewed at AED 232,000, 8.4% above the prior rent.", createdAt: daysAgo(4, now) },
-      { id: uid("alert:3"), tenantId: TENANT_ID, clientId: clientId("khalid"), portfolioId: hid("khalid", 0), severity: "HIGH", title: "Palm penthouse above single-asset limit", detail: "The holding is 25% of real estate value against a 20% policy limit.", createdAt: daysAgo(0.5, now) },
-      { id: uid("alert:4"), tenantId: TENANT_ID, clientId: clientId("khalid"), portfolioId: hid("khalid", 3), severity: "MEDIUM", title: "Cavalli Tower handover guidance moved", detail: "DAMAC guided handover to Q2 2027, one quarter later than at purchase.", createdAt: daysAgo(6, now) },
-      { id: uid("alert:5"), tenantId: TENANT_ID, clientId: clientId("priya"), portfolioId: hid("priya", 1), severity: "MEDIUM", title: "Service charge increase at Binghatti Heights", detail: "2026 Mollak budget up 11%, reducing net yield by an estimated 30 basis points.", createdAt: daysAgo(2, now) },
-      { id: uid("alert:6"), tenantId: TENANT_ID, clientId: clientId("rajesh"), portfolioId: hid("rajesh", 1), severity: "HIGH", title: "Bayz 101 payment milestone due", detail: "A 10% construction milestone of AED 190,000 falls due in 21 days.", createdAt: daysAgo(1.5, now) },
-      { id: uid("alert:7"), tenantId: TENANT_ID, clientId: clientId("fatima"), portfolioId: hid("fatima", 1), severity: "LOW", title: "Sobha Creek Vistas reached 50% completion", detail: "Escrow-certified progress at 50%. The next instalment is linked to 60%.", createdAt: daysAgo(3, now) },
-      { id: uid("alert:8"), tenantId: TENANT_ID, clientId: clientId("fatima"), severity: "MEDIUM", title: "Off-plan share above policy", detail: "Off-plan holdings are 26% of value against a 20% limit.", createdAt: daysAgo(6, now) },
+      { id: id("alert:1"), tenantId: tenantId, clientId: clientId("ahmed"), portfolioId: hid("ahmed", 1), severity: "MEDIUM", title: "Marina Shores facade works behind plan", detail: "Construction progress report shows facade at 61% against 70% planned. Handover guidance remains Q4 2026.", createdAt: daysAgo(1, now) },
+      { id: id("alert:2"), tenantId: tenantId, clientId: clientId("ahmed"), portfolioId: hid("ahmed", 0), severity: "LOW", title: "Downtown Views lease renewed", detail: "Tenant renewed at AED 232,000, 8.4% above the prior rent.", createdAt: daysAgo(4, now) },
+      { id: id("alert:3"), tenantId: tenantId, clientId: clientId("khalid"), portfolioId: hid("khalid", 0), severity: "HIGH", title: "Palm penthouse above single-asset limit", detail: "The holding is 25% of real estate value against a 20% policy limit.", createdAt: daysAgo(0.5, now) },
+      { id: id("alert:4"), tenantId: tenantId, clientId: clientId("khalid"), portfolioId: hid("khalid", 3), severity: "MEDIUM", title: "Cavalli Tower handover guidance moved", detail: "DAMAC guided handover to Q2 2027, one quarter later than at purchase.", createdAt: daysAgo(6, now) },
+      { id: id("alert:5"), tenantId: tenantId, clientId: clientId("priya"), portfolioId: hid("priya", 1), severity: "MEDIUM", title: "Service charge increase at Binghatti Heights", detail: "2026 Mollak budget up 11%, reducing net yield by an estimated 30 basis points.", createdAt: daysAgo(2, now) },
+      { id: id("alert:6"), tenantId: tenantId, clientId: clientId("rajesh"), portfolioId: hid("rajesh", 1), severity: "HIGH", title: "Bayz 101 payment milestone due", detail: "A 10% construction milestone of AED 190,000 falls due in 21 days.", createdAt: daysAgo(1.5, now) },
+      { id: id("alert:7"), tenantId: tenantId, clientId: clientId("fatima"), portfolioId: hid("fatima", 1), severity: "LOW", title: "Sobha Creek Vistas reached 50% completion", detail: "Escrow-certified progress at 50%. The next instalment is linked to 60%.", createdAt: daysAgo(3, now) },
+      { id: id("alert:8"), tenantId: tenantId, clientId: clientId("fatima"), severity: "MEDIUM", title: "Off-plan share above policy", detail: "Off-plan holdings are 26% of value against a 20% limit.", createdAt: daysAgo(6, now) },
     ])
     .onConflictDoNothing();
 
@@ -565,7 +615,7 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   const msgRows: (typeof s.messages.$inferInsert)[] = [];
   for (const [ck, rows] of Object.entries(threads)) {
     rows.forEach(([author, role, body, ago], i) =>
-      msgRows.push({ id: uid(`msg:${ck}:${i}`), tenantId: TENANT_ID, clientId: clientId(ck), authorName: author, authorRole: role, body, createdAt: daysAgo(ago, now) }),
+      msgRows.push({ id: id(`msg:${ck}:${i}`), tenantId: tenantId, clientId: clientId(ck), authorName: role === "client" ? author : staffName(author), authorRole: role, body, createdAt: daysAgo(ago, now) }),
     );
   }
   await db.insert(s.messages).values(msgRows).onConflictDoNothing();
@@ -578,8 +628,8 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
       const inTok = Math.round((r.costUsd / 0.0000065) * 0.62);
       const outTok = Math.round((r.costUsd - inTok * 0.000003) / 0.000015);
       auditRows.push({
-        id: uid(`audit:${key}:${i}`),
-        tenantId: TENANT_ID,
+        id: id(`audit:${key}:${i}`),
+        tenantId: tenantId,
         actorName: `${r.agent} agent`,
         actorType: "agent",
         action: `completed ${r.stage.toLowerCase().replace("_", " ")}`,
@@ -594,25 +644,25 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
         createdAt: new Date(r.completedAt!),
       });
     });
-  pushTimeline("downtown", uid("mandate:downtown"), dtTimeline);
-  pushTimeline("palm", uid("mandate:palm"), pmTimeline);
-  pushTimeline("india", uid("mandate:india"), inTimeline);
+  pushTimeline("downtown", id("mandate:downtown"), dtTimeline);
+  pushTimeline("palm", id("mandate:palm"), pmTimeline);
+  pushTimeline("india", id("mandate:india"), inTimeline);
   const human: [string, string, string, string | null, number][] = [
-    ["Aisha Rahman", "user", "created mandate MND-0001", uid("mandate:downtown"), 26],
-    ["Amol Bandekar", "user", "approved allocation memo MND-0001", uid("mandate:downtown"), 15],
-    ["Aisha Rahman", "user", "delivered memo to Ahmed Al Mansoori", uid("mandate:downtown"), 14],
-    ["Aisha Rahman", "user", "created mandate MND-0003", uid("mandate:palm"), 4],
-    ["Aisha Rahman", "user", "edited exit memo MND-0003", uid("mandate:palm"), 0.4],
-    ["Rohan Mehta", "user", "created mandate MND-0002", uid("mandate:india"), 0.25],
+    ["Aisha Rahman", "user", "created mandate MND-0001", id("mandate:downtown"), 26],
+    ["Amol Bandekar", "user", "approved allocation memo MND-0001", id("mandate:downtown"), 15],
+    ["Aisha Rahman", "user", "delivered memo to Ahmed Al Mansoori", id("mandate:downtown"), 14],
+    ["Aisha Rahman", "user", "created mandate MND-0003", id("mandate:palm"), 4],
+    ["Aisha Rahman", "user", "edited exit memo MND-0003", id("mandate:palm"), 0.4],
+    ["Rohan Mehta", "user", "created mandate MND-0002", id("mandate:india"), 0.25],
     ["System", "system", "refreshed DLD market data, 4 emirates", null, 1],
     ["developer-risk agent", "agent", "rescored 17 developers", null, 2],
     ["portfolio-monitor agent", "agent", "scanned 23 holdings, raised 8 alerts", null, 0.5],
   ];
   human.forEach(([actor, type, action, mandateId, ago], i) =>
     auditRows.push({
-      id: uid(`audit:human:${i}`),
-      tenantId: TENANT_ID,
-      actorName: actor,
+      id: id(`audit:human:${i}`),
+      tenantId: tenantId,
+      actorName: type === "user" ? staffName(actor) : actor,
       actorType: type as "user" | "agent" | "system",
       action,
       entityType: mandateId ? "mandate" : null,
@@ -625,4 +675,106 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   await db.insert(s.auditLogs).values(auditRows).onConflictDoNothing();
 
   return { seeded: true, counts: { properties: PROPERTIES.length, developers: DEVELOPERS.length, clients: CLIENTS.length, holdings: holdingRows.length, mandates: 3, transactions: txRows.length, marketMonths: marketRows.length, documents: docRows.length } };
+}
+
+/* ------------------------------------------------------------- platform */
+
+const MONTH = 30 * DAY;
+
+async function addTenant(
+  db: DB,
+  t: { id: string; name: string; slug: string; plan: PlanId; status: "trial" | "active" | "suspended" | "cancelled"; config: s.TenantConfig; startedMonthsAgo: number; cancelledMonthsAgo?: number },
+) {
+  const now = Date.now();
+  await db
+    .insert(s.tenants)
+    .values({ id: t.id, name: t.name, slug: t.slug, plan: t.plan, status: t.status, configJson: t.config, customDomain: t.config.custom_domain, createdAt: new Date(now - t.startedMonthsAgo * MONTH) })
+    .onConflictDoNothing();
+  const plan = planById(t.plan);
+  await db
+    .insert(s.subscriptions)
+    .values({
+      id: uid(`sub:${t.slug}`),
+      tenantId: t.id,
+      plan: t.plan,
+      status: t.status === "cancelled" ? "cancelled" : t.status === "trial" ? "trialing" : "active",
+      seats: plan.seats,
+      priceAed: plan.priceAed,
+      startedAt: new Date(now - t.startedMonthsAgo * MONTH),
+      currentPeriodEnd: new Date(now + (t.status === "trial" ? 14 : 18) * DAY),
+      cancelledAt: t.cancelledMonthsAgo !== undefined ? new Date(now - t.cancelledMonthsAgo * MONTH) : null,
+    })
+    .onConflictDoNothing();
+}
+
+async function addAdmin(db: DB, tenantId: string, key: string, u: { name: string; email: string; title: string }) {
+  const id = uid(`user:${key}`);
+  await db
+    .insert(s.users)
+    .values({ id, tenantId, name: u.name, email: u.email, title: u.title, role: "tenant_admin", preferences: { digest: "weekly", alerts: true, currency: "AED" }, lastActiveAt: new Date(Date.now() - 2 * 3_600_000) })
+    .onConflictDoNothing();
+  return id;
+}
+
+/**
+ * Seeds the whole platform: the Nakhla operator tenant, PropFolios (tenant #1,
+ * full dataset and logins), and three further tenants that give the platform
+ * console real figures: Gulf Crest Capital (Professional, demonstration data),
+ * Meridian Family Office (Starter, on trial) and Al Noor Realty Advisors
+ * (cancelled). Idempotent; `force` wipes and reloads.
+ */
+export async function seed(db: DB, opts: { force?: boolean } = {}) {
+  if (!opts.force && (await isSeeded(db))) return { seeded: false };
+  if (opts.force) await wipe(db);
+
+  await addTenant(db, { id: PLATFORM_TENANT_ID, name: "Nakhla", slug: "nakhla", plan: "enterprise", status: "active", config: defaultTenantConfig("Nakhla", { platform: true }), startedMonthsAgo: 14 });
+  await db
+    .insert(s.users)
+    .values({ id: uid("user:nakhla-ops"), tenantId: PLATFORM_TENANT_ID, name: "Nakhla Operations", email: "ops@nakhla.ai", title: "Platform administrator", role: "platform_admin", lastActiveAt: new Date() })
+    .onConflictDoNothing();
+
+  await addTenant(db, {
+    id: TENANT_ID,
+    name: "PropFolios",
+    slug: "propfolios",
+    plan: "professional",
+    status: "active",
+    config: defaultTenantConfig("PropFolios Intelligence", {
+      custom_domain: null,
+      memo_style: {
+        tone: "Formal, precise and evidence-led. Lead with the recommendation; quantify every claim; cite UAE and India regulators by name.",
+        signoff: "The PropFolios investment committee",
+        disclaimer: "This memo is advisory and is prepared for the named client only. Projected returns are simulations, not forecasts or guarantees. Tax and legal matters should be confirmed with qualified advisers in the relevant jurisdiction.",
+      },
+    }),
+    startedMonthsAgo: 9,
+  });
+  const result = await seedTenantData(db, { tenantId: TENANT_ID, slug: "propfolios", staff: true });
+
+  const gulfId = uid("tenant:gulfcrest");
+  await addTenant(db, {
+    id: gulfId,
+    name: "Gulf Crest Capital",
+    slug: "gulfcrest",
+    plan: "professional",
+    status: "active",
+    config: defaultTenantConfig("Gulf Crest Intelligence", {
+      primary_color: "#13392F",
+      accent_color: "#B08D57",
+      memo_style: { tone: "Concise and direct. Recommendation first, then the three numbers that matter.", signoff: "Gulf Crest Capital, Investment Committee", disclaimer: "Prepared for the addressee only. Not an offer or solicitation." },
+    }),
+    startedMonthsAgo: 5,
+  });
+  const gulfAdmin = await addAdmin(db, gulfId, "gulfcrest-admin", { name: "Omar Haddad", email: "omar@gulfcrest.ae", title: "Managing Director" });
+  await seedTenantData(db, { tenantId: gulfId, slug: "gulfcrest", staff: false, adminUserId: gulfAdmin, adminName: "Omar Haddad" });
+
+  const meridianId = uid("tenant:meridian");
+  await addTenant(db, { id: meridianId, name: "Meridian Family Office", slug: "meridian", plan: "starter", status: "trial", config: defaultTenantConfig("Meridian Family Office", { primary_color: "#2B2A4C", accent_color: "#C2A15A" }), startedMonthsAgo: 0.3 });
+  await addAdmin(db, meridianId, "meridian-admin", { name: "Leena Kapoor", email: "leena@meridianfo.com", title: "Chief Investment Officer" });
+
+  const alnoorId = uid("tenant:alnoor");
+  await addTenant(db, { id: alnoorId, name: "Al Noor Realty Advisors", slug: "alnoor", plan: "starter", status: "cancelled", config: defaultTenantConfig("Al Noor Realty Advisors"), startedMonthsAgo: 7, cancelledMonthsAgo: 2 });
+  await addAdmin(db, alnoorId, "alnoor-admin", { name: "Yousef Al Hashimi", email: "yousef@alnoor.ae", title: "Partner" });
+
+  return { ...result, tenants: 5 };
 }

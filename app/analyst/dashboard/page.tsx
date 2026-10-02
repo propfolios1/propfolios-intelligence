@@ -19,9 +19,9 @@ export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const db = await getDb();
-  const [d, market] = await Promise.all([getDashboard(db, user), getMarket(db)]);
+  const [d, market] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId)]);
   const dubai = market.find((m) => m.region === "Dubai");
   const rows = mandateRows(d.mandates);
   const pulse = (dubai?.series ?? []).map((m) => ({ month: m.month.slice(0, 7), psf: m.medianPriceSqft, tx: m.transactions }));
@@ -59,7 +59,7 @@ export default async function Dashboard() {
 
       <section className="mt-10 grid grid-cols-1 gap-6 xl:grid-cols-12">
         <Card className="xl:col-span-5">
-          <CardHeader eyebrow="Agents and team" title="Activity" actions={user.role === "admin" ? <Link href="/admin/audit" className="text-small text-ink-700 hover:text-ink-900">Audit log</Link> : undefined} />
+          <CardHeader eyebrow="Agents and team" title="Activity" actions={user.role === "tenant_admin" ? <Link href="/admin/audit" className="text-small text-ink-700 hover:text-ink-900">Audit log</Link> : undefined} />
           <CardContent>
             <ActivityFeed items={d.activity.map(({ a, reference }) => ({ id: a.id, actorName: a.actorName, actorType: a.actorType, action: a.action, createdAt: a.createdAt, reference, mandateId: a.mandateId, costUsd: a.costUsd, model: a.model }))} />
           </CardContent>

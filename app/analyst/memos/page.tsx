@@ -10,7 +10,7 @@ export const metadata = { title: "Memos" };
 export const dynamic = "force-dynamic";
 
 export default async function MemosPage() {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const memos = await listMemos(await getDb(), user);
   const count = (s: string) => memos.filter((m) => m.status === s).length;
   return (

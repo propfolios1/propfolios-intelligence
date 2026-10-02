@@ -7,6 +7,7 @@ import { REPLAY_MODEL } from "./agents/_run";
 import { isAiConfigured, MODELS, recordAgentRun, type AgentContext } from "./client";
 import { loadComparables, loadMandateBundle, loadMarketSeries, summariseComparables, summariseMarket, toMandateContext, type MandateBundle } from "./context";
 import { emit } from "./events";
+import { scope } from "@/lib/tenant-db";
 import { INR_PER_AED } from "./replay";
 import type { DDFinding, DebateOutput, ResearchOutput, UnderwritingOutput } from "./schemas";
 import { defaultDrivers, monteCarlo, scenarioTable, sensitivity, underwrite, type UnderwritingParams } from "./tools/financial";
@@ -68,7 +69,7 @@ const intake: StageFn = async (db, b, ctx) => {
 };
 
 const researchStage: StageFn = async (db, b, ctx) => {
-  const [comps, market] = await Promise.all([loadComparables(db, b), loadMarketSeries(db, b.property.region)]);
+  const [comps, market] = await Promise.all([loadComparables(db, b), loadMarketSeries(db, b.mandate.tenantId, b.property.region)]);
   const run = await research({ context: toMandateContext(b), comparablesSummary: summariseComparables(comps, b.property.currency), marketSummary: summariseMarket(market) }, ctx);
   await db.update(s.mandates).set({ research: run.output }).where(eq(s.mandates.id, b.mandate.id));
   return run;
@@ -124,14 +125,14 @@ const underwritingStage: StageFn = async (db, b, ctx) => {
     distribution: sim.dist,
     commentary: `P50 IRR of ${p50.irr.toFixed(1)}% against a ${(run.output.discountRate * 100).toFixed(1)}% hurdle; ${(sim.dist.probBelowHurdle * 100).toFixed(0)}% of simulated paths fall below it.${top ? ` ${top.driver.replace(/ [±0-9].*$/, "")} is the largest driver of returns.` : ""}`,
   };
-  await db.insert(s.simulations).values({ mandateId: b.mandate.id, ...values }).onConflictDoUpdate({ target: s.simulations.mandateId, set: values });
+  await db.insert(s.simulations).values({ tenantId: b.mandate.tenantId, mandateId: b.mandate.id, ...values }).onConflictDoUpdate({ target: s.simulations.mandateId, set: values });
   return run;
 };
 
 const ddStage: StageFn = async (db, b, ctx) => {
   const researchOut = b.mandate.research as ResearchOutput | null;
   if (!researchOut) throw new Error("Research dossier missing; re-run research.");
-  const docs = await db.select({ title: s.documents.title, content: s.documents.contentText }).from(s.documents).where(eq(s.documents.mandateId, b.mandate.id)).limit(6);
+  const docs = await db.select({ title: s.documents.title, content: s.documents.contentText }).from(s.documents).where(scope(s.documents, b.mandate.tenantId, eq(s.documents.mandateId, b.mandate.id))).limit(6);
   const run = await dueDiligence({ context: toMandateContext(b), research: researchOut, documents: docs.map((d) => ({ title: d.title, excerpt: d.content.slice(0, 1500) })) }, ctx);
   const order = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 } as const;
   const findings = [...run.output.findings].sort((a, z) => order[a.severity] - order[z.severity]);
@@ -139,27 +140,27 @@ const ddStage: StageFn = async (db, b, ctx) => {
   return run;
 };
 
-async function loadSimulation(db: DB, mandateId: string) {
-  const [sim] = await db.select().from(s.simulations).where(eq(s.simulations.mandateId, mandateId)).limit(1);
+async function loadSimulation(db: DB, tenantId: string, mandateId: string) {
+  const [sim] = await db.select().from(s.simulations).where(scope(s.simulations, tenantId, eq(s.simulations.mandateId, mandateId))).limit(1);
   if (!sim) throw new Error("Simulation missing; re-run underwriting.");
   return { scenarios: sim.scenarios as ReturnType<typeof scenarioTable>, assumptions: sim.assumptions as UnderwritingParams };
 }
 
 const debateStage: StageFn = async (db, b, ctx) => {
-  const { scenarios, assumptions } = await loadSimulation(db, b.mandate.id);
+  const { scenarios, assumptions } = await loadSimulation(db, b.mandate.tenantId, b.mandate.id);
   const run = await debate(
     { context: toMandateContext(b), research: b.mandate.research as ResearchOutput, scenarios, findings: (b.mandate.ddFindings ?? []) as DDFinding[], hurdlePct: assumptions.discountRate * 100 },
     ctx,
   );
   const values = { bull: run.output.bull, bear: run.output.bear, judge: run.output.judge };
-  await db.insert(s.debates).values({ mandateId: b.mandate.id, ...values }).onConflictDoUpdate({ target: s.debates.mandateId, set: values });
+  await db.insert(s.debates).values({ tenantId: b.mandate.tenantId, mandateId: b.mandate.id, ...values }).onConflictDoUpdate({ target: s.debates.mandateId, set: values });
   await db.update(s.mandates).set({ recommendation: run.output.judge.recommendation, riskRating: run.output.judge.riskRating }).where(eq(s.mandates.id, b.mandate.id));
   return run;
 };
 
 const memoStage: StageFn = async (db, b, ctx) => {
-  const { scenarios, assumptions } = await loadSimulation(db, b.mandate.id);
-  const [deb] = await db.select().from(s.debates).where(eq(s.debates.mandateId, b.mandate.id)).limit(1);
+  const { scenarios, assumptions } = await loadSimulation(db, b.mandate.tenantId, b.mandate.id);
+  const [deb] = await db.select().from(s.debates).where(scope(s.debates, b.mandate.tenantId, eq(s.debates.mandateId, b.mandate.id))).limit(1);
   if (!deb) throw new Error("Debate missing; re-run the debate.");
   const debateOut = { bull: deb.bull, bear: deb.bear, judge: deb.judge } as DebateOutput;
   const run = await memo(

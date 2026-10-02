@@ -8,7 +8,7 @@ export const maxDuration = 300;
 
 /** Invokes one agent directly with a validated input. Staff only. */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ agent: string }> }) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { agent } = await params;
   const entry = AGENTS[agent];
   if (!entry) throw new HttpError(404, `Unknown agent "${agent}".`);

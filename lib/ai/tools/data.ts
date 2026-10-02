@@ -181,7 +181,7 @@ export const DATA_TOOLS = [
       maxPrice: z.number().nullable().optional(),
     }),
     run: async (scope, q) => {
-      const where: SQL[] = [];
+      const where: SQL[] = [eq(s.properties.tenantId, scope.tenantId)];
       if (q.market) where.push(eq(s.properties.market, q.market));
       if (q.status) where.push(eq(s.properties.status, q.status));
       if (q.maxPrice) where.push(lte(s.properties.priceMin, q.maxPrice));
@@ -190,7 +190,7 @@ export const DATA_TOOLS = [
         .select({ p: s.properties, d: s.developers.name })
         .from(s.properties)
         .innerJoin(s.developers, eq(s.developers.id, s.properties.developerId))
-        .where(where.length ? and(...where) : undefined)
+        .where(and(...where))
         .orderBy(desc(s.properties.grossYield))
         .limit(10);
       return {
@@ -204,7 +204,7 @@ export const DATA_TOOLS = [
     description: "Latest twelve months of market data for an emirate (Dubai, Abu Dhabi, Sharjah, Ras Al Khaimah).",
     input: z.object({ region: z.string() }),
     run: async (scope, { region }) => {
-      const rows = await scope.db.select().from(s.marketData).where(ilike(s.marketData.region, region)).orderBy(asc(s.marketData.month));
+      const rows = await scope.db.select().from(s.marketData).where(and(eq(s.marketData.tenantId, scope.tenantId), ilike(s.marketData.region, region))).orderBy(asc(s.marketData.month));
       if (!rows.length) return { data: { error: `No market series for ${region}.` }, sources: [] };
       const first = rows[0]!;
       const last = rows.at(-1)!;

@@ -17,13 +17,13 @@ const body = z.object({ deliver: z.boolean().default(true) }).default({ deliver:
  * and notifies the client in their message thread.
  */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { id } = await params;
   const { deliver } = body.parse(await req.json().catch(() => ({})));
   const db = await getDb();
   const row = await getMemo(db, user, id);
   if (row.memo.status === "delivered") throw new HttpError(409, "This memo has already been delivered.");
-  if (row.memo.lastEditedBy === user.name && user.role !== "admin" && row.memo.lastEditedBy !== "Memo agent") {
+  if (row.memo.lastEditedBy === user.name && user.role !== "tenant_admin" && row.memo.lastEditedBy !== "Memo agent") {
     throw new HttpError(403, "The memo's last editor cannot approve it. Ask a second reviewer or an administrator.");
   }
   const now = new Date();
@@ -47,7 +47,7 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
       tenantId: user.tenantId,
       clientId: row.mandate.clientId,
       authorName: user.name,
-      authorRole: user.role === "admin" ? "admin" : "analyst",
+      authorRole: user.role === "tenant_admin" ? "tenant_admin" : "analyst",
       body: `${row.memo.title} has been approved by the investment committee and is now in your Documents.`,
     });
   }

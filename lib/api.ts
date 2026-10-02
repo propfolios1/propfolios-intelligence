@@ -26,9 +26,9 @@ export async function parseBody<T extends z.ZodType>(req: Request, schema: T): P
   return schema.parse(json);
 }
 
-export async function audit(user: Pick<CurrentUser, "tenantId" | "name">, action: string, extra: { entityType?: string; entityId?: string; mandateId?: string; detail?: unknown } = {}) {
+export async function audit(user: Pick<CurrentUser, "tenantId" | "name"> & { id?: string; impersonating?: boolean }, action: string, extra: { entityType?: string; entityId?: string; mandateId?: string; detail?: unknown } = {}) {
   const db = await getDb();
-  await db.insert(auditLogs).values({ tenantId: user.tenantId, actorName: user.name, actorType: "user", action, ...extra });
+  await db.insert(auditLogs).values({ tenantId: user.tenantId, userId: user.id ?? null, actorName: user.impersonating ? `${user.name} (Nakhla)` : user.name, actorType: "user", action, ...extra });
 }
 
 export const notFoundError = (what = "Resource") => new HttpError(404, `${what} not found.`);

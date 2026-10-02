@@ -15,7 +15,7 @@ const query = z.object({
 });
 
 export const GET = handle(async (req: Request) => {
-  await requireApiUser();
+  const user = await requireApiUser();
   const f = query.parse(Object.fromEntries(new URL(req.url).searchParams));
-  return NextResponse.json(await listProperties(await getDb(), f));
+  return NextResponse.json(await listProperties(await getDb(), user.tenantId, f));
 });

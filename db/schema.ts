@@ -18,7 +18,10 @@ import {
 
 /* ------------------------------------------------------------------ enums */
 
-export const roleEnum = pgEnum("role", ["admin", "analyst", "client"]);
+export const roleEnum = pgEnum("role", ["platform_admin", "tenant_admin", "analyst", "client"]);
+export const planEnum = pgEnum("plan", ["starter", "professional", "enterprise", "white_label"]);
+export const tenantStatusEnum = pgEnum("tenant_status", ["trial", "active", "suspended", "cancelled"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", ["trialing", "active", "past_due", "cancelled"]);
 export const marketEnum = pgEnum("market", ["UAE", "India"]);
 export const propertyStatusEnum = pgEnum("property_status", ["off_plan", "under_construction", "ready"]);
 export const mandateStatusEnum = pgEnum("mandate_status", ["INTAKE", "RESEARCH", "UNDERWRITING", "DUE_DILIGENCE", "DEBATE", "MEMO", "REVIEW", "DELIVERED"]);
@@ -39,6 +42,21 @@ const money = (name: string) => numeric(name, { precision: 16, scale: 2, mode: "
 
 /* ----------------------------------------------------------------- tenants */
 
+export type TenantConfig = {
+  brand_name: string;
+  logo_url: string | null;
+  primary_color: string;
+  accent_color: string;
+  font_display: "Playfair Display" | "Inter";
+  font_body: "Inter";
+  custom_domain: string | null;
+  /** Memo house style: voice and sign-off used by the memo agent and the PDF. */
+  memo_style: { tone: string; signoff: string; disclaimer: string };
+  features: { assistant: boolean; clientPortal: boolean; marketTiming: boolean; crossBorder: boolean };
+  /** Platform tenants hold Nakhla operators only. */
+  platform?: boolean;
+};
+
 export const tenants = pgTable(
   "tenants",
   {
@@ -46,9 +64,35 @@ export const tenants = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     clerkOrgId: text("clerk_org_id"),
+    configJson: jsonb("config_json").$type<TenantConfig>().notNull(),
+    plan: planEnum("plan").notNull().default("starter"),
+    status: tenantStatusEnum("status").notNull().default("trial"),
+    customDomain: text("custom_domain"),
     ...timestamps,
   },
-  (t) => [uniqueIndex("tenants_slug_idx").on(t.slug), uniqueIndex("tenants_clerk_org_idx").on(t.clerkOrgId)],
+  (t) => [uniqueIndex("tenants_slug_idx").on(t.slug), uniqueIndex("tenants_clerk_org_idx").on(t.clerkOrgId), uniqueIndex("tenants_domain_idx").on(t.customDomain)],
+);
+
+/* ----------------------------------------------------------- subscriptions */
+
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    plan: planEnum("plan").notNull(),
+    status: subscriptionStatusEnum("status").notNull(),
+    seats: integer("seats"),
+    priceAed: money("price_aed").notNull(),
+    stripeCustomerId: text("stripe_customer_id"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }).notNull(),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [index("subscriptions_tenant_idx").on(t.tenantId), index("subscriptions_status_idx").on(t.status)],
 );
 
 /* ------------------------------------------------------------------- users */
@@ -65,6 +109,8 @@ export const users = pgTable(
     name: text("name").notNull(),
     title: text("title"),
     role: roleEnum("role").notNull().default("analyst"),
+    /** Invited but not yet signed in. */
+    invitedAt: timestamp("invited_at", { withTimezone: true }),
     clientId: uuid("client_id"),
     preferences: jsonb("preferences").$type<{ digest: "daily" | "weekly" | "off"; alerts: boolean; currency: "AED" | "USD" | "INR" }>(),
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
@@ -119,6 +165,9 @@ export const developers = pgTable(
   "developers",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     market: marketEnum("market").notNull(),
     hq: text("hq").notNull(),
@@ -137,7 +186,7 @@ export const developers = pgTable(
     lastScoredAt: timestamp("last_scored_at", { withTimezone: true }).notNull(),
     ...timestamps,
   },
-  (t) => [uniqueIndex("developers_name_idx").on(t.name), index("developers_risk_idx").on(t.riskScore)],
+  (t) => [uniqueIndex("developers_tenant_name_idx").on(t.tenantId, t.name), index("developers_tenant_idx").on(t.tenantId), index("developers_risk_idx").on(t.riskScore)],
 );
 
 /* -------------------------------------------------------------- properties */
@@ -146,6 +195,9 @@ export const properties = pgTable(
   "properties",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     slug: text("slug").notNull(),
     name: text("name").notNull(),
     developerId: uuid("developer_id")
@@ -172,7 +224,7 @@ export const properties = pgTable(
     paymentPlan: text("payment_plan"),
     ...timestamps,
   },
-  (t) => [uniqueIndex("properties_slug_idx").on(t.slug), index("properties_developer_idx").on(t.developerId), index("properties_market_idx").on(t.market), index("properties_status_idx").on(t.status)],
+  (t) => [uniqueIndex("properties_tenant_slug_idx").on(t.tenantId, t.slug), index("properties_tenant_idx").on(t.tenantId), index("properties_developer_idx").on(t.developerId), index("properties_market_idx").on(t.market), index("properties_status_idx").on(t.status)],
 );
 
 /* ---------------------------------------------------------------- launches */
@@ -181,6 +233,9 @@ export const launches = pgTable(
   "launches",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     propertyId: uuid("property_id")
       .notNull()
       .references(() => properties.id, { onDelete: "cascade" }),
@@ -194,7 +249,7 @@ export const launches = pgTable(
     soldPct: doublePrecision("sold_pct").notNull(),
     ...timestamps,
   },
-  (t) => [index("launches_property_idx").on(t.propertyId), index("launches_date_idx").on(t.launchDate)],
+  (t) => [index("launches_tenant_idx").on(t.tenantId), index("launches_property_idx").on(t.propertyId), index("launches_date_idx").on(t.launchDate)],
 );
 
 /* ------------------------------------------------------------ transactions */
@@ -203,6 +258,9 @@ export const transactions = pgTable(
   "transactions",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     propertyId: uuid("property_id").references(() => properties.id, { onDelete: "set null" }),
     region: text("region").notNull(),
     community: text("community").notNull(),
@@ -216,7 +274,7 @@ export const transactions = pgTable(
     source: text("source").notNull(), // DLD, ADREC, IGR Maharashtra
     ...timestamps,
   },
-  (t) => [index("transactions_property_idx").on(t.propertyId), index("transactions_community_idx").on(t.community), index("transactions_date_idx").on(t.transactedAt)],
+  (t) => [index("transactions_tenant_idx").on(t.tenantId), index("transactions_property_idx").on(t.propertyId), index("transactions_community_idx").on(t.community), index("transactions_date_idx").on(t.transactedAt)],
 );
 
 /* ------------------------------------------------------------- market data */
@@ -225,6 +283,9 @@ export const marketData = pgTable(
   "market_data",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     region: text("region").notNull(),
     month: date("month").notNull(),
     transactions: integer("transactions").notNull(),
@@ -236,7 +297,7 @@ export const marketData = pgTable(
     absorptionRate: doublePrecision("absorption_rate").notNull(),
     ...timestamps,
   },
-  (t) => [uniqueIndex("market_region_month_idx").on(t.region, t.month), index("market_month_idx").on(t.month)],
+  (t) => [uniqueIndex("market_tenant_region_month_idx").on(t.tenantId, t.region, t.month), index("market_tenant_idx").on(t.tenantId), index("market_month_idx").on(t.month)],
 );
 
 /* ---------------------------------------------------------------- mandates */
@@ -290,6 +351,9 @@ export const simulations = pgTable(
   "simulations",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     mandateId: uuid("mandate_id")
       .notNull()
       .references(() => mandates.id, { onDelete: "cascade" }),
@@ -302,13 +366,16 @@ export const simulations = pgTable(
     commentary: text("commentary"),
     ...timestamps,
   },
-  (t) => [uniqueIndex("simulations_mandate_idx").on(t.mandateId)],
+  (t) => [uniqueIndex("simulations_mandate_idx").on(t.mandateId), index("simulations_tenant_idx").on(t.tenantId)],
 );
 
 export const debates = pgTable(
   "debates",
   {
     id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
     mandateId: uuid("mandate_id")
       .notNull()
       .references(() => mandates.id, { onDelete: "cascade" }),
@@ -317,7 +384,7 @@ export const debates = pgTable(
     judge: jsonb("judge").notNull(),
     ...timestamps,
   },
-  (t) => [uniqueIndex("debates_mandate_idx").on(t.mandateId)],
+  (t) => [uniqueIndex("debates_mandate_idx").on(t.mandateId), index("debates_tenant_idx").on(t.tenantId)],
 );
 
 /* ------------------------------------------------------------------- memos */
@@ -335,6 +402,7 @@ export const memos = pgTable(
     title: text("title").notNull(),
     status: memoStatusEnum("status").notNull().default("draft"),
     contentHtml: text("content_html").notNull(),
+    pdfUrl: text("pdf_url"),
     keyMetrics: jsonb("key_metrics").$type<{ label: string; value: string }[]>().notNull().default(sql`'[]'::jsonb`),
     factCheck: jsonb("fact_check"),
     version: integer("version").notNull().default(1),
@@ -357,12 +425,14 @@ export const documents = pgTable(
       .references(() => tenants.id, { onDelete: "cascade" }),
     clientId: uuid("client_id").references(() => clients.id, { onDelete: "cascade" }),
     mandateId: uuid("mandate_id").references(() => mandates.id, { onDelete: "cascade" }),
+    propertyId: uuid("property_id").references(() => properties.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     type: text("type").notNull(), // memo, spa, title_deed, valuation, statement, research, kyc
     blobUrl: text("blob_url"),
     pages: integer("pages").notNull().default(1),
     sizeBytes: integer("size_bytes").notNull().default(0),
     contentText: text("content_text").notNull().default(""),
+    extractedData: jsonb("extracted_data"),
     embedding: vector("embedding", { dimensions: 1536 }),
     ...timestamps,
   },
@@ -370,6 +440,7 @@ export const documents = pgTable(
     index("documents_tenant_idx").on(t.tenantId),
     index("documents_client_idx").on(t.clientId),
     index("documents_mandate_idx").on(t.mandateId),
+    index("documents_property_idx").on(t.propertyId),
     index("documents_type_idx").on(t.type),
     index("documents_embedding_idx").using("hnsw", t.embedding.op("vector_cosine_ops")),
   ],
@@ -478,7 +549,10 @@ export const auditLogs = pgTable(
   "audit_logs",
   {
     id,
-    tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "cascade" }),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    userId: uuid("user_id"),
     actorName: text("actor_name").notNull(),
     actorType: actorTypeEnum("actor_type").notNull(),
     action: text("action").notNull(),
@@ -532,3 +606,6 @@ export const recommendationsRelations = relations(recommendations, ({ one }) => 
   property: one(properties, { fields: [recommendations.propertyId], references: [properties.id] }),
 }));
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({ mandate: one(mandates, { fields: [auditLogs.mandateId], references: [mandates.id] }) }));
+export const tenantsRelations = relations(tenants, ({ many }) => ({ users: many(users), subscriptions: many(subscriptions), clients: many(clients) }));
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({ tenant: one(tenants, { fields: [subscriptions.tenantId], references: [tenants.id] }) }));
+export const usersRelations = relations(users, ({ one }) => ({ tenant: one(tenants, { fields: [users.tenantId], references: [tenants.id] }) }));

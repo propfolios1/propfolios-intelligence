@@ -33,12 +33,12 @@ const createMandateSchema = z.object({
 });
 
 export const POST = handle(async (req: Request) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const input = await parseBody(req, createMandateSchema);
   const db = await getDb();
   const [client] = await db.select({ id: s.clients.id }).from(s.clients).where(and(eq(s.clients.id, input.clientId), eq(s.clients.tenantId, user.tenantId)));
   if (!client) throw new HttpError(422, "Client not found.");
-  const [property] = await db.select({ id: s.properties.id }).from(s.properties).where(eq(s.properties.id, input.propertyId));
+  const [property] = await db.select({ id: s.properties.id }).from(s.properties).where(and(eq(s.properties.id, input.propertyId), eq(s.properties.tenantId, user.tenantId)));
   if (!property) throw new HttpError(422, "Property not found.");
   const reference = await nextMandateReference(db, user.tenantId);
   const [m] = await db

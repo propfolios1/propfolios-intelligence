@@ -26,7 +26,7 @@ const patch = z.object({
 });
 
 export const PATCH = handle(async (req: Request, { params }: Ctx) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { id } = await params;
   const db = await getDb();
   const row = await getMemo(db, user, id);

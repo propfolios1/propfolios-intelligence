@@ -13,7 +13,7 @@ export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const db = await getDb();
   const [row] = await db.select().from(s.users).where(eq(s.users.id, user.id));
   const live = isAiConfigured();

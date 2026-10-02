@@ -20,7 +20,7 @@ import { formatDate } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 async function load(id: string) {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   try {
     return await getProperty(await getDb(), user, id);
   } catch (e) {

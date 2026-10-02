@@ -13,8 +13,8 @@ export const metadata = { title: "Market" };
 export const dynamic = "force-dynamic";
 
 export default async function MarketPage() {
-  await requireRole(["admin", "analyst"]);
-  const regions = await getMarket(await getDb());
+  const user = await requireRole(["tenant_admin", "analyst"]);
+  const regions = await getMarket(await getDb(), user.tenantId);
   const dubai = regions.find((r) => r.region === "Dubai") ?? regions[0]!;
   const months = dubai.series.map((m) => m.month.slice(0, 7));
   const indexed = months.map((month, i) => {

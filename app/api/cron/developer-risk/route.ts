@@ -17,7 +17,7 @@ export const GET = handle(async (req: Request) => {
   for (const d of devs) {
     const run = await developerRisk(
       { developer: { name: d.name, market: d.market, deliveryPct: d.deliveryPct, financialHealth: d.financialHealth, litigationCount: d.litigationCount, projectsDelivered: d.projectsDelivered, escrowCompliant: d.escrowCompliant, listed: d.listed }, recentNews: [] },
-      { tenantId: null, actor: "Scheduler" },
+      { tenantId: d.tenantId, actor: "Scheduler" },
     );
     await db
       .update(s.developers)

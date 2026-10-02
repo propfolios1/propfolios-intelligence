@@ -14,11 +14,11 @@ export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function ClientSettings() {
-  const user = await requireRole(["admin", "analyst", "client"]);
+  const user = await requireRole(["tenant_admin", "analyst", "client"]);
   const db = await getDb();
   const [row] = await db.select().from(s.users).where(eq(s.users.id, user.id));
   const [client] = user.clientId ? await db.select().from(s.clients).where(eq(s.clients.id, user.clientId)) : [];
-  const kycDocs = user.clientId ? await db.select().from(s.documents).where(and(eq(s.documents.clientId, user.clientId), eq(s.documents.type, "kyc"))) : [];
+  const kycDocs = user.clientId ? await db.select().from(s.documents).where(and(eq(s.documents.tenantId, user.tenantId), eq(s.documents.clientId, user.clientId), eq(s.documents.type, "kyc"))) : [];
   return (
     <PageContainer>
       <PageHeader eyebrow="Account" title="Settings" />

@@ -7,12 +7,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { dbKind, getDb } from "@/db";
 import * as s from "@/db/schema";
 import { requireRole } from "@/lib/auth";
+import { scope } from "@/lib/tenant-db";
 
 export const metadata = { title: "Seed data" };
 export const dynamic = "force-dynamic";
 
 export default async function SeedPage() {
-  await requireRole(["admin"]);
+  const user = await requireRole(["tenant_admin"]);
   const db = await getDb();
   const tables = [
     ["Clients", s.clients],
@@ -28,11 +29,11 @@ export default async function SeedPage() {
     ["Alerts", s.alerts],
     ["Audit events", s.auditLogs],
   ] as const;
-  const counts = await Promise.all(tables.map(async ([label, t]) => [label, Number((await db.select({ n: count() }).from(t))[0]!.n)] as const));
+  const counts = await Promise.all(tables.map(async ([label, t]) => [label, Number((await db.select({ n: count() }).from(t).where(scope(t, user.tenantId)))[0]!.n)] as const));
   const kind = dbKind();
   return (
     <PageContainer>
-      <PageHeader eyebrow="Administration" title="Seed data" subtitle="The demonstration dataset: five clients, thirty named UAE and India projects, eighteen developers, twelve months of market data and three mandates at different stages." actions={<SeedButton />} />
+      <PageHeader eyebrow="Administration" title="Seed data" subtitle="Your workspace's demonstration dataset: five clients, thirty named UAE and India projects, eighteen developers, twelve months of market data and three mandates at different stages. Resetting affects this workspace only." actions={<SeedButton />} />
       <section className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {counts.map(([label, n]) => (
           <StatCard key={label} label={label} value={n.toLocaleString("en-US")} />

@@ -31,7 +31,7 @@ const patch = z.object({
 
 /** Edits mandate fields. Status moves (from the kanban board) are restricted to valid transitions. */
 export const PATCH = handle(async (req: Request, { params }: Ctx) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { id } = await params;
   const db = await getDb();
   const m = await mandateForUser(db, user, id);
@@ -64,11 +64,11 @@ export const PATCH = handle(async (req: Request, { params }: Ctx) => {
 });
 
 export const DELETE = handle(async (_req: Request, { params }: Ctx) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { id } = await params;
   const db = await getDb();
   const m = await mandateForUser(db, user, id);
-  if (m.status === "DELIVERED" && user.role !== "admin") throw new HttpError(403, "Only an administrator can delete a delivered mandate.");
+  if (m.status === "DELIVERED" && user.role !== "tenant_admin") throw new HttpError(403, "Only an administrator can delete a delivered mandate.");
   await db.delete(s.mandates).where(eq(s.mandates.id, id));
   await audit(user, `deleted mandate ${m.reference}`, { entityType: "mandate", entityId: id });
   return new Response(null, { status: 204 });

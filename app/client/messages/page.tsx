@@ -10,7 +10,7 @@ export const metadata = { title: "Messages" };
 export const dynamic = "force-dynamic";
 
 export default async function MessagesPage() {
-  const user = await requireRole(["admin", "analyst", "client"]);
+  const user = await requireRole(["tenant_admin", "analyst", "client"]);
   if (!user.clientId) return <PageContainer><EmptyState glyph="documents" headline="No client record is linked to this account." /></PageContainer>;
   const msgs = await listMessages(await getDb(), user, user.clientId);
   return (

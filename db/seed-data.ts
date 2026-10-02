@@ -120,7 +120,7 @@ export const PROPERTIES: PropertySeed[] = [
 export const TENANT = { name: "PropFolios", slug: "propfolios" };
 
 export const STAFF = [
-  { key: "amol", name: "Amol Bandekar", email: "amol@propfolios.ae", role: "admin" as const, title: "Founder and Managing Partner" },
+  { key: "amol", name: "Amol Bandekar", email: "amol@propfolios.ae", role: "tenant_admin" as const, title: "Founder and Managing Partner" },
   { key: "aisha", name: "Aisha Rahman", email: "aisha.rahman@propfolios.ae", role: "analyst" as const, title: "Senior Analyst, UAE" },
   { key: "rohan", name: "Rohan Mehta", email: "rohan.mehta@propfolios.ae", role: "analyst" as const, title: "Analyst, India and Cross-border" },
 ];

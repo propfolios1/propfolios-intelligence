@@ -18,12 +18,12 @@ export const GET = handle(async (req: Request) => {
 
 /** Runs the recommender agent for a client and stores new recommendations. Staff only. */
 export const POST = handle(async (req: Request) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { clientId } = await parseBody(req, z.object({ clientId: z.uuid() }));
   const db = await getDb();
   const p = await getPortfolio(db, user, clientId);
   const held = new Set(p.holdings.map((h) => h.propertyId));
-  const catalogue = (await listProperties(db, {})).filter((x) => !held.has(x.id) && p.client.policy.markets.includes(x.market) && x.status === "ready").sort((a, b) => b.grossYield - a.grossYield).slice(0, 8);
+  const catalogue = (await listProperties(db, user.tenantId)).filter((x) => !held.has(x.id) && p.client.policy.markets.includes(x.market) && x.status === "ready").sort((a, b) => b.grossYield - a.grossYield).slice(0, 8);
   const run = await recommender(
     {
       client: { name: p.client.name, residency: p.client.residency, policy: JSON.stringify(p.client.policy) },

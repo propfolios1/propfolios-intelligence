@@ -25,7 +25,7 @@ export function supportsForcedTool(model: string) {
 }
 
 export interface AgentContext {
-  tenantId: string | null;
+  tenantId: string;
   mandateId?: string | null;
   actor: string;
   signal?: AbortSignal;

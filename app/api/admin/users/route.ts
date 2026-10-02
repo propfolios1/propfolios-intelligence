@@ -7,16 +7,16 @@ import { audit, handle, parseBody } from "@/lib/api";
 import { clerkEnabled, HttpError, requireApiUser } from "@/lib/auth";
 
 export const GET = handle(async () => {
-  const user = await requireApiUser(["admin"]);
+  const user = await requireApiUser(["tenant_admin"]);
   const db = await getDb();
   return NextResponse.json(await db.select().from(s.users).where(eq(s.users.tenantId, user.tenantId)));
 });
 
 /** Changes a user's role (and client link). Mirrors the role to Clerk public metadata when Clerk is enabled. */
 export const PATCH = handle(async (req: Request) => {
-  const user = await requireApiUser(["admin"]);
-  const input = await parseBody(req, z.object({ id: z.uuid(), role: z.enum(["admin", "analyst", "client"]), clientId: z.uuid().nullable().optional() }));
-  if (input.id === user.id && input.role !== "admin") throw new HttpError(409, "You cannot remove your own administrator role.");
+  const user = await requireApiUser(["tenant_admin"]);
+  const input = await parseBody(req, z.object({ id: z.uuid(), role: z.enum(["tenant_admin", "analyst", "client"]), clientId: z.uuid().nullable().optional() }));
+  if (input.id === user.id && input.role !== "tenant_admin") throw new HttpError(409, "You cannot remove your own administrator role.");
   const db = await getDb();
   const [target] = await db.select().from(s.users).where(and(eq(s.users.id, input.id), eq(s.users.tenantId, user.tenantId)));
   if (!target) throw new HttpError(404, "User not found.");

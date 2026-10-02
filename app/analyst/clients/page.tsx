@@ -13,7 +13,7 @@ export const metadata = { title: "Clients" };
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage() {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const clients = await listClients(await getDb(), user);
   const aum = clients.reduce((a, c) => a + c.aumAed, 0);
   const value = clients.reduce((a, c) => a + c.valueAed, 0);

@@ -2,6 +2,7 @@ import "server-only";
 import { and, desc, eq, gte } from "drizzle-orm";
 import type { DB } from "@/db";
 import * as s from "@/db/schema";
+import { scope } from "@/lib/tenant-db";
 import type { MandateContext } from "./schemas";
 
 export type MandateBundle = NonNullable<Awaited<ReturnType<typeof loadMandateBundle>>>;
@@ -65,17 +66,17 @@ export async function loadComparables(db: DB, b: MandateBundle, limit = 24) {
   let rows = await db
     .select()
     .from(s.transactions)
-    .where(and(eq(s.transactions.community, b.property.community), gte(s.transactions.transactedAt, since)))
+    .where(scope(s.transactions, b.mandate.tenantId, eq(s.transactions.community, b.property.community), gte(s.transactions.transactedAt, since)))
     .orderBy(desc(s.transactions.transactedAt))
     .limit(limit);
   if (rows.length < 3) {
-    rows = await db.select().from(s.transactions).where(eq(s.transactions.region, b.property.region)).orderBy(desc(s.transactions.transactedAt)).limit(limit);
+    rows = await db.select().from(s.transactions).where(scope(s.transactions, b.mandate.tenantId, eq(s.transactions.region, b.property.region))).orderBy(desc(s.transactions.transactedAt)).limit(limit);
   }
   return rows;
 }
 
-export async function loadMarketSeries(db: DB, region: string) {
-  return db.select().from(s.marketData).where(eq(s.marketData.region, region)).orderBy(s.marketData.month);
+export async function loadMarketSeries(db: DB, tenantId: string, region: string) {
+  return db.select().from(s.marketData).where(scope(s.marketData, tenantId, eq(s.marketData.region, region))).orderBy(s.marketData.month);
 }
 
 export function summariseComparables(rows: Awaited<ReturnType<typeof loadComparables>>, currency: string) {

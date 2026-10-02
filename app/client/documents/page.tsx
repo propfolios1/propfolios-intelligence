@@ -14,7 +14,7 @@ export const metadata = { title: "Documents" };
 export const dynamic = "force-dynamic";
 
 export default async function ClientDocuments() {
-  const user = await requireRole(["admin", "analyst", "client"]);
+  const user = await requireRole(["tenant_admin", "analyst", "client"]);
   const db = await getDb();
   const docs = user.clientId ? await listDocuments(db, user, { clientId: user.clientId }) : [];
   const memos = user.clientId

@@ -5,7 +5,7 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
 import { useUi } from "@/lib/store";
-import { NAV, type Area } from "./nav-config";
+import { navFor, type Area } from "./nav-config";
 
 const typing = (el: EventTarget | null) => {
   const t = el as HTMLElement | null;
@@ -20,7 +20,7 @@ export function KeyboardShortcuts({ area }: { area: Area }) {
   const router = useRouter();
   const { shortcutsOpen, setShortcutsOpen } = useUi();
   const pending = React.useRef<number | null>(null);
-  const items = NAV[area].flatMap((s) => s.items).filter((i) => i.key);
+  const items = navFor(area).flatMap((s) => s.items).filter((i) => i.key);
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

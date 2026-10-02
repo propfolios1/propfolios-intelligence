@@ -10,7 +10,7 @@ import { cn, formatDate } from "@/lib/utils";
 interface Msg {
   id: string;
   authorName: string;
-  authorRole: "admin" | "analyst" | "client";
+  authorRole: "platform_admin" | "tenant_admin" | "analyst" | "client";
   body: string;
   createdAt: string;
 }

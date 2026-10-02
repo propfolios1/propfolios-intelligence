@@ -10,7 +10,7 @@ export const metadata = { title: "Portfolio" };
 export const dynamic = "force-dynamic";
 
 export default async function PortfolioPage() {
-  const user = await requireRole(["admin", "analyst", "client"]);
+  const user = await requireRole(["tenant_admin", "analyst", "client"]);
   if (!user.clientId) {
     return (
       <PageContainer>

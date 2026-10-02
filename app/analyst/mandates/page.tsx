@@ -13,7 +13,7 @@ export const metadata = { title: "Mandates" };
 export const dynamic = "force-dynamic";
 
 export default async function MandatesPage() {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const db = await getDb();
   const [rows, clients] = await Promise.all([listMandates(db, user), listClients(db, user)]);
   const open = rows.filter((r) => r.status !== "DELIVERED").length;

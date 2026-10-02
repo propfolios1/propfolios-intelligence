@@ -9,7 +9,7 @@ export const metadata = { title: "Audit log" };
 export const dynamic = "force-dynamic";
 
 export default async function AuditPage() {
-  const user = await requireRole(["admin"]);
+  const user = await requireRole(["tenant_admin"]);
   const rows = await listAudit(await getDb(), user);
   const events = rows.map(({ a, reference }) => ({
     id: a.id,

@@ -9,7 +9,7 @@ export const metadata = { title: "Recommendations" };
 export const dynamic = "force-dynamic";
 
 export default async function RecommendationsPage() {
-  const user = await requireRole(["admin", "analyst", "client"]);
+  const user = await requireRole(["tenant_admin", "analyst", "client"]);
   const rows = user.clientId ? await listRecommendations(await getDb(), user, { clientId: user.clientId, status: "open" }) : [];
   return (
     <PageContainer>

@@ -1,11 +1,12 @@
 import "server-only";
-import { and, asc, count, desc, eq, gte, ilike, inArray, lte, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, ilike, inArray, lte, ne, or, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import type { DB } from "@/db";
 import * as s from "@/db/schema";
 import type { DDFinding, DebateOutput, ResearchOutput } from "@/lib/ai/schemas";
 import type { CashFlowYear, Distribution } from "@/lib/ai/tools/financial";
 import { HttpError, type CurrentUser } from "./auth";
+import { scope } from "./tenant-db";
 
 /**
  * Read models shared by API routes and server components. Every function
@@ -92,11 +93,11 @@ export async function getMandateDetail(db: DB, user: CurrentUser, id: string) {
   if (!row) throw new HttpError(404, "Mandate not found.");
   assertClientAccess(user, row.client.id);
   const [[sim], [deb], [memo], audit, docs] = await Promise.all([
-    db.select().from(s.simulations).where(eq(s.simulations.mandateId, id)).limit(1),
-    db.select().from(s.debates).where(eq(s.debates.mandateId, id)).limit(1),
+    db.select().from(s.simulations).where(scope(s.simulations, user.tenantId, eq(s.simulations.mandateId, id))).limit(1),
+    db.select().from(s.debates).where(scope(s.debates, user.tenantId, eq(s.debates.mandateId, id))).limit(1),
     db.select().from(s.memos).where(eq(s.memos.mandateId, id)).limit(1),
     db.select().from(s.auditLogs).where(eq(s.auditLogs.mandateId, id)).orderBy(desc(s.auditLogs.createdAt)).limit(80),
-    db.select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, createdAt: s.documents.createdAt }).from(s.documents).where(eq(s.documents.mandateId, id)).orderBy(desc(s.documents.createdAt)),
+    db.select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, createdAt: s.documents.createdAt }).from(s.documents).where(scope(s.documents, user.tenantId, eq(s.documents.mandateId, id))).orderBy(desc(s.documents.createdAt)),
   ]);
   return {
     ...row,
@@ -177,8 +178,8 @@ export interface PropertyFilters {
   maxPrice?: number;
 }
 
-export async function listProperties(db: DB, f: PropertyFilters = {}) {
-  const where: SQL[] = [];
+export async function listProperties(db: DB, tenantId: string, f: PropertyFilters = {}) {
+  const where: SQL[] = [scope(s.properties, tenantId)];
   if (f.market) where.push(eq(s.properties.market, f.market));
   if (f.status) where.push(eq(s.properties.status, f.status));
   if (f.developerId) where.push(eq(s.properties.developerId, f.developerId));
@@ -212,7 +213,7 @@ export async function listProperties(db: DB, f: PropertyFilters = {}) {
     })
     .from(s.properties)
     .innerJoin(s.developers, eq(s.developers.id, s.properties.developerId))
-    .where(where.length ? and(...where) : undefined)
+    .where(and(...where))
     .orderBy(asc(s.properties.market), asc(s.properties.name));
 }
 export type PropertyListItem = Awaited<ReturnType<typeof listProperties>>[number];
@@ -222,19 +223,19 @@ export async function getProperty(db: DB, user: CurrentUser, idOrSlug: string) {
     .select({ property: s.properties, developer: s.developers })
     .from(s.properties)
     .innerJoin(s.developers, eq(s.developers.id, s.properties.developerId))
-    .where(isUuid(idOrSlug) ? eq(s.properties.id, idOrSlug) : eq(s.properties.slug, idOrSlug))
+    .where(scope(s.properties, user.tenantId, isUuid(idOrSlug) ? eq(s.properties.id, idOrSlug) : eq(s.properties.slug, idOrSlug)))
     .limit(1);
   if (!row) throw new HttpError(404, "Property not found.");
   const p = row.property;
   const [txs, launches, mandates, market] = await Promise.all([
-    db.select().from(s.transactions).where(or(eq(s.transactions.propertyId, p.id), eq(s.transactions.community, p.community))).orderBy(desc(s.transactions.transactedAt)).limit(40),
-    db.select().from(s.launches).where(eq(s.launches.propertyId, p.id)).orderBy(desc(s.launches.launchDate)),
+    db.select().from(s.transactions).where(scope(s.transactions, user.tenantId, or(eq(s.transactions.propertyId, p.id), eq(s.transactions.community, p.community)))).orderBy(desc(s.transactions.transactedAt)).limit(40),
+    db.select().from(s.launches).where(scope(s.launches, user.tenantId, eq(s.launches.propertyId, p.id))).orderBy(desc(s.launches.launchDate)),
     db
       .select({ id: s.mandates.id, reference: s.mandates.reference, title: s.mandates.title, status: s.mandates.status, clientName: s.clients.name })
       .from(s.mandates)
       .innerJoin(s.clients, eq(s.clients.id, s.mandates.clientId))
       .where(and(eq(s.mandates.propertyId, p.id), eq(s.mandates.tenantId, user.tenantId), clientScope(user, s.mandates.clientId))),
-    db.select().from(s.marketData).where(eq(s.marketData.region, p.region)).orderBy(asc(s.marketData.month)),
+    db.select().from(s.marketData).where(scope(s.marketData, user.tenantId, eq(s.marketData.region, p.region))).orderBy(asc(s.marketData.month)),
   ]);
   return { ...row, transactions: txs, launches, mandates, market };
 }
@@ -242,12 +243,12 @@ export type PropertyDetail = Awaited<ReturnType<typeof getProperty>>;
 
 /* ------------------------------------------------------------ developers */
 
-export async function listDevelopers(db: DB, f: { market?: "UAE" | "India" } = {}) {
+export async function listDevelopers(db: DB, tenantId: string, f: { market?: "UAE" | "India" } = {}) {
   const rows = await db
     .select({ d: s.developers, projects: count(s.properties.id) })
     .from(s.developers)
     .leftJoin(s.properties, eq(s.properties.developerId, s.developers.id))
-    .where(f.market ? eq(s.developers.market, f.market) : undefined)
+    .where(scope(s.developers, tenantId, f.market ? eq(s.developers.market, f.market) : undefined))
     .groupBy(s.developers.id)
     .orderBy(asc(s.developers.riskScore));
   return rows.map((r) => ({ ...r.d, catalogueProjects: Number(r.projects) }));
@@ -336,8 +337,8 @@ export type Portfolio = Awaited<ReturnType<typeof getPortfolio>>;
 
 /* ---------------------------------------------------------------- market */
 
-export async function getMarket(db: DB) {
-  const rows = await db.select().from(s.marketData).orderBy(asc(s.marketData.region), asc(s.marketData.month));
+export async function getMarket(db: DB, tenantId: string) {
+  const rows = await db.select().from(s.marketData).where(scope(s.marketData, tenantId)).orderBy(asc(s.marketData.region), asc(s.marketData.month));
   const regions = [...new Set(rows.map((r) => r.region))];
   return regions.map((region) => {
     const series = rows.filter((r) => r.region === region);
@@ -373,7 +374,7 @@ export type RecommendationItem = Awaited<ReturnType<typeof listRecommendations>>
 /* ------------------------------------------------------------- documents */
 
 export async function listDocuments(db: DB, user: CurrentUser, f: { clientId?: string } = {}) {
-  const where: (SQL | undefined)[] = [eq(s.documents.tenantId, user.tenantId)];
+  const where: (SQL | undefined)[] = [scope(s.documents, user.tenantId), ne(s.documents.type, "property_profile")];
   if (user.role === "client") where.push(eq(s.documents.clientId, user.clientId ?? "00000000-0000-0000-0000-000000000000"));
   else if (f.clientId) where.push(eq(s.documents.clientId, f.clientId));
   return db
@@ -398,7 +399,7 @@ export async function listMessages(db: DB, user: CurrentUser, clientId: string) 
 /* ----------------------------------------------------------------- audit */
 
 export async function listAudit(db: DB, user: CurrentUser, f: { actorType?: "user" | "agent" | "system"; limit?: number } = {}) {
-  if (user.role !== "admin") throw new HttpError(403, "Your role does not permit this action.");
+  if (user.role !== "tenant_admin") throw new HttpError(403, "Your role does not permit this action.");
   return db
     .select({ a: s.auditLogs, reference: s.mandates.reference })
     .from(s.auditLogs)

@@ -26,7 +26,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const user = await requireRole(["admin", "analyst"]);
+    const user = await requireRole(["tenant_admin", "analyst"]);
     const d = await getMandateDetail(await getDb(), user, id);
     return { title: `${d.mandate.reference} ${d.mandate.title}` };
   } catch {
@@ -54,7 +54,7 @@ function factCheck(d: MandateDetail): MemoFlag[] {
 }
 
 export default async function MandatePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const { id } = await params;
   const { tab: rawTab } = await searchParams;
   const d = await getMandateDetail(await getDb(), user, id);
@@ -81,7 +81,7 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
               <LiveStatusLine />
             </div>
           </div>
-          <RunControls mandateId={m.id} reference={m.reference} memoId={d.memo?.id ?? null} memoStatus={d.memo?.status ?? null} canDelete={user.role === "admin" || m.status !== "DELIVERED"} />
+          <RunControls mandateId={m.id} reference={m.reference} memoId={d.memo?.id ?? null} memoStatus={d.memo?.status ?? null} canDelete={user.role === "tenant_admin" || m.status !== "DELIVERED"} />
         </header>
 
         <TabBar id={m.id} active={tab} counts={{ dd: d.findings.length, audit: d.audit.length }} />

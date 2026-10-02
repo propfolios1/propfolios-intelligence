@@ -10,8 +10,8 @@ export const metadata = { title: "Developers" };
 export const dynamic = "force-dynamic";
 
 export default async function DevelopersPage() {
-  await requireRole(["admin", "analyst"]);
-  const rows = await listDevelopers(await getDb());
+  const user = await requireRole(["tenant_admin", "analyst"]);
+  const rows = await listDevelopers(await getDb(), user.tenantId);
   const avg = rows.reduce((a, d) => a + d.riskScore, 0) / rows.length;
   const elevated = rows.filter((d) => d.riskScore > 25).length;
   const best = [...rows].sort((a, b) => a.riskScore - b.riskScore)[0]!;

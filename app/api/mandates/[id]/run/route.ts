@@ -16,7 +16,7 @@ const body = z.object({ from: z.enum(PIPELINE.filter((p) => p.automated).map((p)
  * time budget runs out the stream emits "paused" and the client POSTs again.
  */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const { id } = await params;
   const db = await getDb();
   const m = await mandateForUser(db, user, id);

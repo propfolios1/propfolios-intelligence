@@ -21,7 +21,7 @@ export interface UserRow {
   name: string;
   email: string;
   title: string | null;
-  role: "admin" | "analyst" | "client";
+  role: "tenant_admin" | "analyst" | "client";
   clientId: string | null;
   clientName: string | null;
   lastActiveAt: string | null;
@@ -50,7 +50,7 @@ export function UsersTable({
     if (!res.ok)
       return void toast.error("Role not changed", { description: json.error });
     toast.success(
-      `${u.name} is now ${role === "admin" ? "an administrator" : `an ${role}`}`.replace(
+      `${u.name} is now ${role === "tenant_admin" ? "an administrator" : `an ${role}`}`.replace(
         "an client",
         "a client",
       ),
@@ -83,7 +83,7 @@ export function UsersTable({
       size: 110,
       cell: ({ getValue }) => (
         <StatusPill
-          tone={getValue<string>() === "admin" ? "progress" : "neutral"}
+          tone={getValue<string>() === "tenant_admin" ? "progress" : "neutral"}
         >
           {getValue<string>()}
         </StatusPill>
@@ -158,7 +158,7 @@ export function UsersTable({
         rowActions={[
           {
             label: "Make administrator",
-            onSelect: (u) => void setRole(u, "admin"),
+            onSelect: (u) => void setRole(u, "tenant_admin"),
           },
           {
             label: "Make analyst",

@@ -11,10 +11,10 @@ export const metadata = { title: "Opportunities" };
 export const dynamic = "force-dynamic";
 
 export default async function OpportunitiesPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const user = await requireRole(["admin", "analyst", "client"]);
+  const user = await requireRole(["tenant_admin", "analyst", "client"]);
   const { q } = await searchParams;
   const db = await getDb();
-  const all = await listProperties(db, { q });
+  const all = await listProperties(db, user.tenantId, { q });
   let markets: string[] = ["UAE", "India"];
   let held = new Set<string>();
   if (user.clientId) {

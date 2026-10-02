@@ -1,29 +1,34 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
+import { notFound, redirect } from "next/navigation";
 import { requireRole, type CurrentUser, type Role } from "@/lib/auth";
 import { STAGE_LABEL } from "@/lib/domain";
 import { listMandates } from "@/lib/queries";
 import { relativeTime } from "@/lib/utils";
 import { CommandPaletteProvider, type SearchItem } from "./command-palette";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
-import { NAV, type Area } from "./nav-config";
+import { navFor, type Area } from "./nav-config";
 import { PageTransition } from "./page-transition";
 import { SidebarNav } from "./sidebar-nav";
 import { TopBar } from "./top-bar";
 
-const AREA_ROLES: Record<Area, Role[]> = { analyst: ["admin", "analyst"], client: ["admin", "analyst", "client"], admin: ["admin"] };
+const AREA_ROLES: Record<Area, Role[]> = { analyst: ["tenant_admin", "analyst"], client: ["tenant_admin", "analyst", "client"], admin: ["tenant_admin"], platform: ["platform_admin", "tenant_admin"] };
 
 async function searchIndex(user: CurrentUser, area: Area): Promise<SearchItem[]> {
   const db = await getDb();
-  const nav: SearchItem[] = NAV[area].flatMap((sec) => sec.items.map((i) => ({ id: `nav-${i.href}`, group: "Actions" as const, label: i.label, href: i.href })));
+  const nav: SearchItem[] = navFor(area).flatMap((sec) => sec.items.map((i) => ({ id: `nav-${i.href}`, group: "Actions" as const, label: i.label, href: i.href })));
+  if (area === "platform") {
+    const all = await db.select({ id: s.tenants.id, name: s.tenants.name, slug: s.tenants.slug, plan: s.tenants.plan }).from(s.tenants);
+    return [...nav, { id: "a-new-tenant", group: "Actions", label: "Create tenant", href: "/platform/tenants/new" }, ...all.map((t) => ({ id: `t-${t.id}`, group: "Clients" as const, label: t.name, sub: `${t.slug} · ${t.plan.replace("_", "-")}`, href: `/platform/tenants/${t.id}` }))];
+  }
   if (user.role === "client" || area === "client") {
-    const props = await db.select({ slug: s.properties.slug, name: s.properties.name, community: s.properties.community }).from(s.properties);
+    const props = await db.select({ slug: s.properties.slug, name: s.properties.name, community: s.properties.community }).from(s.properties).where(eq(s.properties.tenantId, user.tenantId));
     return [...nav, ...props.map((p) => ({ id: `p-${p.slug}`, group: "Properties" as const, label: p.name, sub: p.community, href: `/client/opportunities?q=${encodeURIComponent(p.name)}` }))];
   }
   const [mandates, props, clients] = await Promise.all([
     listMandates(db, user),
-    db.select({ slug: s.properties.slug, name: s.properties.name, community: s.properties.community }).from(s.properties),
+    db.select({ slug: s.properties.slug, name: s.properties.name, community: s.properties.community }).from(s.properties).where(eq(s.properties.tenantId, user.tenantId)),
     db.select({ id: s.clients.id, name: s.clients.name, type: s.clients.type, residency: s.clients.residency }).from(s.clients).where(eq(s.clients.tenantId, user.tenantId)),
   ]);
   return [
@@ -32,11 +37,12 @@ async function searchIndex(user: CurrentUser, area: Area): Promise<SearchItem[]>
     ...mandates.map((m) => ({ id: `m-${m.id}`, group: "Mandates" as const, label: m.reference, sub: `${m.title} · ${m.clientName} · ${STAGE_LABEL[m.status]}`, href: `/analyst/mandates/${m.id}`, keywords: [m.propertyName] })),
     ...props.map((p) => ({ id: `p-${p.slug}`, group: "Properties" as const, label: p.name, sub: p.community, href: `/analyst/properties/${p.slug}` })),
     ...clients.map((c) => ({ id: `c-${c.id}`, group: "Clients" as const, label: c.name, sub: `${c.type} · ${c.residency}`, href: `/analyst/clients/${c.id}` })),
-    ...(user.role === "admin" ? NAV.admin[0]!.items.map((i) => ({ id: `adm-${i.href}`, group: "Actions" as const, label: i.label, sub: "Administration", href: i.href })) : []),
+    ...(user.role === "tenant_admin" ? navFor("admin").flatMap((sec) => sec.items).map((i) => ({ id: `adm-${i.href}`, group: "Actions" as const, label: i.label, sub: "Administration", href: i.href })) : []),
   ];
 }
 
 async function notifications(user: CurrentUser, area: Area) {
+  if (area === "platform") return [];
   const db = await getDb();
   const clientOnly = area === "client" && user.clientId;
   const rows = await db
@@ -51,6 +57,8 @@ async function notifications(user: CurrentUser, area: Area) {
 
 export async function AppShell({ area, children }: { area: Area; children: React.ReactNode }) {
   const user = await requireRole(AREA_ROLES[area]);
+  if (area === "platform" && !user.platformAdmin) notFound();
+  if (area !== "platform" && user.role === "platform_admin") redirect("/platform/dashboard");
   const [items, alerts] = await Promise.all([searchIndex(user, area), notifications(user, area)]);
   let previewing: string | null = null;
   if (area === "client" && user.role !== "client" && user.clientId) {
@@ -64,8 +72,18 @@ export async function AppShell({ area, children }: { area: Area; children: React
         Skip to content
       </a>
       <div className="flex min-h-dvh">
-        <SidebarNav area={area} viewer={{ name: user.name, role: user.title ?? user.role, email: user.email, userRole: user.role, demo: user.demo }} />
+        <SidebarNav area={area} viewer={{ name: user.name, role: user.impersonating ? `Viewing ${user.tenantSlug} as administrator` : (user.title ?? user.role.replace("_", " ")), email: user.email, userRole: user.role, platformAdmin: user.platformAdmin, impersonating: user.impersonating, demo: user.demo }} />
         <div className="flex min-w-0 flex-1 flex-col">
+          {user.impersonating && area !== "platform" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-navy-900 bg-navy-900 px-6 py-2 text-small text-surface md:px-12 xl:px-20" data-no-print role="status">
+              <span>
+                Platform view of <span className="font-medium">{user.tenantSlug}</span>. Actions are recorded in this tenant&apos;s audit log under your name.
+              </span>
+              <a href="/api/platform/impersonate?exit=1" className="underline decoration-surface/40 underline-offset-4 hover:decoration-surface">
+                Return to platform
+              </a>
+            </div>
+          )}
           {previewing && (
             <div className="border-b border-gold-100 bg-gold-100/60 px-6 py-2 text-small text-ink-700 md:px-12 xl:px-20" data-no-print>
               Previewing the client portal as <span className="font-medium text-ink-900">{previewing}</span>. Choose another client from Clients.

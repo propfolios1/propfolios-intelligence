@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Client" };
 
 export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireRole(["admin", "analyst"]);
+  const user = await requireRole(["tenant_admin", "analyst"]);
   const { id } = await params;
   const db = await getDb();
   let p;

@@ -1,6 +1,8 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
+import { TenantProvider } from "@/components/tenant-provider";
+import { brandStyle, resolveBrand } from "@/lib/brand";
 import { palette } from "@/lib/design/tokens";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -9,18 +11,28 @@ const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter", display: "swap" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["400"], variable: "--font-jetbrains", display: "swap" });
 
-export const metadata: Metadata = {
-  title: { default: "PropFolios Intelligence", template: "%s · PropFolios Intelligence" },
-  description: "Research, underwriting and portfolio monitoring for private capital in UAE and India real estate.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await resolveBrand();
+  const name = brand.config.brand_name;
+  return {
+    title: { default: name, template: `%s · ${name}` },
+    description: brand.config.platform
+      ? "Nakhla is the AI operating system for real estate advisory firms: research, underwriting, due diligence, memos and client portfolios."
+      : `Research, underwriting and portfolio monitoring for private capital, by ${brand.name}.`,
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  };
+}
 
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const brand = await resolveBrand();
   const body = (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${inter.variable} ${jetbrains.variable}`} style={brandStyle(brand)}>
       <body>
-        <Providers>{children}</Providers>
+        <TenantProvider brand={brand}>
+          <Providers>{children}</Providers>
+        </TenantProvider>
       </body>
     </html>
   );

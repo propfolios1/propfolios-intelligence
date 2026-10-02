@@ -9,8 +9,8 @@ export const metadata = { title: "Properties" };
 export const dynamic = "force-dynamic";
 
 export default async function PropertiesPage() {
-  await requireRole(["admin", "analyst"]);
-  const rows = await listProperties(await getDb());
+  const user = await requireRole(["tenant_admin", "analyst"]);
+  const rows = await listProperties(await getDb(), user.tenantId);
   const uae = rows.filter((r) => r.market === "UAE").length;
   return (
     <PageContainer>

@@ -12,7 +12,7 @@ export const maxDuration = 60;
 export const GET = handle(async (req: Request) => {
   const user = await requireApiUser();
   const q = z.object({ region: z.string().max(40).optional(), signal: z.enum(["0", "1"]).optional() }).parse(Object.fromEntries(new URL(req.url).searchParams));
-  const all = await getMarket(await getDb());
+  const all = await getMarket(await getDb(), user.tenantId);
   const regions = q.region ? all.filter((r) => r.region.toLowerCase() === q.region!.toLowerCase()) : all;
   if (q.region && !regions.length) throw new HttpError(404, `No market data for ${q.region}.`);
   if (q.signal === "1" && regions.length === 1) {

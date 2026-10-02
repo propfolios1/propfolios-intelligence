@@ -7,7 +7,7 @@ import { requireApiUser } from "@/lib/auth";
 import { listClients } from "@/lib/queries";
 
 export const GET = handle(async () => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   return NextResponse.json(await listClients(await getDb(), user));
 });
 
@@ -30,7 +30,7 @@ const create = z.object({
 });
 
 export const POST = handle(async (req: Request) => {
-  const user = await requireApiUser(["admin", "analyst"]);
+  const user = await requireApiUser(["tenant_admin", "analyst"]);
   const input = await parseBody(req, create);
   const db = await getDb();
   const [c] = await db.insert(s.clients).values({ ...input, tenantId: user.tenantId, relationshipManagerId: user.id, kycStatus: "pending" }).returning();

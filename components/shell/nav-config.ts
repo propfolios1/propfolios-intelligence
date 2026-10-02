@@ -1,10 +1,12 @@
-export type Area = "analyst" | "client" | "admin";
+export type Area = "analyst" | "client" | "admin" | "platform";
 
 export interface NavItem {
   href: string;
   label: string;
   /** Single-key "g then …" shortcut. */
   key?: string;
+  /** Hidden when the tenant has switched this feature off. */
+  feature?: "assistant" | "clientPortal" | "marketTiming" | "crossBorder";
 }
 
 export interface NavSection {
@@ -29,7 +31,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/properties", label: "Properties", key: "p" },
         { href: "/analyst/developers", label: "Developers", key: "v" },
         { href: "/analyst/market", label: "Market", key: "k" },
-        { href: "/analyst/assistant", label: "Assistant", key: "a" },
+        { href: "/analyst/assistant", label: "Assistant", key: "a", feature: "assistant" },
       ],
     },
     { title: "Account", items: [{ href: "/analyst/settings", label: "Settings", key: "s" }] },
@@ -47,7 +49,7 @@ export const NAV: Record<Area, NavSection[]> = {
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
         { href: "/client/messages", label: "Messages", key: "m" },
-        { href: "/client/assistant", label: "Assistant", key: "a" },
+        { href: "/client/assistant", label: "Assistant", key: "a", feature: "assistant" },
         { href: "/client/settings", label: "Settings", key: "s" },
       ],
     },
@@ -55,10 +57,27 @@ export const NAV: Record<Area, NavSection[]> = {
   admin: [
     {
       items: [
+        { href: "/admin/dashboard", label: "Overview", key: "o" },
         { href: "/admin/users", label: "Users", key: "u" },
-        { href: "/admin/integrations", label: "Integrations", key: "i" },
+        { href: "/admin/branding", label: "Branding", key: "b" },
+        { href: "/admin/billing", label: "Billing", key: "i" },
+      ],
+    },
+    {
+      title: "Governance",
+      items: [
         { href: "/admin/audit", label: "Audit log", key: "l" },
-        { href: "/admin/seed", label: "Seed data", key: "s" },
+        { href: "/admin/integrations", label: "Integrations", key: "n" },
+        { href: "/admin/seed", label: "Demonstration data", key: "s" },
+      ],
+    },
+  ],
+  platform: [
+    {
+      items: [
+        { href: "/platform/dashboard", label: "Dashboard", key: "d" },
+        { href: "/platform/tenants", label: "Tenants", key: "t" },
+        { href: "/platform/metrics", label: "Metrics", key: "m" },
       ],
     },
   ],
@@ -86,7 +105,16 @@ export const SEGMENT_LABEL: Record<string, string> = {
   users: "Users",
   integrations: "Integrations",
   audit: "Audit log",
-  seed: "Seed data",
+  seed: "Demonstration data",
+  branding: "Branding",
+  billing: "Billing",
+  platform: "Platform",
+  tenants: "Tenants",
+  metrics: "Metrics",
 };
 
-export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration" };
+export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };
+
+export function navFor(area: Area, features?: Partial<Record<NonNullable<NavItem["feature"]>, boolean>>): NavSection[] {
+  return NAV[area].map((s) => ({ ...s, items: s.items.filter((i) => !i.feature || features?.[i.feature] !== false) }));
+}
