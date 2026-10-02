@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { UNDERWRITING_PROMPT_VERSION, UNDERWRITING_SYSTEM } from "../prompts/underwriting_v1";
+import { UNDERWRITING_PROMPT_VERSION, UNDERWRITING_SYSTEM } from "../prompts/underwriting_v2";
 import { replayUnderwriting } from "../replay";
 import { underwritingOutput, type underwritingInput } from "../schemas";
 import { payload, runAgent } from "./_run";

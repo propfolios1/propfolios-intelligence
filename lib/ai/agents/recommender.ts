@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { RECOMMENDER_PROMPT_VERSION, RECOMMENDER_SYSTEM } from "../prompts/recommender_v1";
+import { RECOMMENDER_PROMPT_VERSION, RECOMMENDER_SYSTEM } from "../prompts/recommender_v2";
 import { replayRecommender } from "../replay";
 import { recommenderOutput, type recommenderInput } from "../schemas";
 import { payload, runAgent } from "./_run";

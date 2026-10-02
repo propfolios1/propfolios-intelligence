@@ -3,12 +3,18 @@ import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { getDb, type DB } from "@/db";
 import * as s from "@/db/schema";
 import { debate, dueDiligence, memo, research, underwriting } from "./agents";
+import { valuation as valuationAgent } from "./agents/valuation";
+import { describeBaseline, federatedBaselineFor } from "@/lib/federation";
+import { defaultWeights, reconcile, valuationMethods, type MethodValue } from "./tools/valuation";
 import { REPLAY_MODEL } from "./agents/_run";
 import { isAiConfigured, MODELS, recordAgentRun, type AgentContext } from "./client";
 import { loadComparables, loadMandateBundle, loadMarketSeries, summariseComparables, summariseMarket, toMandateContext, type MandateBundle } from "./context";
 import { emit } from "./events";
 import { getTenantById } from "@/lib/tenant";
+import { proposeActions } from "@/lib/actions";
+import { learnHouseStyle } from "./house-style";
 import { similarProperties } from "./similar";
+import { crossValidate, crossValidationInputFrom } from "./cross-validation";
 import { scope } from "@/lib/tenant-db";
 import { INR_PER_AED } from "./replay";
 import type { DDFinding, DebateOutput, ResearchOutput, UnderwritingOutput } from "./schemas";
@@ -115,7 +121,8 @@ export function simulate(assumptions: UnderwritingOutput, seed: number) {
 const underwritingStage: StageFn = async (db, b, ctx) => {
   const researchOut = b.mandate.research as ResearchOutput | null;
   if (!researchOut) throw new Error("Research dossier missing; re-run research.");
-  const run = await underwriting({ context: toMandateContext(b), research: researchOut }, ctx);
+  const baseline = await federatedBaselineFor(db, b.property).catch(() => null);
+  const run = await underwriting({ context: toMandateContext(b), research: researchOut, federatedBaseline: describeBaseline(baseline) }, ctx);
   const sim = simulate(run.output, hashSeed(b.mandate.id));
   const top = sim.sens[0];
   const p50 = sim.scenarios.find((x) => x.label === "P50")!;
@@ -128,9 +135,66 @@ const underwritingStage: StageFn = async (db, b, ctx) => {
     distribution: sim.dist,
     commentary: `P50 IRR of ${p50.irr.toFixed(1)}% against a ${(run.output.discountRate * 100).toFixed(1)}% hurdle; ${(sim.dist.probBelowHurdle * 100).toFixed(0)}% of simulated paths fall below it.${top ? ` ${top.driver.replace(/ [±0-9].*$/, "")} is the largest driver of returns.` : ""}`,
   };
-  await db.insert(s.simulations).values({ tenantId: b.mandate.tenantId, mandateId: b.mandate.id, ...values }).onConflictDoUpdate({ target: s.simulations.mandateId, set: values });
-  return run;
+  const val = await valueAsset(db, b, sim, run.output, ctx).catch((e: Error) => {
+    console.error("valuation failed", e);
+    return null;
+  });
+  const full = { ...values, valuation: val?.valuation ?? null, baseline };
+  await db.insert(s.simulations).values({ tenantId: b.mandate.tenantId, mandateId: b.mandate.id, ...full }).onConflictDoUpdate({ target: s.simulations.mandateId, set: full });
+  return { model: run.model, costUsd: run.costUsd + (val?.costUsd ?? 0), durationMs: run.durationMs + (val?.durationMs ?? 0) };
 };
+
+export type StoredValuation = {
+  methods: MethodValue[];
+  reconciled: { value: number; low: number; high: number; weights: Record<string, number>; dispersionPct: number };
+  askingPrice: number;
+  vsAskingPct: number;
+  currency: string;
+  conclusion: string;
+  confidence: number;
+  keyJudgements: string[];
+  commentary: string;
+};
+
+/** Four computed valuations reconciled by the valuation agent. */
+async function valueAsset(db: DB, b: MandateBundle, sim: ReturnType<typeof simulate>, uw: UnderwritingOutput, ctx: AgentContext) {
+  const [comps, market] = await Promise.all([loadComparables(db, b), loadMarketSeries(db, b.mandate.tenantId, b.property.region)]);
+  const psf = comps.map((r) => r.pricePerSqft).sort((a, z) => a - z);
+  const q = (p: number) => psf[Math.min(psf.length - 1, Math.max(0, Math.round(p * (psf.length - 1))))]!;
+  const growthOf = (label: string) => (sim.scenarios.find((x) => x.label === label)?.capitalGrowth ?? uw.capitalGrowth * 100) / 100;
+  const methods = valuationMethods({
+    params: sim.base,
+    askPerSqft: b.property.pricePerSqft,
+    comps: psf.length >= 3 ? { low: q(0.25), mid: q(0.5), high: q(0.75), count: psf.length, source: `registered ${comps[0]!.source} transactions` } : null,
+    marketYieldPct: market.at(-1)?.rentalYield ?? b.property.grossYield,
+    scenarioGrowth: { p10: growthOf("P10"), p50: growthOf("P50"), p90: growthOf("P90") },
+  });
+  const offPlan = b.property.status !== "ready";
+  const defaults = defaultWeights(methods, offPlan);
+  const run = await valuationAgent(
+    {
+      property: { name: b.property.name, community: b.property.community, status: b.property.status, currency: b.property.currency, askingPrice: sim.base.purchasePrice, askPerSqft: b.property.pricePerSqft },
+      methods,
+      defaultWeights: defaults,
+      context: `${summariseComparables(comps, b.property.currency)} ${summariseMarket(market)}`,
+    },
+    ctx,
+  );
+  const w = run.output.weights;
+  const reconciled = reconcile(methods, { "Direct comparison": w.directComparison, "Income capitalisation": w.incomeCapitalisation, "Discounted cash flow": w.discountedCashFlow, "Monte Carlo": w.monteCarlo });
+  const valuation: StoredValuation = {
+    methods,
+    reconciled,
+    askingPrice: sim.base.purchasePrice,
+    vsAskingPct: +((sim.base.purchasePrice / reconciled.value - 1) * 100).toFixed(1),
+    currency: b.property.currency,
+    conclusion: run.output.conclusion,
+    confidence: run.output.confidence,
+    keyJudgements: run.output.keyJudgements,
+    commentary: run.output.commentary,
+  };
+  return { valuation, costUsd: run.costUsd, durationMs: run.durationMs };
+}
 
 const ddStage: StageFn = async (db, b, ctx) => {
   const researchOut = b.mandate.research as ResearchOutput | null;
@@ -162,8 +226,32 @@ const debateStage: StageFn = async (db, b, ctx) => {
   const values = { bull: run.output.bull, bear: run.output.bear, judge: run.output.judge };
   await db.insert(s.debates).values({ tenantId: b.mandate.tenantId, mandateId: b.mandate.id, ...values }).onConflictDoUpdate({ target: s.debates.mandateId, set: values });
   await db.update(s.mandates).set({ recommendation: run.output.judge.recommendation, riskRating: run.output.judge.riskRating }).where(eq(s.mandates.id, b.mandate.id));
-  return run;
+  // Layer 3: the same decision, reviewed independently by three models.
+  const cv = await runCrossValidation(db, b, ctx).catch((e: Error) => {
+    console.error("cross-validation failed", e);
+    return null;
+  });
+  return { model: run.model, costUsd: run.costUsd + (cv?.costUsd ?? 0), durationMs: run.durationMs + (cv?.durationMs ?? 0) };
 };
+
+/** Runs multi-model cross-validation on a mandate's stored evidence. */
+export async function runCrossValidation(db: DB, b: MandateBundle, ctx: AgentContext) {
+  const [sim] = await db.select().from(s.simulations).where(scope(s.simulations, b.mandate.tenantId, eq(s.simulations.mandateId, b.mandate.id))).limit(1);
+  if (!sim) throw new Error("Simulation missing; run underwriting first.");
+  const research = b.mandate.research as ResearchOutput | null;
+  const val = sim.valuation as StoredValuation | null;
+  const input = crossValidationInputFrom({
+    title: b.mandate.title,
+    objective: b.mandate.objective,
+    hurdlePct: (sim.assumptions as UnderwritingParams).discountRate * 100,
+    scenarios: sim.scenarios as { label: string; irr: number; npv: number }[],
+    probBelowHurdle: (sim.distribution as { probBelowHurdle: number }).probBelowHurdle,
+    findings: (b.mandate.ddFindings ?? []) as DDFinding[],
+    researchSummary: research?.summary ?? "",
+    valuation: val ? { conclusion: val.conclusion, vsAskingPct: val.vsAskingPct } : null,
+  });
+  return crossValidate(db, { tenantId: b.mandate.tenantId, mandateId: b.mandate.id, input, ctx });
+}
 
 const memoStage: StageFn = async (db, b, ctx) => {
   const { scenarios, assumptions, sensitivity } = await loadSimulation(db, b.mandate.tenantId, b.mandate.id);
@@ -172,6 +260,7 @@ const memoStage: StageFn = async (db, b, ctx) => {
   const [deb] = await db.select().from(s.debates).where(scope(s.debates, b.mandate.tenantId, eq(s.debates.mandateId, b.mandate.id))).limit(1);
   if (!deb) throw new Error("Debate missing; re-run the debate.");
   const debateOut = { bull: deb.bull, bear: deb.bear, judge: deb.judge } as DebateOutput;
+  const learned = await learnHouseStyle(db, b.mandate.tenantId, b.mandate.id);
   const run = await memo(
     {
       context: toMandateContext(b),
@@ -180,7 +269,7 @@ const memoStage: StageFn = async (db, b, ctx) => {
       findings: (b.mandate.ddFindings ?? []) as DDFinding[],
       debate: debateOut,
       allocationLocal: assumptions.purchasePrice ?? (b.property.currency === "INR" ? b.mandate.ticketSizeAed * INR_PER_AED : b.mandate.ticketSizeAed),
-      houseStyle: cfg ? { brandName: cfg.brand_name, tone: cfg.memo_style.tone, signoff: cfg.memo_style.signoff } : undefined,
+      houseStyle: cfg ? { brandName: cfg.brand_name, tone: cfg.memo_style.tone, signoff: cfg.memo_style.signoff, learned } : undefined,
       sensitivity,
       assumptions: assumptions.rationale,
     },
@@ -191,8 +280,10 @@ const memoStage: StageFn = async (db, b, ctx) => {
     .values({ tenantId: b.mandate.tenantId, mandateId: b.mandate.id, title: run.output.title, contentHtml: run.output.html, keyMetrics: run.output.keyMetrics, status: "in_review", lastEditedBy: "Memo agent" })
     .onConflictDoUpdate({
       target: s.memos.mandateId,
-      set: { title: run.output.title, contentHtml: run.output.html, keyMetrics: run.output.keyMetrics, status: "in_review", lastEditedBy: "Memo agent", version: sql`${s.memos.version} + 1`, approvedAt: null, approvedBy: null },
+      set: { title: run.output.title, contentHtml: run.output.html, keyMetrics: run.output.keyMetrics, status: "in_review", lastEditedBy: "Memo agent", version: sql`${s.memos.version} + 1`, approvedAt: null, approvedBy: null, sharedAt: null },
     });
+  // Layer 5: propose the follow-up actions for review (the mandate moves to REVIEW next).
+  await proposeActions(db, b.mandate.tenantId, b.mandate.id, ctx, "REVIEW").catch((e: Error) => console.error("action proposals failed", e));
   return run;
 };
 

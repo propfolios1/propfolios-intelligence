@@ -15,6 +15,21 @@ export function BrandingForm({ config, canStyle, canDomain, planName }: { config
   const router = useRouter();
   const [c, setC] = React.useState(config);
   const [saving, setSaving] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  async function upload(file: File) {
+    setUploading(true);
+    const fd = new FormData();
+    fd.set("file", file);
+    const res = await fetch("/api/tenants/me/branding/logo", { method: "POST", body: fd });
+    const json = await res.json().catch(() => ({}));
+    setUploading(false);
+    if (!res.ok) return void toast.error("Logo not uploaded", { description: json.error });
+    set("logo_url", json.logo_url);
+    toast.success("Logo uploaded", { description: "Stored privately in your workspace's branding bucket." });
+    router.refresh();
+  }
   const set = <K extends keyof TenantConfig>(k: K, v: TenantConfig[K]) => setC((x) => ({ ...x, [k]: v }));
 
   async function save(e: React.FormEvent) {
@@ -41,8 +56,24 @@ export function BrandingForm({ config, canStyle, canDomain, planName }: { config
             <FormField label="Product name" htmlFor="brand_name" hint="Shown in navigation, on sign-in and on every memo." className="md:col-span-2">
               <Input id="brand_name" value={c.brand_name} onChange={(e) => set("brand_name", e.target.value)} />
             </FormField>
-            <FormField label="Logo URL" htmlFor="logo" hint={canStyle ? "SVG or PNG on a transparent background." : `Available from the Professional plan. You are on ${planName}.`} className="md:col-span-2">
-              <Input id="logo" value={c.logo_url ?? ""} disabled={!canStyle} onChange={(e) => set("logo_url", e.target.value || null)} placeholder="https://" />
+            <FormField label="Logo" htmlFor="logo" hint={canStyle ? "Upload an SVG or PNG on a transparent background, up to 1 MB, or paste an image address." : `Available from the Professional plan. You are on ${planName}.`} className="md:col-span-2">
+              <div className="flex gap-2">
+                <Input id="logo" value={c.logo_url ?? ""} disabled={!canStyle} onChange={(e) => set("logo_url", e.target.value || null)} placeholder="https://" />
+                <Button type="button" variant="secondary" disabled={!canStyle || uploading} onClick={() => fileRef.current?.click()}>
+                  {uploading ? "Uploading" : "Upload"}
+                </Button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void upload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
             </FormField>
           </CardContent>
         </Card>

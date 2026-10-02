@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { dbKind, getDb, hasExternalDb, migrateExternal } from "@/db";
 import { isSeeded, seed } from "@/db/seed";
+import { ensureBuckets } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -28,6 +29,7 @@ async function run(req: Request) {
   const db = await getDb();
   const already = await isSeeded(db);
   const result = await seed(db, { force: reset });
+  const storage = await ensureBuckets().catch((e: Error) => ({ created: [] as string[], provider: "error" as const, error: e.message }));
   return NextResponse.json({
     ok: true,
     database: dbKind(),
@@ -35,6 +37,7 @@ async function run(req: Request) {
     seeded: result.seeded,
     note: result.seeded ? (reset ? "Data wiped and reseeded." : "Demo data created.") : already ? "Already seeded. Add &reset=1 to wipe and reseed." : "No changes.",
     counts: "counts" in result ? result.counts : undefined,
+    storage,
     ms: Date.now() - started,
   });
 }

@@ -149,7 +149,7 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
                 ) : (
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {d.documents.map((doc) => (
-                      <DocumentCard key={doc.id} doc={doc} href={doc.type === "memo" && d.memo ? `/api/memos/${d.memo.id}/export` : doc.blobUrl} subtitle={formatDate(doc.createdAt)} />
+                      <DocumentCard key={doc.id} doc={doc} href={doc.type === "memo" && d.memo && !doc.storagePath && !doc.blobUrl ? `/api/memos/${d.memo.id}/export` : undefined} subtitle={formatDate(doc.createdAt)} />
                     ))}
                   </div>
                 )}

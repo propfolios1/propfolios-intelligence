@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { CROSS_BORDER_PROMPT_VERSION, CROSS_BORDER_SYSTEM } from "../prompts/cross-border_v2";
+import { CROSS_BORDER_PROMPT_VERSION, CROSS_BORDER_SYSTEM } from "../prompts/cross-border_v3";
 import { replayCrossBorder } from "../replay";
 import { crossBorderOutput, type crossBorderInput } from "../schemas";
 import { payload, runAgent } from "./_run";

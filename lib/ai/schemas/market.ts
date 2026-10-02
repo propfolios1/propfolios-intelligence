@@ -12,6 +12,11 @@ export const developerRiskInput = z.object({
     listed: z.string().nullable(),
   }),
   recentNews: z.array(z.string()).default([]),
+  federatedSignal: z
+    .object({ deals: z.number().int(), advisories: z.number().int(), highSeverityRate: z.number(), declineRate: z.number() })
+    .nullable()
+    .optional()
+    .describe("Anonymised findings on this developer from other advisories' completed mandates"),
 });
 export const developerRiskOutput = z.object({
   riskScore: z.number().min(0).max(100),
@@ -44,11 +49,20 @@ export const marketTimingInput = z.object({
   region: z.string(),
   months: z.array(z.object({ month: z.string(), transactions: z.number(), medianPriceSqft: z.number(), offPlanShare: z.number(), rentalYield: z.number(), supplyUnits: z.number(), absorptionRate: z.number() })),
 });
+export const backtestSchema = z.object({
+  periods: z.number().int(),
+  horizonMonths: z.number().int(),
+  hitRate: z.number(),
+  bySignal: z.array(z.object({ signal: z.enum(["BUY", "HOLD", "SELL"]), count: z.number().int(), avgForwardReturnPct: z.number() })),
+  note: z.string(),
+});
+
 export const marketTimingOutput = z.object({
   signal: z.enum(["BUY", "HOLD", "SELL"]),
   confidence: z.number().min(0).max(1),
   indicators: z.array(z.object({ name: z.string(), reading: z.string(), direction: z.enum(["supportive", "neutral", "adverse"]) })).min(3),
   commentary: z.string(),
+  backtest: backtestSchema.optional().describe("Computed by the platform after your call; leave empty"),
 });
 export type MarketTimingOutput = z.infer<typeof marketTimingOutput>;
 
@@ -85,6 +99,16 @@ export const crossBorderOutput = z.object({
       rationale: z.string(),
     })
     .optional(),
+  checklist: z
+    .array(
+      z.object({
+        item: z.string(),
+        jurisdiction: z.enum(["UAE", "India", "Both"]),
+        status: z.enum(["Required", "Recommended", "Not applicable"]),
+        reference: z.string().describe("Statute, regulator or form, e.g. FEMA (Non-debt Instruments) Rules 2019, Form 15CA/15CB, DLD Oqood"),
+      }),
+    )
+    .default([]),
   summary: z.string(),
 });
 export type CrossBorderOutput = z.infer<typeof crossBorderOutput>;

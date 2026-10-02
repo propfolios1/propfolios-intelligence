@@ -1,4 +1,3 @@
-import { put } from "@vercel/blob";
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -7,6 +6,7 @@ import * as s from "@/db/schema";
 import { embed } from "@/lib/ai/embed";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { audit, handle } from "@/lib/api";
+import { putObject } from "@/lib/storage";
 import { HttpError, requireApiUser } from "@/lib/auth";
 import { assertClientAccess, listDocuments } from "@/lib/queries";
 
@@ -23,8 +23,8 @@ export const GET = handle(async (req: Request) => {
 /**
  * Uploads a document (multipart form: file, type, title, clientId?, mandateId?,
  * propertyId?). A mandate or property must belong to the caller's tenant. Files go to
- * Vercel Blob when BLOB_READ_WRITE_TOKEN is set; otherwise the record is kept
- * without a stored file so the flow remains demonstrable.
+ * the private Supabase Storage bucket under {tenant_id}/{client_id}/… (Vercel
+ * Blob as a fallback); without storage only the record is kept.
  */
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser();
@@ -56,16 +56,13 @@ export const POST = handle(async (req: Request) => {
       if (!p) throw new HttpError(404, "Property not found.");
     }
   }
-  let blobUrl: string | null = null;
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`${user.tenantId}/${clientId ?? mandateId ?? "firm"}/${Date.now()}-${file.name.replace(/[^\w.-]+/g, "_")}`, file, { access: "public", contentType: file.type });
-    blobUrl = blob.url;
-  }
+  const stored = await putObject({ bucket: "documents", tenantId: user.tenantId, folder: clientId ?? (mandateId ? `mandates/${mandateId}` : "firm"), name: file.name, body: file, contentType: file.type });
+  const blobUrl = stored.url;
   const [doc] = await db
     .insert(s.documents)
-    .values({ tenantId: user.tenantId, clientId, mandateId, propertyId, title, type, blobUrl, pages: 1, sizeBytes: file.size, contentText: title, embedding: embed(title) })
+    .values({ tenantId: user.tenantId, clientId, mandateId, propertyId, title, type, blobUrl, storagePath: stored.storagePath, pages: 1, sizeBytes: file.size, contentText: title, embedding: embed(title) })
     .returning({ id: s.documents.id, title: s.documents.title, type: s.documents.type, blobUrl: s.documents.blobUrl, sizeBytes: s.documents.sizeBytes, createdAt: s.documents.createdAt });
   if (type === "kyc" && clientId) await db.update(s.clients).set({ kycStatus: "submitted" }).where(eq(s.clients.id, clientId));
-  await audit(user, `uploaded ${type.replace("_", " ")} document`, { entityType: "document", entityId: doc!.id, mandateId: mandateId ?? undefined, detail: { title, stored: Boolean(blobUrl) } });
-  return NextResponse.json({ ...doc, stored: Boolean(blobUrl) }, { status: 201 });
+  await audit(user, `uploaded ${type.replace("_", " ")} document`, { entityType: "document", entityId: doc!.id, mandateId: mandateId ?? undefined, detail: { title, stored: stored.provider } });
+  return NextResponse.json({ ...doc, stored: stored.provider !== "none", provider: stored.provider }, { status: 201 });
 });

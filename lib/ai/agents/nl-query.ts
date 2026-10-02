@@ -3,7 +3,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { anthropic, isAiConfigured, MODELS, recordAgentRun, toolSchema } from "../client";
 import { addUsage, costUsd, emptyUsage } from "../cost";
-import { NL_QUERY_PROMPT_VERSION, nlQuerySystem } from "../prompts/nl-query_v1";
+import { NL_QUERY_PROMPT_VERSION, nlQuerySystem } from "../prompts/nl-query_v2";
 import { runDataTool, toolsFor, type Source, type ToolScope } from "../tools/data";
 
 /** Events streamed to the browser as newline-delimited JSON. */

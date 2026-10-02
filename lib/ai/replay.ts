@@ -1,5 +1,6 @@
 import "server-only";
 import { scoreDeveloper } from "@/db/seed-data";
+import { backtestTiming, timingScore } from "./tools/valuation";
 import type {
   ComparablesOutput,
   CrossBorderOutput,
@@ -364,6 +365,8 @@ export interface HouseStyle {
   brandName: string;
   tone: string;
   signoff: string;
+  /** Learned from the firm's prior approved memos (lib/ai/house-style.ts). */
+  learned?: { headingOrder: string[]; avgSentenceWords: number; learnedFrom: number; exemplars: { headings: string[]; opening: string }[] } | null;
 }
 
 /**
@@ -456,7 +459,12 @@ export function replayMemo(
 export function replayDeveloperRisk(input: z.infer<typeof developerRiskInput>): DeveloperRiskOutput {
   const d = input.developer;
   const sentimentScore = Math.max(30, Math.min(95, 50 + (d.deliveryPct - 80) * 1.2 + (d.financialHealth - 70) * 0.6 - d.litigationCount * 0.8));
-  const { breakdown, riskScore } = scoreDeveloper({ ...d, sentimentScore });
+  const base = scoreDeveloper({ ...d, sentimentScore });
+  const fed = input.federatedSignal;
+  // Federated evidence moves the score by at most 8 points, weighted by how many deals it rests on.
+  const fedAdj = fed && fed.deals >= 3 ? Math.max(-4, Math.min(8, ((fed.highSeverityRate - 0.3) * 10 + fed.declineRate * 6) * Math.min(1, fed.deals / 10))) : 0;
+  const riskScore = +Math.max(0, Math.min(100, base.riskScore + fedAdj)).toFixed(1);
+  const breakdown = base.breakdown;
   return {
     riskScore,
     breakdown,
@@ -467,6 +475,7 @@ export function replayDeveloperRisk(input: z.infer<typeof developerRiskInput>): 
       { factor: "Litigation", impact: +(breakdown.litigation * 0.15).toFixed(1), note: `${d.litigationCount} active matters.` },
       { factor: "Market sentiment", impact: +(breakdown.sentiment * 0.15).toFixed(1), note: input.recentNews.length ? `${input.recentNews.length} recent news items considered.` : "No material recent news." },
       { factor: "Escrow compliance", impact: +(breakdown.escrow * 0.1).toFixed(1), note: d.escrowCompliant ? "Compliant on all registered projects." : "Compliance not confirmed." },
+      ...(fed && fed.deals >= 3 ? [{ factor: "Federated evidence", impact: +fedAdj.toFixed(1), note: `${fed.deals} completed mandates across ${fed.advisories} advisories: ${Math.round(fed.highSeverityRate * 100)}% raised HIGH or CRITICAL findings; ${Math.round(fed.declineRate * 100)}% were declined.` }] : []),
     ],
     summary: `${d.name} scores ${riskScore.toFixed(1)} on the composite framework (lower is stronger), driven principally by its delivery record. ${riskScore < 15 ? "Tier one." : riskScore < 25 ? "Acceptable with standard monitoring." : "Elevated; mandates require completion protections."}`,
   };
@@ -503,13 +512,7 @@ export function replayComparables(input: z.infer<typeof comparablesInput>): Comp
 export function replayMarketTiming(input: z.infer<typeof marketTimingInput>): MarketTimingOutput {
   const m = input.months;
   const last = m.at(-1)!;
-  const prev = m.at(-4) ?? m[0]!;
-  const priceMom = (last.medianPriceSqft - prev.medianPriceSqft) / prev.medianPriceSqft;
-  const volMom = (last.transactions - prev.transactions) / prev.transactions;
-  const supplyTrend = (last.supplyUnits - prev.supplyUnits) / prev.supplyUnits;
-  const absorptionTrend = last.absorptionRate - prev.absorptionRate;
-  const score = (priceMom > 0.02 ? 1 : priceMom < 0 ? -1 : 0) + (volMom > 0.03 ? 1 : volMom < -0.03 ? -1 : 0) + (supplyTrend > 0.15 ? -1 : 0) + (absorptionTrend < -2 ? -1 : 0);
-  const signal = score >= 2 ? "BUY" : score <= -1 ? "SELL" : "HOLD";
+  const { score, signal, priceMom, volMom, supplyTrend, absorptionTrend } = timingScore(m);
   return {
     signal,
     confidence: +(0.55 + Math.min(3, Math.abs(score)) * 0.1).toFixed(2),
@@ -520,6 +523,7 @@ export function replayMarketTiming(input: z.infer<typeof marketTimingInput>): Ma
       { name: "Absorption", reading: pct(last.absorptionRate, 0), direction: absorptionTrend < -2 ? "adverse" : last.absorptionRate > 88 ? "supportive" : "neutral" },
       { name: "Gross rental yield", reading: pct(last.rentalYield), direction: last.rentalYield >= 6 ? "supportive" : "neutral" },
     ],
+    backtest: backtestTiming(m),
     commentary: `${input.region}: ${signal}. Prices moved ${pct(priceMom * 100)} over three months on volumes ${volMom >= 0 ? "up" : "down"} ${pct(Math.abs(volMom * 100))}. ${supplyTrend > 0.15 ? "Rising handovers warrant selectivity in mid-market communities." : "Supply is being absorbed without visible stress."}`,
   };
 }
@@ -561,9 +565,32 @@ export function replayCrossBorder(input: z.infer<typeof crossBorderInput>): Cros
         };
       })()
     : undefined;
+  type Check = CrossBorderOutput["checklist"][number];
+  const checklist: Check[] = india
+    ? [
+        { item: "Payments routed through NRE, NRO or FCNR(B) accounts or inward remittance", jurisdiction: "India", status: nri ? "Required" : "Not applicable", reference: "FEMA (Non-debt Instruments) Rules 2019" },
+        { item: "Project registration verified on the state RERA portal", jurisdiction: "India", status: "Required", reference: "Real Estate (Regulation and Development) Act 2016, s.3" },
+        { item: "Stamp duty and registration paid on the agreement value", jurisdiction: "India", status: "Required", reference: "State Stamp Act; Registration Act 1908" },
+        { item: "GST invoice obtained for under-construction consideration", jurisdiction: "India", status: /ready|complete/i.test(input.property.name) ? "Not applicable" : "Recommended", reference: "CGST Act 2017, Notification 03/2019" },
+        { item: "Forms 15CA/15CB filed before remitting rental income or sale proceeds", jurisdiction: "India", status: nri ? "Required" : "Not applicable", reference: "Income-tax Rules 1962, r.37BB" },
+        { item: "Lower-deduction certificate sought before any sale", jurisdiction: "India", status: nri ? "Recommended" : "Not applicable", reference: "Income-tax Act 1961, s.197" },
+        { item: "UAE tax residency certificate kept current for treaty relief", jurisdiction: "UAE", status: "Recommended", reference: "India-UAE DTAA; UAE Ministry of Finance" },
+        { item: "Source-of-funds pack prepared for both banks", jurisdiction: "Both", status: "Required", reference: "UAE AML Federal Decree-Law 20 of 2018; PMLA 2002" },
+      ]
+    : [
+        { item: "Community confirmed as a designated freehold area", jurisdiction: "UAE", status: "Required", reference: "Dubai Law No. 7 of 2006 / Abu Dhabi Law No. 3 of 2015" },
+        { item: "Off-plan contract registered on Oqood and payments made to the project escrow account", jurisdiction: "UAE", status: /off|construction/i.test(input.property.name) ? "Required" : "Not applicable", reference: "Dubai Law No. 8 of 2007; RERA escrow rules" },
+        { item: "DLD 4% transfer fee and trustee fees budgeted", jurisdiction: "UAE", status: "Required", reference: "Dubai Land Department fee schedule" },
+        { item: "Will registered with DIFC Wills Service or ADJD", jurisdiction: "UAE", status: "Recommended", reference: "DIFC Wills Service Rules; Abu Dhabi Law No. 14 of 2021" },
+        { item: "Golden Visa application lodged (AED 2M or more)", jurisdiction: "UAE", status: input.property.priceLocal >= 2_000_000 ? "Recommended" : "Not applicable", reference: "Cabinet Resolution No. 65 of 2022" },
+        { item: "Indian tax disclosure of foreign assets (Schedule FA) for resident Indians", jurisdiction: "India", status: /india/i.test(input.client.residency) ? "Required" : "Not applicable", reference: "Income-tax Act 1961; Black Money Act 2015" },
+        { item: "Remittance within the Liberalised Remittance Scheme limit for resident Indians", jurisdiction: "India", status: /india/i.test(input.client.residency) ? "Required" : "Not applicable", reference: "RBI Liberalised Remittance Scheme (USD 250,000 a year)" },
+        { item: "Source-of-funds pack prepared for the conveyancing bank", jurisdiction: "Both", status: "Required", reference: "UAE AML Federal Decree-Law 20 of 2018" },
+      ];
   return {
     considerations,
     arbitrage,
+    checklist,
     structuringOptions: india
       ? [
           { option: "Direct individual ownership", pros: "Simplest; full NRI repatriation route available.", cons: "TDS on sale and Indian probate on death." },

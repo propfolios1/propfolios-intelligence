@@ -2,7 +2,11 @@ import { z } from "zod";
 import { mandateContext } from "./common";
 import { researchOutput } from "./research";
 
-export const underwritingInput = z.object({ context: mandateContext, research: researchOutput });
+export const underwritingInput = z.object({
+  context: mandateContext,
+  research: researchOutput,
+  federatedBaseline: z.string().nullable().optional().describe("Median assumptions from comparable completed deals across advisories (anonymised)"),
+});
 
 /** The agent sets assumptions; the financial engine computes every return figure from them. */
 export const underwritingOutput = z.object({

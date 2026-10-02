@@ -6,3 +6,4 @@ export * from "./debate";
 export * from "./memo";
 export * from "./portfolio";
 export * from "./market";
+export * from "./intelligence";

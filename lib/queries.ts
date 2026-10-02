@@ -97,7 +97,7 @@ export async function getMandateDetail(db: DB, user: CurrentUser, id: string) {
     db.select().from(s.debates).where(scope(s.debates, user.tenantId, eq(s.debates.mandateId, id))).limit(1),
     db.select().from(s.memos).where(eq(s.memos.mandateId, id)).limit(1),
     db.select().from(s.auditLogs).where(eq(s.auditLogs.mandateId, id)).orderBy(desc(s.auditLogs.createdAt)).limit(80),
-    db.select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, createdAt: s.documents.createdAt }).from(s.documents).where(scope(s.documents, user.tenantId, eq(s.documents.mandateId, id))).orderBy(desc(s.documents.createdAt)),
+    db.select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, storagePath: s.documents.storagePath, createdAt: s.documents.createdAt }).from(s.documents).where(scope(s.documents, user.tenantId, eq(s.documents.mandateId, id))).orderBy(desc(s.documents.createdAt)),
   ]);
   return {
     ...row,
@@ -378,7 +378,7 @@ export async function listDocuments(db: DB, user: CurrentUser, f: { clientId?: s
   if (user.role === "client") where.push(eq(s.documents.clientId, user.clientId ?? "00000000-0000-0000-0000-000000000000"));
   else if (f.clientId) where.push(eq(s.documents.clientId, f.clientId));
   return db
-    .select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, createdAt: s.documents.createdAt, mandateId: s.documents.mandateId, clientId: s.documents.clientId })
+    .select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, pages: s.documents.pages, sizeBytes: s.documents.sizeBytes, blobUrl: s.documents.blobUrl, storagePath: s.documents.storagePath, createdAt: s.documents.createdAt, mandateId: s.documents.mandateId, clientId: s.documents.clientId })
     .from(s.documents)
     .where(and(...where))
     .orderBy(desc(s.documents.createdAt));

@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { DEVELOPER_RISK_PROMPT_VERSION, DEVELOPER_RISK_SYSTEM } from "../prompts/developer-risk_v1";
+import { DEVELOPER_RISK_PROMPT_VERSION, DEVELOPER_RISK_SYSTEM } from "../prompts/developer-risk_v2";
 import { replayDeveloperRisk } from "../replay";
 import { developerRiskOutput, type developerRiskInput } from "../schemas";
 import { payload, runAgent } from "./_run";

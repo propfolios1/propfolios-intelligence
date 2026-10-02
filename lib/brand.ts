@@ -8,7 +8,7 @@ import { getTenantById, platformBrand, tenantForHost } from "./tenant";
 const HEX = /^#[0-9a-f]{6}$/i;
 
 /** The brand for this request: the signed-in user's tenant, else the custom-domain tenant, else Nakhla. */
-const MARKETING = /^\/($|pricing|onboarding|sign-in|sign-up|suspended)/;
+const MARKETING = /^\/($|pricing|onboarding|demo|sign-in|sign-up|suspended)/;
 
 export async function resolveBrand(): Promise<TenantBrand> {
   const path = (await headers()).get("x-nakhla-path") ?? "";

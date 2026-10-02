@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { MONITOR_PROMPT_VERSION, MONITOR_SYSTEM } from "../prompts/portfolio-monitor_v1";
+import { MONITOR_PROMPT_VERSION, MONITOR_SYSTEM } from "../prompts/portfolio-monitor_v2";
 import { replayPortfolioMonitor } from "../replay";
 import { portfolioMonitorOutput, type portfolioMonitorInput } from "../schemas";
 import { payload, runAgent } from "./_run";

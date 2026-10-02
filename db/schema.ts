@@ -45,6 +45,8 @@ const money = (name: string) => numeric(name, { precision: 16, scale: 2, mode: "
 export type TenantConfig = {
   brand_name: string;
   logo_url: string | null;
+  /** Object path of an uploaded logo in the branding bucket. */
+  logo_path?: string | null;
   primary_color: string;
   accent_color: string;
   font_display: "Playfair Display" | "Inter";

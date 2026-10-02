@@ -9,6 +9,7 @@ export interface DocumentCardData {
   pages: number;
   sizeBytes: number;
   blobUrl: string | null;
+  storagePath?: string | null;
   createdAt: Date | string;
 }
 
@@ -17,9 +18,9 @@ function size(bytes: number) {
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-/** A document tile. Opens the stored file, or the memo PDF when a memo has no stored file. */
+/** A document tile. Opens the stored file through a tenant-checked download link, or the memo PDF when a memo has no stored file. */
 export function DocumentCard({ doc, href, subtitle, className }: { doc: DocumentCardData; href?: string | null; subtitle?: string; className?: string }) {
-  const link = href ?? doc.blobUrl;
+  const link = href ?? (doc.storagePath || doc.blobUrl ? `/api/documents/${doc.id}/download` : null);
   const Body = (
     <>
       <div className="flex items-start gap-3">

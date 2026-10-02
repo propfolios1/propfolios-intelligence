@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { COMPARABLES_PROMPT_VERSION, COMPARABLES_SYSTEM } from "../prompts/comparables_v1";
+import { COMPARABLES_PROMPT_VERSION, COMPARABLES_SYSTEM } from "../prompts/comparables_v2";
 import { replayComparables } from "../replay";
 import { comparablesOutput, type comparablesInput } from "../schemas";
 import { payload, runAgent } from "./_run";

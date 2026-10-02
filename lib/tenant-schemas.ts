@@ -9,7 +9,7 @@ const domain = z
 
 export const brandingInput = z.object({
   brand_name: z.string().trim().min(2).max(60),
-  logo_url: z.union([z.url(), z.literal("")]).nullable().optional(),
+  logo_url: z.union([z.url(), z.string().regex(/^\/api\/branding\/[0-9a-f-]{36}\/logo(\?v=\d+)?$/), z.literal("")]).nullable().optional(),
   primary_color: hex,
   accent_color: hex,
   font_display: z.enum(["Playfair Display", "Inter"]),

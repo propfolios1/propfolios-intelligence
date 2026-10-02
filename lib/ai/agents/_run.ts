@@ -1,6 +1,6 @@
 import "server-only";
 import type { z } from "zod";
-import { type AgentContext, type AgentRun, isAiConfigured, MODELS, recordAgentRun, runStructured } from "../client";
+import { type AgentContext, type AgentRun, isAiConfigured, MODELS, type ModelTier, recordAgentRun, runStructured } from "../client";
 import { emptyUsage } from "../cost";
 
 export const REPLAY_MODEL = "replay";
@@ -19,7 +19,9 @@ const sleep = (ms: number, signal?: AbortSignal) =>
 export async function runAgent<T extends z.ZodType>(opts: {
   agent: string;
   action: string;
-  model?: "primary" | "fast";
+  model?: ModelTier;
+  /** Exact model id, overriding the tier (cross-validation runs one call per model). */
+  modelId?: string;
   system: string;
   user: string;
   schema: T;
@@ -31,7 +33,7 @@ export async function runAgent<T extends z.ZodType>(opts: {
   replayMs?: number;
 }): Promise<AgentRun<z.infer<T>>> {
   if (isAiConfigured()) {
-    return runStructured({ ...opts, model: MODELS[opts.model ?? "primary"] });
+    return runStructured({ ...opts, model: opts.modelId ?? MODELS[opts.model ?? "primary"] });
   }
   const started = Date.now();
   const output = opts.schema.parse(opts.replay()) as z.infer<T>;

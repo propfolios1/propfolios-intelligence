@@ -7,9 +7,12 @@ import { addUsage, costUsd, emptyUsage, type Usage } from "./cost";
 
 /** Deep work (pipeline agents) and fast work (chat, monitoring). Override with env vars. */
 export const MODELS = {
+  /** Deepest reasoning; used as the third opinion in cross-validation. */
+  deep: process.env.ANTHROPIC_MODEL_DEEP || "claude-opus-4-20250514",
   primary: process.env.ANTHROPIC_MODEL_PRIMARY || "claude-sonnet-4-20250514",
   fast: process.env.ANTHROPIC_MODEL_FAST || "claude-haiku-4-5",
 };
+export type ModelTier = keyof typeof MODELS;
 
 export const isAiConfigured = () => Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
 
@@ -103,11 +106,13 @@ export async function runStructured<T extends z.ZodType>(opts: {
   if (!isAiConfigured()) throw new AgentError(opts.agent, "ANTHROPIC_API_KEY is not set.", "not_configured");
   const model = opts.model ?? MODELS.primary;
   const forced = supportsForcedTool(model);
-  const tool: Anthropic.Tool = { name: opts.toolName, description: opts.toolDescription, input_schema: toolSchema(opts.schema) };
+  const inputSchema = toolSchema(opts.schema);
+  const tool: Anthropic.Tool = { name: opts.toolName, description: opts.toolDescription, input_schema: inputSchema };
+  const schemaSection = `OUTPUT SCHEMA\nThe input of the ${opts.toolName} tool, as JSON Schema:\n${JSON.stringify(inputSchema)}`;
   const system: Anthropic.TextBlockParam[] = [
     {
       type: "text",
-      text: forced ? opts.system : `${opts.system}\n\nRespond only by calling the ${opts.toolName} tool with the complete result.`,
+      text: `${opts.system}\n\n${schemaSection}${forced ? "" : `\n\nRespond only by calling the ${opts.toolName} tool with the complete result.`}`,
       cache_control: { type: "ephemeral" },
     },
   ];

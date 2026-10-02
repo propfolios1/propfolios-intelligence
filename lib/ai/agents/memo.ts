@@ -1,7 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentContext } from "../client";
-import { MEMO_PROMPT_VERSION, MEMO_SYSTEM } from "../prompts/memo_v1";
+import { MEMO_PROMPT_VERSION, MEMO_SYSTEM } from "../prompts/memo_v2";
 import { replayMemo, type HouseStyle } from "../replay";
 import { memoOutput, type memoInput } from "../schemas";
 import { payload, runAgent } from "./_run";
@@ -32,7 +32,7 @@ export async function memo(
     system: MEMO_SYSTEM,
     user: payload(
       style
-        ? `Draft the memo for ${style.brandName}. HOUSE STYLE: ${style.tone} Close with the sign-off "${style.signoff}". Write a complete committee pack: executive summary, recommendation, thesis, returns with every scenario, sensitivity, asset, market, developer, comparable evidence, each due diligence finding, risks, both sides of the debate, regulatory and tax, conditions, next steps, and appendices for assumptions and sources.`
+        ? `Draft the memo for ${style.brandName}. HOUSE STYLE: ${style.tone} Close with the sign-off "${style.signoff}".${style.learned ? ` LEARNED STYLE: mirror the ${style.learned.learnedFrom} approved memos in houseStyle.learned.exemplars; use their section order (${style.learned.headingOrder.join(" / ") || "as shown"}) and an average of about ${style.learned.avgSentenceWords} words a sentence.` : ""} Write a complete committee pack: executive summary, recommendation, thesis, returns with every scenario, sensitivity, asset, market, developer, comparable evidence, each due diligence finding, risks, both sides of the debate, regulatory and tax, conditions, next steps, and appendices for assumptions and sources.`
         : "Draft the memo.",
       input,
     ),

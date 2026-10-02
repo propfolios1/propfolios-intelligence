@@ -1,12 +1,15 @@
 import { and, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { embed } from "@/lib/ai/embed";
+import { proposeActions } from "@/lib/actions";
 import { markDelivered } from "@/lib/ai/orchestrator";
 import { audit, handle } from "@/lib/api";
 import { HttpError, requireApiUser } from "@/lib/auth";
+import { contributeLearning } from "@/lib/federation";
+import { putObject, storageConfigured, type StoredObject } from "@/lib/storage";
 import { memoPdf } from "@/lib/pdf/memo-export";
 import { getMemo } from "@/lib/queries";
 
@@ -30,15 +33,18 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
   const now = new Date();
   await db.update(s.memos).set({ status: deliver ? "delivered" : "approved", approvedBy: user.name, approvedAt: now }).where(eq(s.memos.id, id));
   await audit(user, deliver ? "approved and delivered memo" : "approved memo", { entityType: "memo", entityId: id, mandateId: row.mandate.id });
+  // Layer 5: refresh proposed follow-up actions now that the memo is approved.
+  after(() => proposeActions(db, user.tenantId, row.mandate.id, { tenantId: user.tenantId, mandateId: row.mandate.id, actor: user.name }, deliver ? "DELIVERED" : undefined).then(() => undefined, (e: Error) => console.error("action proposals failed", e)));
   if (deliver) {
     if (row.mandate.status === "REVIEW") await markDelivered(db, row.mandate.id, user.name);
+    // Layer 6: contribute the anonymised learning (only when the firm has opted in).
+    await contributeLearning(db, user.tenantId, row.mandate.id).catch((e: Error) => console.error("federation contribution failed", e));
     // archive the delivered PDF so the client's copy never changes
-    let pdfUrl: string | null = null;
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+    let stored: StoredObject = { provider: "none", storagePath: null, url: null };
+    if (storageConfigured()) {
       const { pdf, filename } = await memoPdf(db, user, id);
-      const { put } = await import("@vercel/blob");
-      pdfUrl = (await put(`${user.tenantId}/memos/${filename}`, Buffer.from(pdf), { access: "public", contentType: "application/pdf", addRandomSuffix: true })).url;
-      await db.update(s.memos).set({ pdfUrl }).where(and(eq(s.memos.id, id), eq(s.memos.tenantId, user.tenantId)));
+      stored = await putObject({ bucket: "memos", tenantId: user.tenantId, folder: row.mandate.id, name: filename, body: Buffer.from(pdf), contentType: "application/pdf" });
+      await db.update(s.memos).set({ pdfUrl: stored.url ?? stored.storagePath }).where(and(eq(s.memos.id, id), eq(s.memos.tenantId, user.tenantId)));
     }
     const text = row.memo.contentHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     await db.insert(s.documents).values({
@@ -47,7 +53,8 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
       mandateId: row.mandate.id,
       title: row.memo.title,
       type: "memo",
-      blobUrl: pdfUrl,
+      blobUrl: stored.url,
+      storagePath: stored.storagePath,
       pages: Math.max(2, Math.ceil(text.length / 3200)),
       sizeBytes: Math.round(text.length * 1.6),
       contentText: text,

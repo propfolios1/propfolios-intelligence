@@ -2,7 +2,7 @@ import "server-only";
 import type { z } from "zod";
 import type { AgentContext, AgentRun } from "../client";
 import { addUsage } from "../cost";
-import { BEAR_SYSTEM, BULL_SYSTEM, DEBATE_PROMPT_VERSION, JUDGE_SYSTEM } from "../prompts/debate_v1";
+import { BEAR_SYSTEM, BULL_SYSTEM, DEBATE_PROMPT_VERSION, JUDGE_SYSTEM } from "../prompts/debate_v2";
 import { replayDebate } from "../replay";
 import { debateCase, judgeDecision, type DebateOutput, type debateEvidence } from "../schemas";
 import { payload, runAgent } from "./_run";

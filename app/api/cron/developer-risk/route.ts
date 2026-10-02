@@ -1,3 +1,4 @@
+import { federatedDeveloperSignal } from "@/lib/federation";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
@@ -16,7 +17,7 @@ export const GET = handle(async (req: Request) => {
   const results: { name: string; from: number; to: number }[] = [];
   for (const d of devs) {
     const run = await developerRisk(
-      { developer: { name: d.name, market: d.market, deliveryPct: d.deliveryPct, financialHealth: d.financialHealth, litigationCount: d.litigationCount, projectsDelivered: d.projectsDelivered, escrowCompliant: d.escrowCompliant, listed: d.listed }, recentNews: [] },
+      { developer: { name: d.name, market: d.market, deliveryPct: d.deliveryPct, financialHealth: d.financialHealth, litigationCount: d.litigationCount, projectsDelivered: d.projectsDelivered, escrowCompliant: d.escrowCompliant, listed: d.listed }, recentNews: [], federatedSignal: await federatedDeveloperSignal(db, d.name) },
       { tenantId: d.tenantId, actor: "Scheduler" },
     );
     await db
