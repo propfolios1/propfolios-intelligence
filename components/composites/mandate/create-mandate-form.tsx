@@ -98,7 +98,7 @@ export function CreateMandateForm({ clients, properties, defaultClientId, defaul
       if (!res.ok) throw new Error(json.error ?? "The mandate could not be created.");
       await fetch(`/api/mandates/${json.id}/run`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
       toast.success(`${json.reference} created`, { description: "Agents are researching the mandate." });
-      router.push(`/analyst/mandates/${json.id}?tab=timeline`);
+      router.push(`/analyst/mandates/${json.id}`);
     } catch (err) {
       toast.error("Mandate not created", { description: (err as Error).message });
       setSubmitting(false);

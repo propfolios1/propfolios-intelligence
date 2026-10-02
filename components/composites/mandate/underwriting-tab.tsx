@@ -1,4 +1,5 @@
 import { CashFlowChart } from "@/components/charts/cash-flow-chart";
+import { RiskRadar } from "@/components/charts/risk-radar";
 import { BarSeries } from "@/components/charts/series";
 import { Tornado } from "@/components/charts/tornado";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -36,12 +37,9 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
           </CardContent>
         </Card>
         <Card className="xl:col-span-5">
-          <CardHeader eyebrow={`${sim.distribution.iterations.toLocaleString("en-US")} simulated paths`} title="IRR distribution" />
+          <CardHeader eyebrow="1 low, 10 high" title="Risk profile" />
           <CardContent>
-            <BarSeries data={sim.distribution.histogram} x="bucket" y="count" name="Paths" height={220} format="number" />
-            <p className="mt-3 text-small text-ink-500">
-              {(sim.distribution.probBelowHurdle * 100).toFixed(0)}% of paths fall below the {hurdle.toFixed(1)}% hurdle. Mean IRR {(sim.distribution.mean * 100).toFixed(1)}%.
-            </p>
+            <RiskRadar data={sim.risk} size={280} />
           </CardContent>
         </Card>
         <Card className="xl:col-span-7">
@@ -51,6 +49,15 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
           </CardContent>
         </Card>
         <Card className="xl:col-span-5">
+          <CardHeader eyebrow={`${sim.distribution.iterations.toLocaleString("en-US")} simulated paths`} title="IRR distribution" />
+          <CardContent>
+            <BarSeries data={sim.distribution.histogram} x="bucket" y="count" name="Paths" height={220} format="number" />
+            <p className="mt-3 text-small text-ink-500">
+              {(sim.distribution.probBelowHurdle * 100).toFixed(0)}% of paths fall below the {hurdle.toFixed(1)}% hurdle. Mean IRR {(sim.distribution.mean * 100).toFixed(1)}%.
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-12">
           <CardHeader eyebrow="Set by the underwriting agent" title="Assumptions" />
           <CardContent>
             <dl className="divide-y divide-ink-200 border-y border-ink-200">
@@ -76,7 +83,7 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
           </CardContent>
         </Card>
       </div>
-      <p className="text-small text-ink-500">Returns are computed by the PropFolios financial engine (IRR, NPV, Monte Carlo), not by the language model. Projections are not guarantees.</p>
+      <p className="text-small text-ink-500">Returns are computed by the platform financial engine (IRR, NPV, Monte Carlo), not by the language model. Projections are not guarantees.</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ActivityFeed } from "@/components/composites/activity-feed";
 import { DocumentCard } from "@/components/composites/document-card";
+import { DocumentUpload } from "@/components/composites/document-upload";
 import { EmptyState } from "@/components/composites/empty-state";
 import { DDTab } from "@/components/composites/mandate/dd-tab";
 import { DebateTab } from "@/components/composites/mandate/debate-tab";
@@ -84,12 +85,12 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
           <RunControls mandateId={m.id} reference={m.reference} memoId={d.memo?.id ?? null} memoStatus={d.memo?.status ?? null} canDelete={user.role === "tenant_admin" || m.status !== "DELIVERED"} />
         </header>
 
-        <TabBar id={m.id} active={tab} counts={{ dd: d.findings.length, audit: d.audit.length }} />
+        <TabBar id={m.id} active={tab} counts={{ dd: d.findings.length, documents: d.documents.length, audit: d.audit.length }} />
 
         <div className="pt-8">
           {tab === "overview" && <OverviewTab d={d} />}
-          {tab === "timeline" && (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          {tab === "overview" && (
+            <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
               <Card className="xl:col-span-7">
                 <CardHeader eyebrow="Server-sent events" title="Agent timeline" />
                 <CardContent>
@@ -140,22 +141,31 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
             ) : (
               <Pending stage={STAGE_LABEL.MEMO} />
             ))}
-          {tab === "audit" && (
+          {tab === "documents" && (
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-              <Card className="xl:col-span-8">
-                <CardHeader eyebrow="Immutable record" title="Audit trail" />
-                <CardContent>
-                  <ActivityFeed linkMandates={false} items={d.audit.map((a) => ({ ...a, reference: null }))} />
-                </CardContent>
-              </Card>
-              <div className="flex flex-col gap-3 xl:col-span-4">
-                <div className="eyebrow">Documents</div>
-                {d.documents.length === 0 && <p className="text-small text-ink-500">No documents filed against this mandate.</p>}
-                {d.documents.map((doc) => (
-                  <DocumentCard key={doc.id} doc={doc} href={doc.type === "memo" && d.memo ? `/api/memos/${d.memo.id}/export` : undefined} subtitle={formatDate(doc.createdAt)} />
-                ))}
+              <div className="xl:col-span-8">
+                {d.documents.length === 0 ? (
+                  <p className="text-small text-ink-500">No documents filed against this mandate.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {d.documents.map((doc) => (
+                      <DocumentCard key={doc.id} doc={doc} href={doc.type === "memo" && d.memo ? `/api/memos/${d.memo.id}/export` : doc.blobUrl} subtitle={formatDate(doc.createdAt)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="xl:col-span-4">
+                <DocumentUpload mandateId={m.id} defaultType="research" types={["research", "spa", "title_deed", "valuation", "statement", "other"]} />
               </div>
             </div>
+          )}
+          {tab === "audit" && (
+            <Card>
+              <CardHeader eyebrow="Immutable record" title="Audit trail" />
+              <CardContent>
+                <ActivityFeed linkMandates={false} items={d.audit.map((a) => ({ ...a, reference: null }))} />
+              </CardContent>
+            </Card>
           )}
         </div>
       </PageContainer>

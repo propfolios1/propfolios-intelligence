@@ -8,13 +8,13 @@ import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 /** Drag-and-drop or browse upload to /api/documents. PDF or image, 10 MB. */
-export function DocumentUpload({ defaultType = "kyc", types = ["kyc", "spa", "title_deed", "valuation", "statement", "other"], clientId }: { defaultType?: string; types?: string[]; clientId?: string }) {
+export function DocumentUpload({ defaultType = "kyc", types = ["kyc", "spa", "title_deed", "valuation", "statement", "other"], clientId, mandateId }: { defaultType?: string; types?: string[]; clientId?: string; mandateId?: string }) {
   const router = useRouter();
   const input = React.useRef<HTMLInputElement>(null);
   const [type, setType] = React.useState(defaultType);
   const [over, setOver] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
-  const LABEL: Record<string, string> = { kyc: "KYC (passport, Emirates ID, proof of address)", spa: "Sale and purchase agreement", title_deed: "Title deed", valuation: "Valuation", statement: "Statement", other: "Other" };
+  const LABEL: Record<string, string> = { kyc: "KYC (passport, Emirates ID, proof of address)", spa: "Sale and purchase agreement", title_deed: "Title deed", valuation: "Valuation", statement: "Statement", research: "Research", other: "Other" };
 
   async function upload(file: File) {
     if (file.size > 10 * 1024 * 1024) return void toast.error("Files must be 10 MB or smaller.");
@@ -24,6 +24,7 @@ export function DocumentUpload({ defaultType = "kyc", types = ["kyc", "spa", "ti
     fd.set("type", type);
     fd.set("title", file.name.replace(/\.[^.]+$/, ""));
     if (clientId) fd.set("clientId", clientId);
+    if (mandateId) fd.set("mandateId", mandateId);
     const res = await fetch("/api/documents", { method: "POST", body: fd });
     const json = await res.json().catch(() => ({}));
     setBusy(false);

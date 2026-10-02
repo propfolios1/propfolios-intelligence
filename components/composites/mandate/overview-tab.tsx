@@ -7,7 +7,6 @@ import { formatDate } from "@/lib/utils";
 import { Metric, MetricGrid } from "../metric";
 import { ScenarioCards } from "../scenario-cards";
 import { RecommendationPill, RiskPill } from "../status";
-import { LiveTimeline } from "./live-mandate";
 
 export function OverviewTab({ d }: { d: MandateDetail }) {
   const { mandate: m, client, property: p, developer: dev } = d;
@@ -62,12 +61,6 @@ export function OverviewTab({ d }: { d: MandateDetail }) {
         </Card>
       </div>
       <div className="flex flex-col gap-6 xl:col-span-4">
-        <Card>
-          <CardHeader eyebrow="Live" title="Agent pipeline" />
-          <CardContent>
-            <LiveTimeline compact />
-          </CardContent>
-        </Card>
         {d.simulation && (
           <Card>
             <CardHeader eyebrow="1 low, 10 high" title="Risk profile" />

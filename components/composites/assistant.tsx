@@ -50,7 +50,7 @@ function Rich({ text, sources }: { text: string; sources: CitationSource[] }) {
 
 /**
  * The client's reading room. Replies are set as prose at 18px on a 720px
- * measure; questions sit right-aligned in ink-2. A 1.5px gold caret marks
+ * measure; questions sit right-aligned in ink-2. A 2px gold caret marks
  * where the answer is being written.
  */
 export function Assistant({ initialQuery, staff = false }: { initialQuery?: string; staff?: boolean }) {
@@ -212,7 +212,7 @@ function Reply({ message, sources, streaming, activity }: { message: Message; so
       {activity && <p className="eyebrow mb-3 text-gold-600">{activity}</p>}
       <div className={cn("prose-pf prose-read", message.error && "text-danger")}>
         {message.content ? <Rich text={message.content} sources={sources} /> : <p />}
-        {streaming && <span className="ml-0.5 inline-block h-[1.15em] w-[1.5px] translate-y-[3px] animate-caret bg-gold-500" aria-hidden />}
+        {streaming && <span className="ml-0.5 inline-block h-[1.15em] w-[2px] translate-y-[3px] animate-caret bg-gold-500" aria-hidden />}
       </div>
       {!streaming && message.content && !message.error && (
         <div className="mt-2 opacity-0 transition-opacity duration-120 group-hover:opacity-100 focus-within:opacity-100">

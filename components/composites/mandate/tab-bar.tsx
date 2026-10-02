@@ -3,12 +3,12 @@ import { cn } from "@/lib/utils";
 
 export const MANDATE_TABS = [
   ["overview", "Overview"],
-  ["timeline", "Timeline"],
   ["research", "Research"],
   ["underwriting", "Underwriting"],
   ["dd", "Due Diligence Findings"],
   ["debate", "Debate"],
   ["memo", "Memo"],
+  ["documents", "Documents"],
   ["audit", "Audit"],
 ] as const;
 export type MandateTab = (typeof MANDATE_TABS)[number][0];
