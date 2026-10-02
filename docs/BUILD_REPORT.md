@@ -2,114 +2,137 @@
 
 Release v1.0 · branch `claude/adoring-brown-6qrqag` · 2 October 2026
 
-Nakhla is a multi-tenant AI operating system for real estate advisory firms. Tenant number one is PropFolios.ae. It builds on the PropFolios Intelligence v1.0 codebase in the same repository.
+Nakhla is a multi-tenant, multi-agent AI operating system for real estate advisory firms, on Supabase (Postgres with pgvector, Storage, Realtime, row-level security) and Vercel. Tenant number one is PropFolios.ae.
 
 ## 1. Size
 
 | Measure | Count |
 | --- | --- |
-| Files in the repository | 352 |
-| Source files (TypeScript, TSX, CSS, SQL) | 295 |
-| Lines of source | 20,338 |
-| of which `app/` (pages and API routes) | 4,708 |
-| of which `components/` | 7,590 |
-| of which `lib/` (agents, prompts, orchestrator, auth, tenancy, plans, queries) | 5,381 |
-| of which `db/` (schema, seed, seed data) | 2,046 |
-| of which `drizzle/` (SQL migrations, including row-level security) | 550 |
-| Pages | 44 |
-| API route handlers | 36 |
-| Database tables | 19, every tenant-owned table carrying `tenant_id` |
-| Row-level security policies | 19, plus Supabase Data API lockdown (migration 0002) |
-| AI agents | 12 |
-| Versioned prompts | 15 files: thirteen `_v1`, plus `market-timing_v2` and `cross-border_v2` (v1 kept) |
+| Files in the repository | 449 |
+| Source files (TypeScript, TSX, CSS, SQL) | 381 |
+| Lines of source | 26,688 |
+| of which `app/` (pages and API routes) | 5,926 |
+| of which `components/` | 9,475 |
+| of which `lib/` (agents, prompts, orchestrator, cross-validation, insights, actions, federation, MCP, storage, auth, tenancy) | 7,644 |
+| of which `db/` (schema, connection, seed) | 2,588 |
+| of which `drizzle/` (SQL migrations: RLS, storage, Realtime, triggers) | 987 |
+| Pages | 51 |
+| API route handlers | 59 |
+| Database tables | 28 |
+| AI agents | 13 domain agents (the twelve specified plus the action planner) and the streaming assistant; insight narrator; three-model cross-validation panel |
+| Versioned prompts | 29 files (`_v1` to `_v3`; every earlier version kept) |
+| Components | 40+ (including ConfidenceMeter, CrossValidationBadge, InsightCard, ActionButton, FederationStats, CitationsList, MonteCarloHistogram, MoneyInput, PercentageInput, DateRangePicker, FilterBuilder, ExportMenu, RealtimeIndicator, DebateTranscript, TenantProvider, BrandMark) |
 
-## 2. Build status
+## 2. Security
 
-| Check | Result |
+| Measure | Value |
 | --- | --- |
-| `npm run type-check` (TypeScript strict) | Pass, 0 errors |
-| `npm run lint` | Pass, 0 errors, 0 warnings |
-| `npm run build` (Next.js production) | Pass |
-| `npm test` (financial engine: IRR, XIRR against Excel, NPV, Monte Carlo, sensitivity) | 10 of 10 pass |
-| Page sweep on the production server, four personas (platform, firm administrator, analyst, client) | 43 pages, all HTTP 200, 0 browser errors |
-| Three-tenant isolation (PropFolios, Gulf Crest Capital, Meridian Family Office): mandates, properties and clients disjoint; each tenant's mandates return 404 to the other two; a cross-tenant upload against another firm's mandate returns 404 | Pass |
-| Plan enforcement: sixth seat on Starter returns 402; Starter branding returns 402; custom domain without White-label returns 402 | Pass |
-| Self-serve onboarding: new firm created with trial subscription, administrator and demonstration data | Pass |
-| Mandate flow over server-sent events: Intake, Research, Underwriting, Due Diligence, Debate, Memo, Review | Pass in replay mode |
-| Memo PDF export in the tenant's house style (brand name, colours, sign-off, disclaimer) | Pass, HTTP 200 `application/pdf` |
-| Seed idempotency: `/api/setup` run twice; second run reports no changes; wrong secret returns 401 | Pass |
-| Supabase compatibility, on PostgreSQL 16 with pgvector and Supabase's `anon` and `authenticated` roles, connected through a Supabase-format pooler address (`?sslmode=require&supa=base-pooler.x`) as `POSTGRES_URL`: migrations, seed, second run unchanged, 43-page sweep with 0 browser errors, three-tenant isolation, SSE mandate run to Review, PDF export, both cron jobs, tenant provisioning, pgvector comparables, reset and reseed | Pass |
-| Supabase Data API lockdown: `anon` and `authenticated` hold no table privileges after migration; a non-owner role sees 0 rows without a tenant and only that tenant's rows with one (row-level security) | Pass |
-| Migration on a database holding pre-Nakhla data: columns backfilled, `admin` role converted to `tenant_admin`, 19 policies created | Pass |
+| Row-level security policies on tenant tables | **100** (25 tables × select, insert, update, delete) |
+| Storage policies | 4 on `storage.objects` (tenant prefix; clients limited to their own folder) |
+| Tables closed to all non-service roles | 3 federation tables (RLS on, no policies) |
+| Anonymous (`anon`) access | None: all privileges revoked |
+| Signed-in (`authenticated`) access | Read-only through the policies; all writes go through the server |
 
-## 3. Known limitations and deviations
+Policies resolve the caller from Clerk JWT claims via `auth.jwt()`: the user's own record (`sub`) decides the tenant, so a forged organisation claim cannot move a user into another firm; `org_id` (or Clerk's compact `o.id`) is used when the user has no record yet. Client users see only their own client, holdings, documents, messages and client-facing insights, and none of the internal tables (simulations, debates, cross-validations, actions, audit, users).
 
-1. **Repository and branch.** The specification asks for a fresh repository named `nakhla-intel` pushed to `main`. This session can write only to `propfolios-intelligence` on branch `claude/adoring-brown-6qrqag`, so Nakhla is built there. Merge the branch to `main` (or import the branch in Vercel) to deploy.
-2. **Next.js 15, not 14.** The project uses Next.js 15.5 (React 19), the current supported line. Route params are asynchronous; everything else specified for 14 applies.
-3. **Model names.** `claude-sonnet-4-20250514` is deprecated by Anthropic. It remains the default to match the specification; set `ANTHROPIC_MODEL_PRIMARY=claude-sonnet-5-5` to use the current model. "claude-haiku-4" maps to `claude-haiku-4-5`.
-4. **Row-level security is defence in depth.** Policies are enabled, not forced, so the table owner (the role the app connects as) bypasses them. Isolation is enforced in code: every query passes through `scope()` or `tenantDb()`, which throw when the tenant is missing. The policies protect any other database role, such as a reporting user.
-5. **One firm per user.** A person belongs to one tenant. A platform administrator reaches other firms through **Open as administrator**; each visit is audited in that firm's log.
-6. **Billing.** Plans, seats and custom-domain rights are enforced, and invoices with 5% VAT are computed and displayed, but no payment processor is connected.
-7. **Brand fonts.** Firms choose Playfair Display or Inter for headings; other typefaces are not loaded.
-8. **Replay mode.** Without `ANTHROPIC_API_KEY`, agents return deterministic, rule-based output from the same inputs and schemas. Every flow works, but the prose is templated. The market table's BUY, HOLD and SELL column uses this deterministic signal; the timing agent card runs the live agent.
-9. **Embeddings.** pgvector comparables and document search use a local 1,536-dimension hashing embedding, so no extra key is needed. It matches on vocabulary rather than meaning.
-10. **Rate limiting** is shared across servers only when Upstash or Vercel KV is connected; otherwise each instance limits in memory.
-11. **Embedded database.** Without `DATABASE_URL` the app runs on in-memory PGlite, which resets on restart. Supabase (or any Postgres with pgvector) is required for persistence.
-12. **Long agent runs** work within a 300-second budget and resume automatically; on Vercel Hobby (60-second functions) they resume more often.
-13. **Not found pages under loading states** are served with status 200 and the not-found content, a Next.js streaming behaviour. No data is rendered.
-14. **Seed data is illustrative.** Project and developer names are real; figures, transactions, clients and the three sample firms are synthetic.
-15. **Not built, by instruction:** Python services, Docker, Redis beyond Upstash/KV, WhatsApp, DocuSign, CRM, mobile apps, a public API, fine-tuning, SOC 2 and multi-region hosting. Weekly digests are stored as messages, not emailed.
+## 3. Federation (seeded demonstration)
 
-## 4. Deployment
+| Measure | Value |
+| --- | --- |
+| Learnings in the pool | 5 (three delivered mandates from PropFolios, Gulf Realty Advisors and Bombay Property Intelligence; two archived from a former tenant) |
+| Contributing advisories | 4 |
+| Published baselines | 3: Dubai Residential (5 deals, 4 firms), UAE market (5 deals, 4 firms), one developer signal (4 deals, 4 firms) |
+| Suppressed groups (below 3 deals or 2 firms) | 6 |
+| Anonymisation | Salted SHA-256 for tenant, mandate, property and developer; no names, prices, clients or free text |
+
+## 4. Build and verification
+
+| # | Check | Result |
+| --- | --- | --- |
+| 1 | `npm install` | Pass |
+| 2 | `npm run type-check` (TypeScript strict) | Pass, 0 errors |
+| 3 | `npm run lint` | Pass, 0 errors, 0 warnings |
+| 4 | `npm run build` | Pass |
+| 5 | Every page, four personas, production build | 48 page loads incl. every mandate tab, the demo run and all new pages: all HTTP 200, **0 browser errors** |
+| 6 | API routes | Exercised: setup, mandates, run, stream (SSE), cross-validate, debate, actions (propose, execute, reverse, dismiss), insights (scan, read, dismiss), federation consent and stats, platform aggregate and metrics, MCP (JSON-RPC and REST), documents and download, branding logo, envelopes, share links, crons |
+| 7 | Multi-tenancy, three tenants, application layer | Pass: disjoint mandates, properties and clients; cross-tenant reads and uploads return 404 |
+| 7 | Multi-tenancy, RLS layer (direct queries as `authenticated` with Clerk-style JWT claims) | Pass: each org sees one tenant; forged org claim ignored; client sees 1 client and only `both`-audience insights; no claims: 0 rows; `anon` denied; writes denied |
+| 8 | Supabase Realtime | Publication covers portfolios, insights, recommendations, actions, market_data (verified); browser subscription code with polling fallback; **not tested against a live Supabase project** (see limitations) |
+| 9 | Supabase Storage | Bucket creation (SQL and Storage API), tenant-prefix policies verified in Postgres; signed-URL download route; **live upload not tested** (no Supabase project reachable from the build environment) |
+| 10 | SSE streaming end to end | Pass: Intake to Review, including valuation and cross-validation |
+| 11 | PDF export | Pass, HTTP 200 `application/pdf`, tenant house style |
+| 12 | Federation aggregation | Pass: consent backfill, withdrawal, k-anonymous publication, nightly cron |
+| 13 | Cross-validation flags disagreements | Pass: seeded MND-0001 split 2:1 and resolved by the committee; on-demand runs set and clear the review flag |
+| 14 | Debate produces bull, bear and judge | Pass |
+| 15 | MCP server responds | Pass: `initialize`, `tools/list` (6 tools), `tools/call`, REST mirror; create_mandate, run_research, get_portfolio, get_market_data, get_developer_risk exercised with an API key |
+| 16 | Actions reversible | Pass: lender link revoked (share page 404 after reversal); shared memo withdrawn; follow-ups, escalations, client-record edits restored |
+| 17 | Seed idempotent | Pass: second `/api/setup` run reports no changes |
+| 18 | RLS: tenant A cannot read tenant B with direct client queries | Pass (see row 7) |
+| 19 | README complete | Click-by-click for every step and the five troubleshooting areas |
+| — | `npm test` (financial engine) | 10 of 10 pass |
+| — | Embedded (no database) mode | Pass: migrates, seeds and serves every layer |
+
+Verification ran against PostgreSQL 16 with pgvector configured like Supabase (`auth.jwt()`, `anon` and `authenticated` roles, a `storage` schema and a `supabase_realtime` publication), connected through a Supabase-format pooler address.
+
+## 5. Known limitations and deviations
+
+1. **Repository and branch.** Built in `propfolios-intelligence` on branch `claude/adoring-brown-6qrqag` (this session cannot create repositories or push to `main`).
+2. **Next.js 15, not 14.** The current supported line; route params are asynchronous.
+3. **Models.** Defaults follow the specification (`claude-opus-4-20250514`, `claude-sonnet-4-20250514`, `claude-haiku-4-5`); Opus 4 and Sonnet 4 are deprecated by Anthropic. Set `ANTHROPIC_MODEL_DEEP=claude-opus-5-5` and `ANTHROPIC_MODEL_PRIMARY=claude-sonnet-5-5` for current models.
+4. **Not exercised against a live Supabase project.** RLS, Storage policies and the Realtime publication were verified in a Supabase-like Postgres; Storage uploads and Realtime delivery depend on the project's third-party auth setup (README step 6).
+5. **Scheduling uses Vercel Cron, not Supabase Edge Functions** (the specification allows either; one mechanism keeps deployment in the Vercel UI). The insight agent runs daily, because Vercel Hobby allows daily cron jobs only, and additionally whenever new market data arrives (database trigger plus refresh on the next page load). Pro deployments can set it to every six hours.
+6. **Database triggers mark insights stale rather than calling agents.** Postgres cannot call the agents directly without extensions; the trigger flags the tenant and the next scan runs it.
+7. **Server queries connect as the table owner** and are isolated by the application layer; RLS governs every browser (Supabase client) query and any other role. Policies are enabled, not forced.
+8. **Actions run inside the platform.** Without WhatsApp, DocuSign or CRM integrations (excluded by instruction), executors act in Nakhla: memos shared to the client portal, signature envelopes signed in the portal (typed name, timestamp, source address), expiring lender links, follow-ups, client-record updates, escalation, rent reminders as portal messages with the firm's payment instructions. No email is sent.
+9. **ivfflat versus HNSW.** The embeddings index is HNSW, which keeps recall on small catalogues; ivfflat with too few rows per list returns incomplete results.
+10. **Federation baselines need scale.** With seed data, three baselines publish; the thresholds (3 deals, 2 firms) are constants in `lib/federation.ts`.
+11. **Replay mode.** Without `ANTHROPIC_API_KEY` the agents (including the three cross-validation reviewers and the insight narrator) return deterministic output from the same inputs and schemas. The financial engine, Monte Carlo, valuation, backtest and federation are the same in both modes.
+12. **Embeddings** are a local 1,536-dimension hashing embedding (no extra key); a hosted embedding model would match on meaning rather than vocabulary.
+13. **One firm per user**, billing computed but not collected, brand fonts limited to Playfair Display and Inter.
+14. **Demonstration mode is open.** Without Clerk every visitor acts as a demonstration persona, including on `/api/mcp` without a key; with Clerk configured an API key or a staff session is required.
+
+## 6. Deployment (summary)
 
 Full click-by-click instructions are in `README.md`.
 
-1. GitHub: confirm the repository is in your account.
-2. Vercel: Add New → Project → import; add `SETUP_SECRET`; Deploy.
-3. Supabase: Vercel → Storage → Create Database → Supabase → Connect (or paste the transaction pooler address as `DATABASE_URL`).
-4. Clerk: create the application, enable Organizations, customise the session token with `{"metadata": "{{user.public_metadata}}"}`, add the webhook for `user.created` and `user.updated`.
-5. Anthropic: create an API key.
-6. Environment variables: Clerk keys, webhook secret, Anthropic key, `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`; optionally Blob, Upstash/KV, model override, Mapbox.
-7. Redeploy.
-8. Visit `/api/setup?secret=YOUR_SETUP_SECRET`.
-9. Sign up, then in Clerk set your public metadata to `{"role":"platform_admin"}`; sign in again.
-10. In `/platform`, review the PropFolios tenant (or create a firm with Tenants → Create tenant).
-11. Send Amol the sign-up link for `amol@propfolios.ae`.
+1. GitHub: have the repository in your account.
+2. Supabase: create a project (free tier works).
+3. Switch on the `vector` extension.
+4. Copy the project URL, anon key, service role key and transaction pooler connection string.
+5. Clerk: create the application, enable Organizations, customise the session token.
+6. Supabase trusts Clerk: Clerk → Integrations → Supabase; Supabase → Authentication → Third-Party Auth → Clerk.
+7. Buckets: created automatically by setup (or by hand: documents, memos, branding, avatars, all private).
+8. Anthropic: create an API key.
+9. Vercel: import the repository, add the Clerk integration and the environment variables.
+10. Deploy; add the Clerk webhook and redeploy.
+11. Visit `/api/setup?secret=YOUR_SETUP_SECRET`: tables, RLS, storage, Realtime and seed data.
+12. Clerk → your user → public metadata `{"role":"platform_admin"}`.
+13. `/platform/tenants`: review PropFolios (or create a firm).
+14. Send Amol the sign-up link for `amol@propfolios.ae`.
 
-## 5. Monthly running cost
+## 7. Screenshots
 
-Per firm of about 40 mandates and 1,000 assistant questions a month: Anthropic about USD 68 (mandate pipeline USD 56, assistant USD 10, scheduled jobs USD 2). Shared platform cost: Vercel Pro USD 20, Supabase Pro USD 25, Clerk free to 10,000 monthly users, Blob and Upstash within free tiers at low volume. Agent spend per firm appears in `/platform/metrics` and each firm's audit log.
-
-## 6. Screenshots
-
-In `docs/screenshots`, captured on the production build at 1440 × 900 (full page) unless noted, demonstration mode, replay agents.
+In `docs/screenshots`, production build, 1440 px wide (full page) unless noted, demonstration data, replay agents.
 
 | File | Screen |
 | --- | --- |
-| 01-landing.jpg | Nakhla landing page |
-| 02-pricing.jpg | Pricing: four plans |
-| 03-onboarding.jpg | Self-serve onboarding with live brand preview |
-| 04-sign-in.jpg | Sign-in with demonstration personas |
-| 05-platform-dashboard.jpg | Platform dashboard: MRR, ARR, firms, churn, AI cost |
-| 06-platform-tenants.jpg | Tenant list |
-| 07-platform-tenant-detail.jpg | Tenant detail: plan, status, feature switches, billing, open as administrator |
-| 08-platform-new-tenant.jpg | Create tenant |
-| 09-platform-metrics.jpg | Agent quality and cost by agent, tenant and model |
-| 10-admin-dashboard.jpg | Firm administration overview |
-| 11-admin-users.jpg | Users, seats and invitations |
-| 12-admin-branding.jpg | Branding: logo, colours, fonts, memo house style, domain |
-| 13-admin-billing.jpg | Plan, seats and invoices |
-| 14-admin-audit.jpg | Audit log |
-| 15-admin-seed.jpg | Demonstration data |
-| 16-analyst-dashboard.jpg | Analyst dashboard |
+| 01-landing.jpg | Landing: hero, live preview, federation section |
+| 02-pricing.jpg | Four plans |
+| 03-onboarding.jpg | Self-serve firm onboarding |
+| 04-sign-in.jpg | Sign-in |
+| 05 to 09 | Platform: dashboard, tenants, tenant detail, create tenant, metrics |
+| 10 to 15 | Firm administration: overview, users, branding, billing, audit log (filters, date range, export), demonstration data |
+| 16-analyst-dashboard.jpg | Analyst dashboard with the insight feed and federation line |
 | 17-mandates.jpg | Mandates board |
-| 18-mandate-overview.jpg to 25-mandate-audit.jpg | Mandate tabs: Overview (with timeline), Research, Underwriting (scenarios, cash flow, risk radar, tornado), Due Diligence, Debate, Memo, Documents, Audit |
-| 26-create-mandate.jpg | Create Mandate |
-| 27-properties.jpg | Property catalogue |
-| 28-property-detail.jpg | Property detail with ten pgvector comparables |
-| 29-developers.jpg | Developer risk |
-| 30-market.jpg | Market: heatmap, BUY/HOLD/SELL table, timing agent, UAE versus India |
-| 31-clients.jpg | Clients |
-| 32-memos.jpg | Memos |
-| 33-client-portfolio.jpg to 38-client-assistant.jpg | Client portal: portfolio, opportunities, recommendations, documents, messages, assistant |
-| 39-mobile-landing.jpg, 40-mobile-portfolio.jpg | 390 px phone (viewport only) |
+| 18 to 25 | Mandate tabs: overview, research, underwriting (valuation, federated baseline, scenarios, Monte Carlo, sensitivity), due diligence, debate with three-model cross-validation, memo, documents, audit |
+| 26 to 32 | Create mandate, properties, property detail, developers, market (heatmap, signals with backtest, UAE versus India with checklist), clients, memos |
+| 33 to 38 | Client portal: portfolio (live) with insights, opportunities, recommendations, documents with signature request, messages, assistant |
+| 39, 40 | 390 px phone: landing, portfolio |
+| 41-demo.jpg | Public demonstration after a run |
+| 42-platform-federation.jpg | Federation console: baselines, consent, aggregation runs |
+| 43-admin-integrations-mcp.jpg | Integrations, API keys and MCP connection |
+| 44-admin-intelligence.jpg | Insight thresholds, payment instructions, federation consent |
+| 45-mandate-actions.jpg | Actions tab: proposals, approve and reverse |
+| 46-analyst-insights.jpg | Insights feed and follow-ups |
+| 47-analyst-federation.jpg | Federated baselines for the firm's segments |
+| 48-client-insights.jpg | Client insights |
