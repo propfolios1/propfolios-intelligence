@@ -67,9 +67,9 @@ function citationsFor(c: MandateContext): ResearchOutput["citations"] {
           : { source: `${c.property.region} Real Estate Registration`, title: `${c.property.region} transaction register`, url: "https://u.ae/en/information-and-services/housing/buying-and-selling-a-property" };
     return [
       { id: 1, ...regulator, accessed },
-      { id: 2, source: "PropFolios Research", title: `${c.property.region} monthly market monitor`, url: "https://propfolios.ae/research/market-monitor", accessed },
+      { id: 2, source: "Research desk", title: `${c.property.region} monthly market monitor`, url: "https://dubailand.gov.ae/en/open-data/real-estate-data/", accessed },
       { id: 3, source: c.property.region === "Dubai" ? "Dubai Real Estate Regulatory Agency" : "Project regulator", title: `Project register entry ${c.property.reraNumber}`, url: "https://dubailand.gov.ae/en/eservices/real-estate-projects-status/", accessed },
-      { id: 4, source: c.developer.name, title: `${c.developer.name} disclosures and delivery record`, url: "https://propfolios.ae/research/developers", accessed },
+      { id: 4, source: c.developer.name, title: `${c.developer.name} disclosures and delivery record`, url: "https://dubailand.gov.ae/en/eservices/real-estate-projects-status/", accessed },
       { id: 5, source: "Dubai Land Department", title: "Service charge index (Mollak)", url: "https://dubailand.gov.ae/en/eservices/service-charge-index/", accessed },
       { id: 6, source: "Federal Authority for Identity, Citizenship, Customs and Port Security", title: "Golden Visa for property investors", url: "https://icp.gov.ae", accessed },
     ];
@@ -111,7 +111,7 @@ export function replayResearch(c: MandateContext, comparablesSummary = "", marke
     },
     {
       heading: "Developer",
-      body: `${d.name} has ${devTier}: ${pct(d.deliveryPct, 0)} of projects delivered on time, ${d.litigationCount} active litigation matters and a financial health score of ${d.financialHealth} out of 100 on PropFolios' framework [4]. The composite developer risk score is ${d.riskScore.toFixed(1)} (lower is stronger).${d.escrowCompliant ? " The developer is compliant with escrow requirements on all registered projects." : " Escrow compliance could not be confirmed and is treated as a gating item."}`,
+      body: `${d.name} has ${devTier}: ${pct(d.deliveryPct, 0)} of projects delivered on time, ${d.litigationCount} active litigation matters and a financial health score of ${d.financialHealth} out of 100 on the firm's developer framework [4]. The composite developer risk score is ${d.riskScore.toFixed(1)} (lower is stronger).${d.escrowCompliant ? " The developer is compliant with escrow requirements on all registered projects." : " Escrow compliance could not be confirmed and is treated as a gating item."}`,
     },
     {
       heading: "Comparable transactions",
@@ -325,7 +325,7 @@ export function replayDebate(c: MandateContext, scenarios: Scenario[], findings:
     bull: {
       thesis: `${c.property.name} offers a P50 IRR of ${pct(p50.irr)}${above ? ` against ${an(pct(hurdlePct))} ${pct(hurdlePct)} hurdle` : `, short of the ${pct(hurdlePct)} hurdle but with P90 upside of ${pct(p90.irr)}`}, with ${offPlan(c) ? "entry pricing ahead of handover" : "immediate income from a completed asset"} and a developer with ${pct(c.developer.deliveryPct, 0)} on-time delivery.`,
       points: [
-        { title: above ? "Returns clear the hurdle in the base case" : "Base case close to the hurdle", detail: `P50 IRR ${pct(p50.irr)} and equity multiple ${p50.equityMultiple.toFixed(2)}x over the hold.`, evidence: "Monte Carlo simulation, 5,000 iterations." },
+        { title: above ? "Returns clear the hurdle in the base case" : "Base case close to the hurdle", detail: `P50 IRR ${pct(p50.irr)} and equity multiple ${p50.equityMultiple.toFixed(2)}x over the hold.`, evidence: "Monte Carlo simulation, 10,000 iterations." },
         { title: "Location depth", detail: `${c.property.community} has an established resale market, supporting exit liquidity.`, evidence: "Research dossier, comparable transactions." },
         { title: "Developer quality", detail: `${c.developer.name} carries a composite risk score of ${c.developer.riskScore.toFixed(1)}.`, evidence: "Developer risk framework." },
         { title: "Upside case", detail: `P90 IRR of ${pct(p90.irr)} if capital growth tracks the trailing index.`, evidence: "Scenario table." },
@@ -360,33 +360,81 @@ export function replayDebate(c: MandateContext, scenarios: Scenario[], findings:
 
 /* ------------------------------------------------------------------ memo */
 
-export function replayMemo(c: MandateContext, research: ResearchOutput, scenarios: Scenario[], findings: DDFinding[], debate: DebateOutput, allocationLocal: number): MemoOutput {
+export interface HouseStyle {
+  brandName: string;
+  tone: string;
+  signoff: string;
+}
+
+/**
+ * Full committee pack: executive summary, recommendation, thesis, returns
+ * (scenario list), sensitivity, asset, market, developer, due diligence
+ * findings, risks, the debate, conditions, next steps and an appendix of
+ * assumptions and sources, closed with the firm's sign-off.
+ */
+export function replayMemo(
+  c: MandateContext,
+  research: ResearchOutput,
+  scenarios: Scenario[],
+  findings: DDFinding[],
+  debate: DebateOutput,
+  allocationLocal: number,
+  style: HouseStyle = { brandName: "the firm", tone: "", signoff: "The investment committee" },
+  extras: { sensitivity?: { driver: string; low: number; high: number }[]; assumptions?: { assumption: string; basis: string }[]; iterations?: number } = {},
+): MemoOutput {
   const p50 = scenarios.find((s) => s.label === "P50")!;
   const p10 = scenarios.find((s) => s.label === "P10")!;
   const p90 = scenarios.find((s) => s.label === "P90")!;
   const j = debate.judge;
   const exit = /exit|sale|dispos/i.test(c.title + c.objective);
   const cur = c.property.currency;
+  const section = (h: string) => research.sections.find((s) => s.heading === h)?.body.split(/\n\s*\n/).map((x) => `<p>${x}</p>`).join("") ?? "";
   const risks = research.risks.map((r) => `<li><strong>${r.title}.</strong> ${r.detail}</li>`).join("");
   const conditions = j.conditions.map((x) => `<li>${x}</li>`).join("");
+  const serious = findings.filter((f) => f.severity === "CRITICAL" || f.severity === "HIGH");
+  const iterations = (extras.iterations ?? 10_000).toLocaleString("en-US");
   const html = [
+    `<h2>Executive summary</h2>`,
+    `<p><strong>${j.recommendation}.</strong> ${exit ? "Dispose of" : "Allocate"} ${money(allocationLocal, cur)} ${exit ? "from" : "to"} ${c.property.name}, ${c.property.community}, for ${c.client.name}, ${j.recommendation === "Proceed" ? "on the terms below." : j.recommendation === "Decline" ? "is not recommended at the current price." : "subject to the conditions below."} The base case returns ${pct(p50.irr)} a year over ${c.horizonYears} years with a ${j.riskRating.toLowerCase()} risk rating.</p>`,
+    `<ul><li>P50 IRR ${pct(p50.irr)}; P10 ${pct(p10.irr)}; P90 ${pct(p90.irr)}</li><li>Equity multiple ${p50.equityMultiple.toFixed(2)}x; net cash yield ${pct(p50.cashYield)}</li><li>${findings.length} due diligence findings, ${serious.length} rated high or critical</li></ul>`,
     `<h2>Recommendation</h2>`,
-    `<p><strong>${j.recommendation}.</strong> ${exit ? "Dispose of" : "Allocate"} ${money(allocationLocal, cur)} ${exit ? "from" : "to"} ${c.property.name}, ${c.property.community}, ${j.recommendation === "Proceed" ? "on the terms below." : j.recommendation === "Decline" ? "is not recommended at the current price." : "subject to the conditions below."}</p>`,
+    `<p>${j.rationale}</p>`,
     `<h2>Investment thesis</h2>`,
     `<p>${debate.bull.thesis}</p><p>${research.summary}</p>`,
     `<h2>Returns</h2>`,
-    `<p>On 5,000 simulated paths the P50 IRR is <strong>${pct(p50.irr)}</strong>, with P10 at ${pct(p10.irr)} and P90 at ${pct(p90.irr)}. The P50 equity multiple is ${p50.equityMultiple.toFixed(2)}x and average net cash yield ${pct(p50.cashYield)}. Projected exit value at P50 is ${money(p50.exitValue, cur)}.</p>`,
+    `<p>Returns are computed by the financial engine on ${iterations} simulated paths of capital growth, rental growth, vacancy and handover timing. The P50 IRR is <strong>${pct(p50.irr)}</strong>. Projected exit value at P50 is ${money(p50.exitValue, cur)}.</p>`,
+    `<ul>${scenarios.map((s) => `<li><strong>${s.label}.</strong> IRR ${pct(s.irr)}, equity multiple ${s.equityMultiple.toFixed(2)}x, NPV ${money(s.npv, cur)}, exit value ${money(s.exitValue, cur)}</li>`).join("")}</ul>`,
+    ...(extras.sensitivity?.length
+      ? [`<h3>Sensitivity</h3>`, `<ul>${extras.sensitivity.slice(0, 4).map((x) => `<li>${x.driver}: ${x.low.toFixed(1)} to +${x.high.toFixed(1)} percentage points of IRR</li>`).join("")}</ul>`]
+      : []),
     `<h2>The asset</h2>`,
-    `<p>${research.sections.find((s) => s.heading === "The asset")?.body.split("\n")[0] ?? ""}</p>`,
+    section("The asset"),
     `<h2>Market</h2>`,
-    `<p>${research.sections.find((s) => s.heading === "Market context")?.body.split("\n")[0] ?? ""}</p>`,
+    section("Market context"),
+    section("Demand drivers"),
+    `<h2>Developer</h2>`,
+    section("Developer"),
+    `<h2>Comparable evidence</h2>`,
+    section("Comparable transactions"),
+    `<h2>Due diligence findings</h2>`,
+    `<ul>${findings.map((f) => `<li><strong>${f.severity.charAt(0) + f.severity.slice(1).toLowerCase()}, ${f.category}: ${f.title}.</strong> ${f.description} Action: ${f.action}</li>`).join("")}</ul>`,
     `<h2>Key risks and mitigants</h2>`,
     `<ul>${risks}</ul>`,
-    `<blockquote>${debate.bear.thesis}</blockquote>`,
+    `<h2>Committee debate</h2>`,
+    `<h3>The case for</h3>`,
+    `<p>${debate.bull.thesis}</p><ul>${debate.bull.points.map((x) => `<li><strong>${x.title}.</strong> ${x.detail}</li>`).join("")}</ul>`,
+    `<h3>The case against</h3>`,
+    `<blockquote>${debate.bear.thesis}</blockquote><ul>${debate.bear.points.map((x) => `<li><strong>${x.title}.</strong> ${x.detail}</li>`).join("")}</ul>`,
+    `<h2>Regulatory and tax</h2>`,
+    section("Regulatory context"),
     `<h2>Conditions</h2>`,
     conditions ? `<ol>${conditions}</ol>` : `<p>No conditions beyond standard completion procedures.</p>`,
     `<h2>Next steps</h2>`,
     `<p>On approval, the advisory team will ${exit ? "instruct agents and prepare the sale mandate" : "issue the expression of interest, commission the valuation and instruct counsel"}. ${findings.length} due diligence findings are tracked to closure in the mandate record.</p>`,
+    ...(extras.assumptions?.length ? [`<h2>Appendix: underwriting assumptions</h2>`, `<ul>${extras.assumptions.map((a) => `<li><strong>${a.assumption}.</strong> ${a.basis}</li>`).join("")}</ul>`] : []),
+    `<h2>Appendix: sources</h2>`,
+    `<ol>${research.citations.map((x) => `<li>${x.source}, ${x.title}, accessed ${x.accessed}</li>`).join("")}</ol>`,
+    `<p><em>${style.signoff}</em></p>`,
   ].join("");
 
   return {
@@ -435,7 +483,15 @@ export function replayComparables(input: z.infer<typeof comparablesInput>): Comp
   const adj = sel.map((r) => r.pricePerSqft * (r.kind === "off_plan" ? 0.97 : 1));
   const mid = adj.reduce((a, v, i) => a + v * weights[i]!, 0) / wsum;
   const sorted = [...adj].sort((a, b) => a - b);
+  const peers = [...input.peers]
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 10)
+    .map((p, i) => {
+      const adj = subj.currency === "AED" ? +(((subj.pricePerSqft - p.pricePerSqftAed) / p.pricePerSqftAed) * 100).toFixed(1) : 0;
+      return { propertyId: p.propertyId, rank: i + 1, relevance: `${(p.similarity * 100).toFixed(0)}% profile similarity; ${p.community}, ${p.city}; ${p.status.replace("_", " ")}; ${p.grossYield.toFixed(1)}% gross yield.`, adjustmentPct: adj };
+    });
   return {
+    peers,
     selected,
     valuePerSqft: { low: Math.round(sorted[Math.floor(sorted.length * 0.2)] ?? mid), mid: Math.round(mid), high: Math.round(sorted[Math.floor(sorted.length * 0.8)] ?? mid) },
     premiumToCompsPct: +(((subj.pricePerSqft - mid) / mid) * 100).toFixed(1),
@@ -453,7 +509,7 @@ export function replayMarketTiming(input: z.infer<typeof marketTimingInput>): Ma
   const supplyTrend = (last.supplyUnits - prev.supplyUnits) / prev.supplyUnits;
   const absorptionTrend = last.absorptionRate - prev.absorptionRate;
   const score = (priceMom > 0.02 ? 1 : priceMom < 0 ? -1 : 0) + (volMom > 0.03 ? 1 : volMom < -0.03 ? -1 : 0) + (supplyTrend > 0.15 ? -1 : 0) + (absorptionTrend < -2 ? -1 : 0);
-  const signal = score >= 2 ? "Accumulate" : score <= -1 ? "Reduce" : "Hold";
+  const signal = score >= 2 ? "BUY" : score <= -1 ? "SELL" : "HOLD";
   return {
     signal,
     confidence: +(0.55 + Math.min(3, Math.abs(score)) * 0.1).toFixed(2),
@@ -490,8 +546,24 @@ export function replayCrossBorder(input: z.infer<typeof crossBorderInput>): Cros
     considerations.push({ area: "Inheritance", severity: "MEDIUM", detail: "Without a registered will, UAE assets of non-Muslims may be distributed under default rules. A DIFC or ADJD will avoids uncertainty.", action: "Register a DIFC will covering UAE real estate." });
   }
   considerations.push({ area: "Banking", severity: "LOW", detail: "Cross-border transfers should be documented for source-of-funds checks at both ends.", action: "Prepare source-of-funds pack for the conveyancing bank." });
+  const m = input.markets;
+  const arbitrage = m
+    ? (() => {
+        const uae = +(m.uaeGrossYieldPct - 1.6 + Math.max(0, m.uaePriceGrowthPct - 3.3)).toFixed(1);
+        const ind = +(m.indiaGrossYieldPct - 0.5 + m.indiaPriceGrowthPct - m.inrDepreciationPct - 1.4).toFixed(1);
+        const spread = +(uae - ind).toFixed(1);
+        return {
+          uaeTotalReturnPct: uae,
+          indiaTotalReturnAedPct: ind,
+          spreadPct: spread,
+          verdict: (Math.abs(spread) <= 1 ? "Balanced" : spread > 0 ? "Favour UAE" : "Favour India") as "Balanced" | "Favour UAE" | "Favour India",
+          rationale: `UAE: ${pct(m.uaeGrossYieldPct)} gross less 1.6 points of service charges and vacancy, plus ${pct(m.uaePriceGrowthPct)} trailing growth less a 3.3-point cycle haircut = ${pct(uae)}. India in AED: ${pct(m.indiaGrossYieldPct)} gross less 0.5 points, plus ${pct(m.indiaPriceGrowthPct)} growth, less ${pct(m.inrDepreciationPct)} INR depreciation and 1.4 points of annualised stamp duty, GST and TDS frictions = ${pct(ind)}.`,
+        };
+      })()
+    : undefined;
   return {
     considerations,
+    arbitrage,
     structuringOptions: india
       ? [
           { option: "Direct individual ownership", pros: "Simplest; full NRI repatriation route available.", cons: "TDS on sale and Indian probate on death." },
@@ -516,7 +588,19 @@ export function replayPortfolioMonitor(input: z.infer<typeof portfolioMonitorInp
     if (h.irr < 4 && h.status !== "under_construction") alerts.push({ severity: "LOW", title: `${h.property} below target return`, detail: `Since-acquisition IRR of ${pct(h.irr)}. Consider exit or re-letting strategy.`, holdingId: h.holdingId });
   }
   for (const e of input.events) alerts.push({ severity: "LOW", title: "Market event", detail: e, holdingId: null });
-  return { alerts, summary: `${input.holdings.length} holdings scanned for ${input.client.name}; ${alerts.length} items raised, ${alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL").length} high priority.` };
+  const value = input.holdings.reduce((a, h) => a + h.valueAed, 0);
+  const cost = input.holdings.reduce((a, h) => a + h.costAed, 0);
+  const high = alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL");
+  const best = [...input.holdings].sort((a, b) => b.irr - a.irr)[0];
+  const digest = [
+    `Your ${input.holdings.length} holdings are valued at ${money(value)}, ${pct(cost ? ((value - cost) / cost) * 100 : 0)} above cost.`,
+    best ? `${best.property} remains the strongest performer at an IRR of ${pct(best.irr)} since acquisition.` : "",
+    high.length ? `${high.length} item${high.length > 1 ? "s need" : " needs"} attention this week: ${high.map((a) => a.title.toLowerCase()).join("; ")}.` : "No item requires action this week.",
+    "Your relationship manager is available to discuss any of these points.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return { alerts, summary: `${input.holdings.length} holdings scanned for ${input.client.name}; ${alerts.length} items raised, ${high.length} high priority.`, digest };
 }
 
 export function replayRecommender(input: z.infer<typeof recommenderInput>): RecommenderOutput {

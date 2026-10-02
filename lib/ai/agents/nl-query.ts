@@ -38,7 +38,7 @@ const MAX_ROUNDS = 6;
  * answer cites as [n]. Without an API key a rule-based router answers from
  * the same tools so the assistant remains usable.
  */
-export function nlQuery(opts: { scope: ToolScope; clientName: string; history: ChatTurn[]; question: string; actor: string; signal?: AbortSignal }): ReadableStream<Uint8Array> {
+export function nlQuery(opts: { scope: ToolScope; clientName: string; firmName?: string; history: ChatTurn[]; question: string; actor: string; signal?: AbortSignal }): ReadableStream<Uint8Array> {
   const enc = new TextEncoder();
   return new ReadableStream({
     async start(controller) {
@@ -59,7 +59,7 @@ async function live(opts: Parameters<typeof nlQuery>[0], send: (e: AssistantEven
   const model = MODELS.fast;
   const tools: Anthropic.Tool[] = toolsFor(opts.scope).map((t) => ({ name: t.name, description: t.description, input_schema: toolSchema(t.input as z.ZodType) }));
   const messages: Anthropic.MessageParam[] = [...opts.history.slice(-10).map((t) => ({ role: t.role, content: t.content })), { role: "user", content: opts.question }];
-  const system: Anthropic.TextBlockParam[] = [{ type: "text", text: nlQuerySystem(opts.clientName, opts.scope.staff), cache_control: { type: "ephemeral" } }];
+  const system: Anthropic.TextBlockParam[] = [{ type: "text", text: nlQuerySystem(opts.clientName, opts.scope.staff, opts.firmName), cache_control: { type: "ephemeral" } }];
   const sources: Source[] = [];
   let usage = emptyUsage();
   const started = Date.now();

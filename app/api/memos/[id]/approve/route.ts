@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
@@ -7,6 +7,7 @@ import { embed } from "@/lib/ai/embed";
 import { markDelivered } from "@/lib/ai/orchestrator";
 import { audit, handle } from "@/lib/api";
 import { HttpError, requireApiUser } from "@/lib/auth";
+import { memoPdf } from "@/lib/pdf/memo-export";
 import { getMemo } from "@/lib/queries";
 
 const body = z.object({ deliver: z.boolean().default(true) }).default({ deliver: true });
@@ -31,6 +32,14 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
   await audit(user, deliver ? "approved and delivered memo" : "approved memo", { entityType: "memo", entityId: id, mandateId: row.mandate.id });
   if (deliver) {
     if (row.mandate.status === "REVIEW") await markDelivered(db, row.mandate.id, user.name);
+    // archive the delivered PDF so the client's copy never changes
+    let pdfUrl: string | null = null;
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { pdf, filename } = await memoPdf(db, user, id);
+      const { put } = await import("@vercel/blob");
+      pdfUrl = (await put(`${user.tenantId}/memos/${filename}`, Buffer.from(pdf), { access: "public", contentType: "application/pdf", addRandomSuffix: true })).url;
+      await db.update(s.memos).set({ pdfUrl }).where(and(eq(s.memos.id, id), eq(s.memos.tenantId, user.tenantId)));
+    }
     const text = row.memo.contentHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     await db.insert(s.documents).values({
       tenantId: user.tenantId,
@@ -38,6 +47,7 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
       mandateId: row.mandate.id,
       title: row.memo.title,
       type: "memo",
+      blobUrl: pdfUrl,
       pages: Math.max(2, Math.ceil(text.length / 3200)),
       sizeBytes: Math.round(text.length * 1.6),
       contentText: text,

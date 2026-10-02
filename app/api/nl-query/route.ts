@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/rate-limit";
 import { handle, parseBody } from "@/lib/api";
 import { HttpError, requireApiUser } from "@/lib/auth";
 import { tenantFeatures } from "@/lib/features";
+import { getTenantById } from "@/lib/tenant";
 
 export const maxDuration = 120;
 
@@ -28,6 +29,7 @@ export const POST = handle(async (req: Request) => {
     const [c] = await db.select({ name: s.clients.name }).from(s.clients).where(eq(s.clients.id, user.clientId));
     clientName = c?.name ?? clientName;
   }
-  const stream = nlQuery({ scope: { db, tenantId: user.tenantId, clientId: user.role === "client" ? user.clientId : null, staff }, clientName, history, question, actor: user.name, signal: req.signal });
+  const firmName = (await getTenantById(user.tenantId))?.configJson.brand_name;
+  const stream = nlQuery({ firmName, scope: { db, tenantId: user.tenantId, clientId: user.role === "client" ? user.clientId : null, staff }, clientName, history, question, actor: user.name, signal: req.signal });
   return new Response(stream, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" } });
 });

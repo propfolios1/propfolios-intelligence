@@ -93,6 +93,11 @@ function Runs({ parts }: { parts: Inline[] }) {
 }
 
 export interface MemoPdfInput {
+  brandName: string;
+  primaryColor: string;
+  accentColor: string;
+  signoff: string;
+  disclaimer: string;
   title: string;
   reference: string;
   clientName: string;
@@ -108,28 +113,30 @@ export interface MemoPdfInput {
 
 function MemoDocument(m: MemoPdfInput) {
   const blocks = parseMemoHtml(m.html);
+  const [first, ...rest] = m.brandName.trim().split(/\s+/);
+  const primary = { color: m.primaryColor };
   return (
     <Document title={m.title} author="PropFolios Intelligence" subject={`${m.reference} ${m.clientName}`} creator="PropFolios Intelligence">
       <Page size="A4" style={st.page}>
         <View style={st.footerRule} fixed />
         <Text style={st.footerLeft} fixed>
-          PropFolios · Dubai, United Arab Emirates
+          {m.brandName}
         </Text>
         <Text style={st.footerRight} fixed>
           {m.reference} · Version {m.version}
         </Text>
-        <View style={st.header} fixed>
+        <View style={[st.header, { borderBottomColor: m.primaryColor }]} fixed>
           <View>
-            <Text style={st.brand}>PROPFOLIOS</Text>
-            <Text style={st.brandSub}>INTELLIGENCE</Text>
+            <Text style={[st.brand, primary]}>{(first ?? m.brandName).toUpperCase()}</Text>
+            {rest.length > 0 && <Text style={st.brandSub}>{rest.join(" ").toUpperCase()}</Text>}
           </View>
           <Text style={st.confidential}>STRICTLY PRIVATE AND CONFIDENTIAL</Text>
         </View>
         <Text style={st.eyebrow}>
           {m.reference} · Prepared for {m.clientName}
         </Text>
-        <Text style={st.title}>{m.title}</Text>
-        <View style={st.mark} />
+        <Text style={[st.title, primary]}>{m.title}</Text>
+        <View style={[st.mark, { backgroundColor: m.accentColor }]} />
         <Text style={st.meta}>
           {m.date} · Prepared by {m.preparedBy} · Version {m.version}
         </Text>
@@ -148,7 +155,7 @@ function MemoDocument(m: MemoPdfInput) {
             <View key={i} style={{ marginBottom: 8 }}>
               {b.items.map((item, j) => (
                 <View key={j} style={st.li} wrap={false}>
-                  <Text style={st.bullet}>{b.ordered ? `${j + 1}.` : "–"}</Text>
+                  <Text style={[st.bullet, { color: m.accentColor }]}>{b.ordered ? `${j + 1}.` : "–"}</Text>
                   <Text style={{ flex: 1 }}>
                     <Runs parts={item} />
                   </Text>
@@ -156,16 +163,14 @@ function MemoDocument(m: MemoPdfInput) {
               ))}
             </View>
           ) : (
-            <Text key={i} style={b.kind === "h2" ? st.h2 : b.kind === "h3" ? st.h3 : b.kind === "quote" ? st.quote : st.p} minPresenceAhead={b.kind === "h2" ? 60 : undefined}>
+            <Text key={i} style={b.kind === "h2" ? [st.h2, primary] : b.kind === "h3" ? st.h3 : b.kind === "quote" ? [st.quote, { borderLeftColor: m.accentColor }] : st.p} minPresenceAhead={b.kind === "h2" ? 60 : undefined}>
               <Runs parts={b.parts} />
             </Text>
           ),
         )}
         <View style={st.approval} wrap={false}>
-          <Text>{m.approvedBy ? `Approved by ${m.approvedBy}${m.approvedAt ? ` on ${m.approvedAt}` : ""} for the PropFolios investment committee.` : `Status: ${m.status.replace("_", " ")}. Not yet approved by the investment committee.`}</Text>
-          <Text style={{ marginTop: 6, color: INK500, fontSize: 7.5 }}>
-            This memo is advisory and is prepared for the named client only. Projected returns are simulations, not forecasts or guarantees. Tax and legal matters should be confirmed with qualified advisers in the relevant jurisdiction.
-          </Text>
+          <Text>{m.approvedBy ? `Approved by ${m.approvedBy}${m.approvedAt ? ` on ${m.approvedAt}` : ""}. ${m.signoff}.` : `Status: ${m.status.replace("_", " ")}. Not yet approved by the investment committee.`}</Text>
+          <Text style={{ marginTop: 6, color: INK500, fontSize: 7.5 }}>{m.disclaimer}</Text>
         </View>
       </Page>
     </Document>

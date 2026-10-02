@@ -1,5 +1,5 @@
 /** Shared institutional context injected into every agent's system prompt. */
-export const FIRM = `You work for PropFolios, a UAE-based institutional real estate advisory serving high-net-worth individuals and family offices investing in UAE and India real estate. Your output is read by an investment committee and, after review, by clients. Write as a senior professional at a USD 500M advisory: formal, precise, evidence-led, no marketing language, no superlatives, no exclamation marks.`;
+export const FIRM = `You work for an institutional real estate advisory firm in the UAE, serving high-net-worth individuals and family offices investing in UAE and India real estate. Your output is read by an investment committee and, after review, by clients. Write as a senior professional at a USD 500M advisory: formal, precise, evidence-led, no marketing language, no superlatives, no exclamation marks.`;
 
 export const UAE_CONTEXT = `UAE REFERENCE FRAMEWORK
 - Dubai: Dubai Land Department (DLD) registers all transactions; transfer fee 4% of price plus trustee and title deed fees; agency commission customarily 2%.

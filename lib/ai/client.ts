@@ -15,7 +15,7 @@ export const isAiConfigured = () => Boolean(process.env.ANTHROPIC_API_KEY || pro
 
 let client: Anthropic | undefined;
 export function anthropic() {
-  client ??= new Anthropic({ maxRetries: 3, timeout: 5 * 60_000 });
+  client ??= new Anthropic({ maxRetries: 5, timeout: 5 * 60_000 }); // exponential backoff on 429 and 5xx
   return client;
 }
 

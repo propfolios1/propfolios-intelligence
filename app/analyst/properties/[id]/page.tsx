@@ -14,6 +14,7 @@ import { Table, TD, TH, THead, TR } from "@/components/ui/table";
 import { getDb } from "@/db";
 import { HttpError, requireRole } from "@/lib/auth";
 import { formatLocal, PROPERTY_STATUS_LABEL } from "@/lib/domain";
+import { similarProperties } from "@/lib/ai/similar";
 import { getProperty } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 
@@ -22,7 +23,9 @@ export const dynamic = "force-dynamic";
 async function load(id: string) {
   const user = await requireRole(["tenant_admin", "analyst"]);
   try {
-    return await getProperty(await getDb(), user, id);
+    const db = await getDb();
+    const d = await getProperty(db, user, id);
+    return { ...d, peers: await similarProperties(db, user.tenantId, d.property.id, 10) };
   } catch (e) {
     if (e instanceof HttpError) notFound();
     throw e;
@@ -39,7 +42,7 @@ const BREAKDOWN_LABEL: Record<string, string> = { delivery: "Delivery", financia
 
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { property: p, developer: d, transactions, launches, mandates, market } = await load(id);
+  const { property: p, developer: d, transactions, launches, mandates, market, peers } = await load(id);
   const own = transactions.filter((t) => t.propertyId === p.id);
   const comps = transactions.filter((t) => t.propertyId !== p.id);
   const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]! : 0);
@@ -90,6 +93,39 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               </CardContent>
             </Card>
           )}
+          <Card>
+            <CardHeader eyebrow="pgvector, nearest by profile" title="Comparable projects" actions={<span className="num text-small text-ink-500">{peers.length} of {peers.length}</span>} />
+            <CardContent>
+              {peers.length === 0 ? (
+                <p className="text-small text-ink-500">No profile embedding for this project yet.</p>
+              ) : (
+                <ol className="divide-y divide-ink-200">
+                  {peers.map((x, i) => (
+                    <li key={x.propertyId} className="grid grid-cols-[28px_1fr_auto] items-center gap-3 py-2.5">
+                      <span className="num text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
+                      <Link href={`/analyst/properties/${x.slug}`} className="min-w-0 hover:underline">
+                        <span className="block truncate text-ui text-ink-900">{x.name}</span>
+                        <span className="block truncate text-small text-ink-500">
+                          {x.community}, {x.city} · {x.developer}
+                        </span>
+                      </Link>
+                      <span className="text-right">
+                        <span className="num block text-small text-ink-900">
+                          {x.currency} {Math.round(x.pricePerSqft).toLocaleString("en-US")} · {x.grossYield.toFixed(1)}%
+                        </span>
+                        <span className="mt-1 flex items-center justify-end gap-2">
+                          <span className="h-1 w-16 rounded-full bg-ink-100" aria-hidden>
+                            <span className="block h-1 rounded-full bg-navy-700" style={{ width: `${Math.round(x.similarity * 100)}%` }} />
+                          </span>
+                          <span className="num text-axis text-ink-500">{Math.round(x.similarity * 100)}%</span>
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </CardContent>
+          </Card>
           <Card>
             <CardHeader eyebrow={`${comps.length + own.length} registered transactions`} title="Comparable transactions" actions={compMedian ? <span className="num text-small text-ink-500">Median {p.currency} {Math.round(compMedian).toLocaleString("en-US")}</span> : undefined} />
             <CardContent className="overflow-x-auto">

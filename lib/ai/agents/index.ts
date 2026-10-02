@@ -34,9 +34,9 @@ export const AGENTS: Record<string, AgentEntry> = {
   memo: { label: "Memo", description: "Client-ready Allocation or Exit Memo in semantic HTML with key metrics.", model: "primary", input: schemas.memoInput.extend({ allocationLocal: z.number() }), run: memo },
   "portfolio-monitor": { label: "Portfolio monitor", description: "Daily scan of holdings; raises severity-rated alerts.", model: "fast", input: schemas.portfolioMonitorInput, run: portfolioMonitor },
   "developer-risk": { label: "Developer risk", description: "Weekly score on delivery, financial health, litigation, sentiment and escrow.", model: "fast", input: schemas.developerRiskInput, run: developerRisk },
-  comparables: { label: "Comparables", description: "Selects, adjusts and weights comparable transactions.", model: "fast", input: schemas.comparablesInput, run: comparables },
-  "market-timing": { label: "Market timing", description: "Accumulate, Hold or Reduce signal from twelve months of market data.", model: "fast", input: schemas.marketTimingInput, run: marketTiming },
-  "cross-border": { label: "Cross-border", description: "FEMA, repatriation, tax residency and succession for UAE and India.", model: "primary", input: schemas.crossBorderInput, run: crossBorder },
+  comparables: { label: "Comparables", description: "Ten nearest projects by pgvector similarity, plus weighted comparable transactions.", model: "fast", input: schemas.comparablesInput, run: comparables },
+  "market-timing": { label: "Market timing", description: "BUY, HOLD or SELL signal per emirate from twelve months of market data.", model: "fast", input: schemas.marketTimingInput, run: marketTiming },
+  "cross-border": { label: "Cross-border", description: "UAE versus India return arbitrage, FEMA, repatriation, tax and succession.", model: "primary", input: schemas.crossBorderInput, run: crossBorder },
   recommender: { label: "Recommender", description: "Next-best actions: exit windows, rebalancing and new opportunities.", model: "primary", input: schemas.recommenderInput, run: recommender },
 };
 

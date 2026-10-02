@@ -7,6 +7,8 @@ import { REPLAY_MODEL } from "./agents/_run";
 import { isAiConfigured, MODELS, recordAgentRun, type AgentContext } from "./client";
 import { loadComparables, loadMandateBundle, loadMarketSeries, summariseComparables, summariseMarket, toMandateContext, type MandateBundle } from "./context";
 import { emit } from "./events";
+import { getTenantById } from "@/lib/tenant";
+import { similarProperties } from "./similar";
 import { scope } from "@/lib/tenant-db";
 import { INR_PER_AED } from "./replay";
 import type { DDFinding, DebateOutput, ResearchOutput, UnderwritingOutput } from "./schemas";
@@ -69,8 +71,9 @@ const intake: StageFn = async (db, b, ctx) => {
 };
 
 const researchStage: StageFn = async (db, b, ctx) => {
-  const [comps, market] = await Promise.all([loadComparables(db, b), loadMarketSeries(db, b.mandate.tenantId, b.property.region)]);
-  const run = await research({ context: toMandateContext(b), comparablesSummary: summariseComparables(comps, b.property.currency), marketSummary: summariseMarket(market) }, ctx);
+  const [comps, market, peers] = await Promise.all([loadComparables(db, b), loadMarketSeries(db, b.mandate.tenantId, b.property.region), similarProperties(db, b.mandate.tenantId, b.property.id, 10)]);
+  const peerNote = peers.length ? ` Nearest projects by profile similarity: ${peers.slice(0, 5).map((p) => `${p.name} (${p.community}, ${p.currency} ${Math.round(p.pricePerSqft).toLocaleString("en-US")} per sq ft, ${p.grossYield.toFixed(1)}% gross)`).join("; ")}.` : "";
+  const run = await research({ context: toMandateContext(b), comparablesSummary: summariseComparables(comps, b.property.currency) + peerNote, marketSummary: summariseMarket(market) }, ctx);
   await db.update(s.mandates).set({ research: run.output }).where(eq(s.mandates.id, b.mandate.id));
   return run;
 };
@@ -105,7 +108,7 @@ export function simulate(assumptions: UnderwritingOutput, seed: number) {
     exitCostPct: rest.exitCostPct,
     discountRate: rest.discountRate,
   };
-  const dist = monteCarlo(base, { iterations: 5000, seed, ...volatility });
+  const dist = monteCarlo(base, { iterations: 10_000, seed, ...volatility });
   return { base, dist, scenarios: scenarioTable(base, dist), sens: sensitivity(base, defaultDrivers(base)), baseCase: underwrite(base) };
 }
 
@@ -143,7 +146,11 @@ const ddStage: StageFn = async (db, b, ctx) => {
 async function loadSimulation(db: DB, tenantId: string, mandateId: string) {
   const [sim] = await db.select().from(s.simulations).where(scope(s.simulations, tenantId, eq(s.simulations.mandateId, mandateId))).limit(1);
   if (!sim) throw new Error("Simulation missing; re-run underwriting.");
-  return { scenarios: sim.scenarios as ReturnType<typeof scenarioTable>, assumptions: sim.assumptions as UnderwritingParams };
+  return {
+    scenarios: sim.scenarios as ReturnType<typeof scenarioTable>,
+    assumptions: sim.assumptions as UnderwritingParams & { rationale?: { assumption: string; basis: string }[] },
+    sensitivity: sim.sensitivity as { driver: string; low: number; high: number }[],
+  };
 }
 
 const debateStage: StageFn = async (db, b, ctx) => {
@@ -159,7 +166,9 @@ const debateStage: StageFn = async (db, b, ctx) => {
 };
 
 const memoStage: StageFn = async (db, b, ctx) => {
-  const { scenarios, assumptions } = await loadSimulation(db, b.mandate.tenantId, b.mandate.id);
+  const { scenarios, assumptions, sensitivity } = await loadSimulation(db, b.mandate.tenantId, b.mandate.id);
+  const tenant = await getTenantById(b.mandate.tenantId);
+  const cfg = tenant?.configJson;
   const [deb] = await db.select().from(s.debates).where(scope(s.debates, b.mandate.tenantId, eq(s.debates.mandateId, b.mandate.id))).limit(1);
   if (!deb) throw new Error("Debate missing; re-run the debate.");
   const debateOut = { bull: deb.bull, bear: deb.bear, judge: deb.judge } as DebateOutput;
@@ -171,6 +180,9 @@ const memoStage: StageFn = async (db, b, ctx) => {
       findings: (b.mandate.ddFindings ?? []) as DDFinding[],
       debate: debateOut,
       allocationLocal: assumptions.purchasePrice ?? (b.property.currency === "INR" ? b.mandate.ticketSizeAed * INR_PER_AED : b.mandate.ticketSizeAed),
+      houseStyle: cfg ? { brandName: cfg.brand_name, tone: cfg.memo_style.tone, signoff: cfg.memo_style.signoff } : undefined,
+      sensitivity,
+      assumptions: assumptions.rationale,
     },
     ctx,
   );

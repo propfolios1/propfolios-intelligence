@@ -1,5 +1,10 @@
 import { BarSeries, LineSeries } from "@/components/charts/series";
+import { Heatmap } from "@/components/charts/heatmap";
+import { ArbitrageCard } from "@/components/composites/arbitrage-card";
 import { MarketTiming } from "@/components/composites/market-timing";
+import { StatusPill } from "@/components/ui/status-pill";
+import { replayMarketTiming } from "@/lib/ai/replay";
+import { tenantFeatures } from "@/lib/features";
 import { PageHeader } from "@/components/composites/page-header";
 import { StatCard } from "@/components/composites/stat-card";
 import { PageContainer } from "@/components/shell/page-container";
@@ -15,6 +20,10 @@ export const dynamic = "force-dynamic";
 export default async function MarketPage() {
   const user = await requireRole(["tenant_admin", "analyst"]);
   const regions = await getMarket(await getDb(), user.tenantId);
+  const features = await tenantFeatures(user.tenantId);
+  const signals = regions.map((r) => ({ region: r.region, ...replayMarketTiming({ region: r.region, months: r.series.map((m) => ({ month: m.month, transactions: m.transactions, medianPriceSqft: m.medianPriceSqft, offPlanShare: m.offPlanShare, rentalYield: m.rentalYield, supplyUnits: m.supplyUnits, absorptionRate: m.absorptionRate })) }) }));
+  const heatCols = (regions[0]?.series ?? []).slice(1).map((m) => new Date(`${m.month}T00:00:00Z`).toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" }));
+  const heatVals = regions.map((r) => r.series.slice(1).map((m, i) => ((m.medianPriceSqft - r.series[i]!.medianPriceSqft) / r.series[i]!.medianPriceSqft) * 100));
   const dubai = regions.find((r) => r.region === "Dubai") ?? regions[0]!;
   const months = dubai.series.map((m) => m.month.slice(0, 7));
   const indexed = months.map((month, i) => {
@@ -44,8 +53,18 @@ export default async function MarketPage() {
         <Card className="xl:col-span-4">
           <CardHeader eyebrow="Agent" title="Market timing" />
           <CardContent>
-            <MarketTiming regions={regions.map((r) => r.region)} />
+            {features.marketTiming ? <MarketTiming regions={regions.map((r) => r.region)} /> : <p className="text-small text-ink-500">The market timing agent is not enabled for this workspace.</p>}
           </CardContent>
+        </Card>
+        <Card className="xl:col-span-8">
+          <CardHeader eyebrow="Month-on-month change in median price per sq ft, percent" title="Where prices moved" />
+          <CardContent>
+            <Heatmap rows={regions.map((r) => r.region)} cols={heatCols} values={heatVals} />
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-4">
+          <CardHeader eyebrow="Cross-border agent" title="UAE versus India" />
+          <CardContent>{features.crossBorder ? <ArbitrageCard /> : <p className="text-small text-ink-500">The cross-border agent is not enabled for this workspace.</p>}</CardContent>
         </Card>
         <Card className="xl:col-span-6">
           <CardHeader eyebrow="Dubai, monthly" title="Transactions" actions={<span className="num text-small text-ink-500">{last.transactions.toLocaleString("en-US")} latest</span>} />
@@ -71,6 +90,7 @@ export default async function MarketPage() {
               <TH numeric>Off-plan share</TH>
               <TH numeric>Gross yield</TH>
               <TH numeric>Absorption</TH>
+              <TH>Signal</TH>
             </TR>
           </THead>
           <tbody>
@@ -83,6 +103,12 @@ export default async function MarketPage() {
                 <TD numeric>{r.latest.offPlanShare.toFixed(1)}%</TD>
                 <TD numeric>{r.latest.rentalYield.toFixed(1)}%</TD>
                 <TD numeric>{r.latest.absorptionRate.toFixed(0)}%</TD>
+                <TD>
+                  {(() => {
+                    const sig = signals.find((x) => x.region === r.region)!;
+                    return <StatusPill tone={sig.signal === "BUY" ? "complete" : sig.signal === "SELL" ? "error" : "neutral"}>{sig.signal}</StatusPill>;
+                  })()}
+                </TD>
               </TR>
             ))}
           </tbody>

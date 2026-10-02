@@ -7,7 +7,7 @@ import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
 interface Timing {
-  signal: "Accumulate" | "Hold" | "Reduce";
+  signal: "BUY" | "HOLD" | "SELL";
   confidence: number;
   indicators: { name: string; reading: string; direction: "supportive" | "neutral" | "adverse" }[];
   commentary: string;
@@ -46,7 +46,7 @@ export function MarketTiming({ regions }: { regions: string[] }) {
           <div>
             <div className="flex items-center gap-3">
               <span className="font-display text-card text-navy-900">{result.signal}</span>
-              <StatusPill tone={result.signal === "Accumulate" ? "complete" : result.signal === "Reduce" ? "error" : "neutral"}>{Math.round(result.confidence * 100)}% confidence</StatusPill>
+              <StatusPill tone={result.signal === "BUY" ? "complete" : result.signal === "SELL" ? "error" : "neutral"}>{Math.round(result.confidence * 100)}% confidence</StatusPill>
             </div>
             <p className="mt-2 text-small text-ink-700">{result.commentary}</p>
             <ul className="mt-4 divide-y divide-ink-200 border-y border-ink-200">

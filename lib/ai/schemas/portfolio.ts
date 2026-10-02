@@ -21,6 +21,7 @@ export const portfolioMonitorInput = z.object({
 export const portfolioMonitorOutput = z.object({
   alerts: z.array(z.object({ severity, title: z.string(), detail: z.string(), holdingId: z.string().nullable() })),
   summary: z.string(),
+  digest: z.string().describe("Weekly client digest: three to five sentences, plain prose, addressed to the client"),
 });
 export type PortfolioMonitorOutput = z.infer<typeof portfolioMonitorOutput>;
 
