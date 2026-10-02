@@ -22,6 +22,20 @@
       "when": 1790942652446,
       "tag": "0002_supabase_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790946957977,
+      "tag": "0003_intelligence_layers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790946996180,
+      "tag": "0004_rls_jwt_storage_realtime",
+      "breakpoints": true
     }
   ]
 }

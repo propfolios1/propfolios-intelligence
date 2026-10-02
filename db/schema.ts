@@ -53,8 +53,20 @@ export type TenantConfig = {
   /** Memo house style: voice and sign-off used by the memo agent and the PDF. */
   memo_style: { tone: string; signoff: string; disclaimer: string };
   features: { assistant: boolean; clientPortal: boolean; marketTiming: boolean; crossBorder: boolean };
+  /** Proactive intelligence thresholds (lib/insights.ts defaults apply when absent). */
+  insights?: InsightConfig;
+  /** Shown to clients in rent reminders (payment link or bank transfer instructions). */
+  payments?: { link: string | null; instructions: string | null };
   /** Platform tenants hold Nakhla operators only. */
   platform?: boolean;
+};
+
+export type InsightConfig = {
+  priceMovementPct: number;
+  developerDistressScore: number;
+  undervaluedDiscountPct: number;
+  exitGainPct: number;
+  notifyClients: boolean;
 };
 
 export const tenants = pgTable(
@@ -68,6 +80,10 @@ export const tenants = pgTable(
     plan: planEnum("plan").notNull().default("starter"),
     status: tenantStatusEnum("status").notNull().default("trial"),
     customDomain: text("custom_domain"),
+    /** Opt-in to contribute anonymised deal learnings to the federation. */
+    consentFederation: boolean("consent_federation").notNull().default(false),
+    /** Set by a database trigger when new market or transaction data arrives. */
+    insightsStaleAt: timestamp("insights_stale_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [uniqueIndex("tenants_slug_idx").on(t.slug), uniqueIndex("tenants_clerk_org_idx").on(t.clerkOrgId), uniqueIndex("tenants_domain_idx").on(t.customDomain)],
@@ -333,6 +349,8 @@ export const mandates = pgTable(
     recommendation: text("recommendation"),
     riskRating: text("risk_rating"),
     totalCostUsd: doublePrecision("total_cost_usd").notNull().default(0),
+    /** Set when multi-model cross-validation disagrees; cleared by a human. */
+    requiresReview: boolean("requires_review").notNull().default(false),
     runningSince: timestamp("running_since", { withTimezone: true }),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     ...timestamps,
@@ -363,6 +381,9 @@ export const simulations = pgTable(
     sensitivity: jsonb("sensitivity").notNull(),
     risk: jsonb("risk").notNull(),
     distribution: jsonb("distribution").notNull(),
+    valuation: jsonb("valuation"),
+    /** Federated baseline the underwriting was checked against, if any. */
+    baseline: jsonb("baseline"),
     commentary: text("commentary"),
     ...timestamps,
   },
@@ -409,6 +430,8 @@ export const memos = pgTable(
     lastEditedBy: text("last_edited_by"),
     approvedBy: text("approved_by"),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
+    /** Shared with the client (by an action); null when withdrawn. */
+    sharedAt: timestamp("shared_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [uniqueIndex("memos_mandate_idx").on(t.mandateId), index("memos_tenant_idx").on(t.tenantId), index("memos_status_idx").on(t.status)],
@@ -429,6 +452,8 @@ export const documents = pgTable(
     title: text("title").notNull(),
     type: text("type").notNull(), // memo, spa, title_deed, valuation, statement, research, kyc
     blobUrl: text("blob_url"),
+    /** Object path in the private Supabase Storage bucket: {tenant_id}/... */
+    storagePath: text("storage_path"),
     pages: integer("pages").notNull().default(1),
     sizeBytes: integer("size_bytes").notNull().default(0),
     contentText: text("content_text").notNull().default(""),
@@ -574,6 +599,260 @@ export const auditLogs = pgTable(
     index("audit_actor_type_idx").on(t.actorType),
   ],
 );
+
+/* ------------------------------------------------------- cross-validation */
+
+export type CrossValidationResult = {
+  model: string;
+  role: "deep" | "primary" | "fast";
+  recommendation: "PROCEED" | "PROCEED_WITH_CONDITIONS" | "DECLINE";
+  confidence: number;
+  p50IrrPct: number;
+  keyRisk: string;
+  rationale: string;
+  costUsd: number;
+  replay: boolean;
+};
+
+export const crossValidations = pgTable(
+  "cross_validations",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    mandateId: uuid("mandate_id")
+      .notNull()
+      .references(() => mandates.id, { onDelete: "cascade" }),
+    task: text("task").notNull(),
+    results: jsonb("results").$type<CrossValidationResult[]>().notNull(),
+    agreement: text("agreement").$type<"unanimous" | "majority" | "split">().notNull(),
+    consensus: text("consensus").notNull(),
+    confidence: doublePrecision("confidence").notNull(),
+    flagged: boolean("flagged").notNull().default(false),
+    resolvedBy: text("resolved_by"),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolution: text("resolution"),
+    ...timestamps,
+  },
+  (t) => [index("cv_tenant_idx").on(t.tenantId), index("cv_mandate_idx").on(t.mandateId), index("cv_created_idx").on(t.createdAt), index("cv_flagged_idx").on(t.flagged)],
+);
+
+/* ---------------------------------------------------------------- insights */
+
+export const insightKindEnum = pgEnum("insight_kind", ["price_movement", "developer_distress", "undervalued", "exit_window", "follow_up"]);
+export const insightStatusEnum = pgEnum("insight_status", ["new", "read", "dismissed"]);
+
+export const insights = pgTable(
+  "insights",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "cascade" }),
+    propertyId: uuid("property_id").references(() => properties.id, { onDelete: "cascade" }),
+    mandateId: uuid("mandate_id").references(() => mandates.id, { onDelete: "cascade" }),
+    kind: insightKindEnum("kind").notNull(),
+    severity: severityEnum("severity").notNull(),
+    audience: text("audience").$type<"analyst" | "client" | "both">().notNull().default("analyst"),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    metrics: jsonb("metrics").$type<{ label: string; value: string }[]>().notNull().default(sql`'[]'::jsonb`),
+    /** One open insight per signal: a rescan updates rather than duplicates. */
+    dedupeKey: text("dedupe_key").notNull(),
+    status: insightStatusEnum("status").notNull().default("new"),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("insights_dedupe_idx").on(t.tenantId, t.dedupeKey),
+    index("insights_tenant_idx").on(t.tenantId),
+    index("insights_client_idx").on(t.clientId),
+    index("insights_status_idx").on(t.status),
+    index("insights_created_idx").on(t.createdAt),
+  ],
+);
+
+/* ----------------------------------------------------------------- actions */
+
+export const actionKindEnum = pgEnum("action_kind", ["rent_reminder", "send_memo", "schedule_follow_up", "send_dd_to_lender", "update_crm", "esign_envelope", "escalate"]);
+export const actionStatusEnum = pgEnum("action_status", ["proposed", "executed", "reversed", "failed", "dismissed"]);
+
+export const actions = pgTable(
+  "actions",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    mandateId: uuid("mandate_id").references(() => mandates.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id").references(() => clients.id, { onDelete: "cascade" }),
+    kind: actionKindEnum("kind").notNull(),
+    status: actionStatusEnum("status").notNull().default("proposed"),
+    title: text("title").notNull(),
+    rationale: text("rationale").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    /** What execution changed, kept so the action can be reversed exactly. */
+    result: jsonb("result").$type<Record<string, unknown>>(),
+    proposedBy: text("proposed_by").notNull(),
+    executedBy: text("executed_by"),
+    executedAt: timestamp("executed_at", { withTimezone: true }),
+    reversedBy: text("reversed_by"),
+    reversedAt: timestamp("reversed_at", { withTimezone: true }),
+    error: text("error"),
+    ...timestamps,
+  },
+  (t) => [index("actions_tenant_idx").on(t.tenantId), index("actions_mandate_idx").on(t.mandateId), index("actions_status_idx").on(t.status), index("actions_created_idx").on(t.createdAt)],
+);
+
+/** E-signature envelopes signed inside the client portal. */
+export const signatureEnvelopes = pgTable(
+  "signature_envelopes",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    mandateId: uuid("mandate_id").references(() => mandates.id, { onDelete: "cascade" }),
+    memoId: uuid("memo_id").references(() => memos.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    statement: text("statement").notNull(),
+    status: text("status").$type<"sent" | "signed" | "voided">().notNull().default("sent"),
+    signerName: text("signer_name"),
+    signedAt: timestamp("signed_at", { withTimezone: true }),
+    signedFrom: text("signed_from"),
+    ...timestamps,
+  },
+  (t) => [index("envelopes_tenant_idx").on(t.tenantId), index("envelopes_client_idx").on(t.clientId), index("envelopes_status_idx").on(t.status)],
+);
+
+/** Expiring read-only links (for example a due diligence report sent to a lender). */
+export const shareLinks = pgTable(
+  "share_links",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    mandateId: uuid("mandate_id")
+      .notNull()
+      .references(() => mandates.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"dd_report">().notNull(),
+    tokenHash: text("token_hash").notNull(),
+    recipient: text("recipient").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    views: integer("views").notNull().default(0),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("share_token_idx").on(t.tokenHash), index("share_tenant_idx").on(t.tenantId)],
+);
+
+/* ---------------------------------------------------------------- API keys */
+
+export const apiKeys = pgTable(
+  "api_keys",
+  {
+    id,
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    prefix: text("prefix").notNull(),
+    keyHash: text("key_hash").notNull(),
+    createdBy: text("created_by").notNull(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("api_keys_hash_idx").on(t.keyHash), index("api_keys_tenant_idx").on(t.tenantId)],
+);
+
+/* -------------------------------------------------------------- federation */
+
+/**
+ * Anonymised learnings contributed by consenting tenants. No tenant_id and no
+ * names: property, developer, mandate and contributor are salted hashes.
+ * Readable only by the service role.
+ */
+export const federationLearnings = pgTable(
+  "federation_learnings",
+  {
+    id,
+    contributorHash: text("contributor_hash").notNull(),
+    mandateHash: text("mandate_hash").notNull(),
+    propertyHash: text("property_hash").notNull(),
+    developerHash: text("developer_hash").notNull(),
+    market: text("market").notNull(),
+    region: text("region").notNull(),
+    assetClass: text("asset_class").notNull(),
+    propertyStatus: text("property_status").notNull(),
+    ticketBand: text("ticket_band").notNull(),
+    holdYears: integer("hold_years").notNull(),
+    assumptions: jsonb("assumptions").$type<{ grossYield: number; rentGrowth: number; vacancy: number; capitalGrowth: number; opexRatio: number; discountRate: number }>().notNull(),
+    p50IrrPct: doublePrecision("p50_irr_pct").notNull(),
+    probBelowHurdle: doublePrecision("prob_below_hurdle").notNull(),
+    recommendation: text("recommendation").notNull(),
+    riskRating: text("risk_rating"),
+    judgeConfidence: doublePrecision("judge_confidence"),
+    ddSeverities: jsonb("dd_severities").$type<Record<string, number>>().notNull(),
+    ddCategories: jsonb("dd_categories").$type<string[]>().notNull(),
+    crossValidation: text("cross_validation"),
+    deliveredQuarter: text("delivered_quarter").notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("fed_mandate_idx").on(t.contributorHash, t.mandateHash),
+    index("fed_segment_idx").on(t.region, t.assetClass),
+    index("fed_property_hash_idx").on(t.propertyHash),
+    index("fed_developer_hash_idx").on(t.developerHash),
+    index("fed_created_idx").on(t.createdAt),
+  ],
+);
+
+export type FederationBaselineData = {
+  medians: { grossYield: number; rentGrowth: number; vacancy: number; capitalGrowth: number; opexRatio: number; discountRate: number };
+  irr: { p25: number; p50: number; p75: number };
+  recommendationMix: Record<string, number>;
+  belowHurdleRate: number;
+  topRisks: { category: string; share: number }[];
+  highSeverityRate: number;
+};
+
+/** Aggregates published only when they cover enough deals and advisories (k-anonymity). */
+export const federationBaselines = pgTable(
+  "federation_baselines",
+  {
+    id,
+    key: text("key").notNull(),
+    kind: text("kind").$type<"segment" | "developer">().notNull(),
+    market: text("market"),
+    region: text("region"),
+    assetClass: text("asset_class"),
+    developerHash: text("developer_hash"),
+    deals: integer("deals").notNull(),
+    advisories: integer("advisories").notNull(),
+    data: jsonb("data").$type<FederationBaselineData>().notNull(),
+    computedAt: timestamp("computed_at", { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("fed_baseline_key_idx").on(t.key), index("fed_baseline_dev_idx").on(t.developerHash)],
+);
+
+export const federationRuns = pgTable("federation_runs", {
+  id,
+  triggeredBy: text("triggered_by").notNull(),
+  learnings: integer("learnings").notNull(),
+  advisories: integer("advisories").notNull(),
+  baselines: integer("baselines").notNull(),
+  suppressed: integer("suppressed").notNull(),
+  durationMs: integer("duration_ms").notNull(),
+  ...timestamps,
+});
 
 /* --------------------------------------------------------------- relations */
 
