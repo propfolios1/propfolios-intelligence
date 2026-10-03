@@ -1,36 +1,38 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { BrandMark } from "./brand-mark";
 
-/** Two-column frame for sign-in and sign-up: form on the left, navy panel on the right. */
+/**
+ * Sign-in and sign-up: a 55/45 split. The form sits on white in a 380px
+ * column with no card; the right panel is navy-900 with a single Playfair
+ * line and the wordmark. No gradient, no imagery.
+ */
 export function AuthFrame({ eyebrow, title, subtitle, children }: { eyebrow: string; title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <div className="grid min-h-dvh grid-cols-1 lg:grid-cols-12">
-      <section className="flex flex-col px-6 py-8 md:px-12 lg:col-span-6 xl:px-20">
-        <Link href="/" aria-label="Home" className="self-start">
-          <BrandMark />
+    <div className="grid min-h-dvh grid-cols-1 bg-surface lg:grid-cols-[55fr_45fr]">
+      <section className="flex flex-col px-4 py-6 md:px-12">
+        <Link href="/" aria-label="Home" className="self-start rounded-xs">
+          <span className="flex items-baseline gap-1.5 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase">
+            Nakhla <span className="text-gold-500">OS</span>
+          </span>
         </Link>
-        <div className="flex flex-1 items-center py-16">
-          <div className="w-full max-w-[420px] animate-hero">
-            <div className="eyebrow">{eyebrow}</div>
-            <h1 className="mt-5 font-display text-title text-navy-900">{title}</h1>
-            <p className="mt-3 text-ui text-ink-700">{subtitle}</p>
-            <div className="mt-10">{children}</div>
+        <div className="flex flex-1 items-center justify-center py-16">
+          <div className="w-full max-w-[380px]">
+            <div className="label-caps">{eyebrow}</div>
+            <h1 className="mt-3 font-display text-page-sm font-medium text-navy-900">{title}</h1>
+            <p className="mt-2 text-ui text-ink-500">{subtitle}</p>
+            <div className="mt-8">{children}</div>
           </div>
         </div>
-        <p className="text-small text-ink-500">Each firm&apos;s workspace is isolated. Client data is never used to train models.</p>
+        <p className="text-axis text-ink-500">Each firm&apos;s workspace is isolated at the application, database and storage layers. Client data is never used to train models.</p>
       </section>
-      <section className="relative hidden flex-col justify-between overflow-hidden bg-navy-900 px-16 py-8 lg:col-span-6 lg:flex xl:px-20">
-        <div className="flex h-12 items-center justify-end">
-          <span className="eyebrow text-surface/60">UAE · India</span>
-        </div>
-        <blockquote className="max-w-[560px]">
-          <p className="font-display text-figure-lg leading-[1.08] tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches a client.</p>
-          <footer className="mt-10 flex items-center gap-4 text-small text-surface/60">
-            <span className="h-px w-8 bg-gold-500" />
-            Research, underwriting and portfolios for advisory firms
-          </footer>
+      <section className="hidden flex-col justify-between bg-navy-900 px-12 py-8 lg:flex xl:px-20">
+        <span className="label-caps text-ink-400">UAE · India</span>
+        <blockquote className="max-w-[520px]">
+          <p className="font-display text-title font-medium tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches a client.</p>
         </blockquote>
-        <BrandMark inverted size="sm" className="self-start" />
+        <span className="flex items-baseline gap-1.5 text-meta font-semibold tracking-[0.1em] text-surface uppercase">
+          Nakhla <span className="text-gold-500">OS</span>
+        </span>
       </section>
     </div>
   );
@@ -42,8 +44,9 @@ export const clerkAppearance = {
     cardBox: "w-full shadow-none border-0",
     card: "shadow-none border-0 p-0 bg-transparent",
     header: "hidden",
-    formButtonPrimary: "bg-navy-900 hover:bg-navy-800 shadow-none normal-case text-ui h-11 rounded-sm",
-    formFieldInput: "h-10 border-hairline shadow-none rounded-sm bg-surface",
+    formButtonPrimary: "bg-navy-900 hover:bg-navy-800 shadow-none normal-case text-ui h-9 rounded-sm",
+    formFieldInput: "h-9 border-hairline shadow-none rounded-sm bg-surface",
+    formFieldLabel: "text-label uppercase tracking-[0.08em] text-ink-500 font-medium",
     footer: "bg-transparent",
     socialButtonsBlockButton: "border-hairline shadow-none rounded-sm",
   },
@@ -58,15 +61,15 @@ export function DemoPersonas() {
   ] as const;
   return (
     <div>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2">
         {personas.map(([as, name, role]) => (
           <li key={as}>
-            <a href={`/api/demo/persona?as=${as}`} className="flex items-center justify-between rounded-md border border-hairline bg-surface px-4 py-3.5 shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400">
+            <a href={`/api/demo/persona?as=${as}`} className="group flex h-14 items-center justify-between rounded-md border border-hairline bg-surface px-4 transition-colors duration-150 hover:bg-ink-50">
               <span>
                 <span className="block text-ui font-medium text-ink-900">{name}</span>
-                <span className="block text-small text-ink-500">{role}</span>
+                <span className="block text-meta text-ink-500">{role}</span>
               </span>
-              <span aria-hidden className="text-ink-500">→</span>
+              <ArrowRight className="size-3.5 stroke-[1.5] text-ink-400 transition-colors group-hover:text-ink-900" aria-hidden />
             </a>
           </li>
         ))}

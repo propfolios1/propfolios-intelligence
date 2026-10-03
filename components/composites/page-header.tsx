@@ -13,6 +13,7 @@ export function PageHeader({
   subtitle,
   actions,
   meta,
+  badge,
   className,
   rule = true,
 }: {
@@ -21,6 +22,8 @@ export function PageHeader({
   subtitle?: React.ReactNode;
   actions?: React.ReactNode;
   meta?: React.ReactNode;
+  /** A status badge beside the eyebrow (for example, demo data). */
+  badge?: React.ReactNode;
   className?: string;
   rule?: boolean;
 }) {
@@ -31,7 +34,12 @@ export function PageHeader({
   eyebrow = tr(eyebrow);
   return (
     <header className={cn(rule && "border-b border-hairline pb-8", className)}>
-      {eyebrow && <div className="label-caps mb-3">{eyebrow}</div>}
+      {(eyebrow || badge) && (
+        <div className="mb-3 flex items-center gap-3">
+          {eyebrow && <div className="label-caps">{eyebrow}</div>}
+          {badge}
+        </div>
+      )}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-page-sm font-medium text-navy-900 md:text-title">{title}</h1>

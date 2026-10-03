@@ -26,9 +26,9 @@ export function LivePreview() {
           <LiveDot /> Live
         </span>
       </div>
-      <div className="mt-8 font-display text-hero leading-none tracking-[-0.04em] text-navy-900">AED 61.2M</div>
+      <div className="num mt-6 text-figure-lg text-ink-900">AED 61,200,000</div>
       <div className="mt-3 flex items-baseline gap-3 text-small">
-        <span className="num text-success">↑ 8.4%</span>
+        <span className="num text-success">▲ +8.4%</span>
         <span className="text-ink-500">since last quarter</span>
       </div>
       <svg viewBox="0 0 400 120" className="mt-8 block h-auto w-full" aria-hidden>
