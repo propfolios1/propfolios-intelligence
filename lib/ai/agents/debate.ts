@@ -5,6 +5,7 @@ import { addUsage } from "../cost";
 import { BEAR_SYSTEM, BULL_SYSTEM, DEBATE_PROMPT_VERSION, JUDGE_SYSTEM } from "../prompts/debate_v2";
 import { replayDebate } from "../replay";
 import { debateCase, judgeDecision, type DebateOutput, type debateEvidence } from "../schemas";
+import { withJurisdiction } from "../prompts/jurisdiction";
 import { payload, runAgent } from "./_run";
 
 /**
@@ -16,12 +17,16 @@ export async function debate(input: z.infer<typeof debateEvidence> & { hurdlePct
   let cached: DebateOutput | undefined;
   const rp = () => (cached ??= fallback());
   const evidence = { ...input, hurdle: `${input.hurdlePct.toFixed(1)}%` };
+  const place = input.context.property;
+  const bullJ = withJurisdiction("debate", BULL_SYSTEM, DEBATE_PROMPT_VERSION, place);
+  const bearJ = withJurisdiction("debate", BEAR_SYSTEM, DEBATE_PROMPT_VERSION, place);
+  const judgeJ = withJurisdiction("debate", JUDGE_SYSTEM, DEBATE_PROMPT_VERSION, place);
 
   const [bull, bear] = await Promise.all([
     runAgent({
       agent: "debate",
-      action: `bull case (${DEBATE_PROMPT_VERSION})`,
-      system: BULL_SYSTEM,
+      action: `bull case (${bullJ.version})`,
+      system: bullJ.system,
       user: payload("Argue the bull case.", evidence),
       schema: debateCase,
       toolName: "submit_case",
@@ -32,8 +37,8 @@ export async function debate(input: z.infer<typeof debateEvidence> & { hurdlePct
     }),
     runAgent({
       agent: "debate",
-      action: `bear case (${DEBATE_PROMPT_VERSION})`,
-      system: BEAR_SYSTEM,
+      action: `bear case (${bearJ.version})`,
+      system: bearJ.system,
       user: payload("Argue the bear case.", evidence),
       schema: debateCase,
       toolName: "submit_case",
@@ -45,8 +50,8 @@ export async function debate(input: z.infer<typeof debateEvidence> & { hurdlePct
   ]);
   const judge = await runAgent({
     agent: "debate",
-    action: `judge decision (${DEBATE_PROMPT_VERSION})`,
-    system: JUDGE_SYSTEM,
+    action: `judge decision (${judgeJ.version})`,
+    system: judgeJ.system,
     user: payload("Decide between the two cases.", { evidence, bull: bull.output, bear: bear.output }),
     schema: judgeDecision,
     toolName: "submit_decision",

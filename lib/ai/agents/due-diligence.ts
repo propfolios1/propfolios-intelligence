@@ -4,14 +4,16 @@ import type { AgentContext } from "../client";
 import { DD_PROMPT_VERSION, DD_SYSTEM } from "../prompts/due-diligence_v1";
 import { replayDueDiligence } from "../replay";
 import { ddOutput, type ddInput } from "../schemas";
+import { withJurisdiction } from "../prompts/jurisdiction";
 import { payload, runAgent } from "./_run";
 
 /** Due diligence findings: title, escrow, developer, construction, SPA, tax, valuation. */
 export function dueDiligence(input: z.input<typeof ddInput>, ctx: AgentContext) {
+  const j = withJurisdiction("due-diligence", DD_SYSTEM, DD_PROMPT_VERSION, input.context.property);
   return runAgent({
     agent: "due-diligence",
-    action: `due diligence (${DD_PROMPT_VERSION})`,
-    system: DD_SYSTEM,
+    action: `due diligence (${j.version})`,
+    system: j.system,
     user: payload("Produce the due diligence findings for this mandate.", input),
     schema: ddOutput,
     toolName: "submit_findings",

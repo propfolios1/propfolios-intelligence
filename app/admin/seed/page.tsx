@@ -33,7 +33,7 @@ export default async function SeedPage() {
   const kind = dbKind();
   return (
     <PageContainer>
-      <PageHeader eyebrow="Administration" title="Seed data" subtitle="Your workspace's demonstration dataset: five clients, thirty named UAE and India projects, eighteen developers, twelve months of market data and three mandates at different stages. Resetting affects this workspace only." actions={<SeedButton />} />
+      <PageHeader eyebrow="Administration" title="Seed data" subtitle="Your workspace's demonstration dataset: five clients, fifty-five named UAE and India projects (including fifteen in Mumbai and twelve in Goa), twenty-three developers, twelve months of market data and three mandates at different stages. Resetting affects this workspace only." actions={<SeedButton />} />
       <section className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {counts.map(([label, n]) => (
           <StatCard key={label} label={label} value={n.toLocaleString("en-US")} />

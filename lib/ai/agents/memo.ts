@@ -4,6 +4,7 @@ import type { AgentContext } from "../client";
 import { MEMO_PROMPT_VERSION, MEMO_SYSTEM } from "../prompts/memo_v2";
 import { replayMemo, type HouseStyle } from "../replay";
 import { memoOutput, type memoInput } from "../schemas";
+import { withJurisdiction } from "../prompts/jurisdiction";
 import { payload, runAgent } from "./_run";
 
 const ALLOWED = /<\/?(h2|h3|p|ul|ol|li|strong|em|blockquote|br)\b[^>]*>/gi;
@@ -26,10 +27,11 @@ export async function memo(
   ctx: AgentContext,
 ) {
   const style = input.houseStyle;
+  const j = withJurisdiction("memo", MEMO_SYSTEM, MEMO_PROMPT_VERSION, input.context.property);
   const run = await runAgent({
     agent: "memo",
-    action: `memo draft (${MEMO_PROMPT_VERSION})`,
-    system: MEMO_SYSTEM,
+    action: `memo draft (${j.version})`,
+    system: j.system,
     user: payload(
       style
         ? `Draft the memo for ${style.brandName}. HOUSE STYLE: ${style.tone} Close with the sign-off "${style.signoff}".${style.learned ? ` LEARNED STYLE: mirror the ${style.learned.learnedFrom} approved memos in houseStyle.learned.exemplars; use their section order (${style.learned.headingOrder.join(" / ") || "as shown"}) and an average of about ${style.learned.avgSentenceWords} words a sentence.` : ""} Write a complete committee pack: executive summary, recommendation, thesis, returns with every scenario, sensitivity, asset, market, developer, comparable evidence, each due diligence finding, risks, both sides of the debate, regulatory and tax, conditions, next steps, and appendices for assumptions and sources.`

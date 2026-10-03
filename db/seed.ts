@@ -1,4 +1,5 @@
 import { seedFederation, seedTenantIntelligence } from "./seed-intelligence";
+import { seedTenantOs } from "./seed-os";
 import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { embed } from "@/lib/ai/embed";
@@ -31,11 +32,13 @@ export async function isSeeded(db: DB) {
   return rows.length > 0;
 }
 
-const CHILD_TABLES = [s.insights, s.actions, s.crossValidations, s.signatureEnvelopes, s.shareLinks, s.auditLogs, s.messages, s.alerts, s.recommendations, s.documents, s.memos, s.debates, s.simulations, s.mandates, s.portfolios, s.clients, s.transactions, s.launches, s.marketData, s.properties, s.developers] as const;
+/** OS tables, children first (events and memory, fabric, BI, client, commission, deals, India). */
+const OS_TABLES = [s.osEvents, s.agentMemories, s.consents, s.dataRequests, s.emailOutbox, s.notificationPreferences, s.notifications, s.automationRuns, s.automations, s.dataSubscriptions, s.marketReports, s.firmMetrics, s.taxDocuments, s.clientGoals, s.walletShareMetrics, s.statements, s.clientReports, s.amlChecks, s.kycRecords, s.taxReports, s.paymentsReceived, s.splits, s.commissions, s.invoices, s.commissionStructures, s.paymentsSchedule, s.signatures, s.closingChecklists, s.contracts, s.negotiations, s.offers, s.dealStages, s.deals, s.landRecords, s.reraComplaints, s.indiaPropertyRecords] as const;
+const CHILD_TABLES = [...OS_TABLES, s.insights, s.actions, s.crossValidations, s.signatureEnvelopes, s.shareLinks, s.auditLogs, s.messages, s.alerts, s.recommendations, s.documents, s.memos, s.debates, s.simulations, s.mandates, s.portfolios, s.clients, s.transactions, s.launches, s.marketData, s.properties, s.developers] as const;
 
 /** Removes every row on the platform, children first. */
 export async function wipe(db: DB) {
-  for (const t of [...CHILD_TABLES, s.apiKeys, s.users, s.subscriptions, s.tenants, s.federationLearnings, s.federationBaselines, s.federationRuns]) await db.delete(t);
+  for (const t of [...CHILD_TABLES, s.benchmarks, s.dataProducts, s.apiKeys, s.users, s.subscriptions, s.tenants, s.federationLearnings, s.federationBaselines, s.federationRuns]) await db.delete(t);
 }
 
 /** Removes one tenant's business data, keeping the tenant, its staff and its subscription. */
@@ -68,18 +71,11 @@ export interface SeedTarget {
 }
 
 /**
- * Loads the demonstration dataset into one tenant: developers, the thirty
- * named projects, transactions, twelve months of market data, five clients
- * with holdings, three mandates, memos, documents, alerts and messages.
- * Deterministic ids per tenant make it idempotent.
+ * Developers, properties, the launch pipeline and comparable transactions.
+ * Separate from the rest of the tenant dataset so an existing workspace can
+ * take new catalogue entries (the Mumbai and Goa projects) without a reset.
  */
-export async function seedTenantData(db: DB, target: SeedTarget) {
-  const { tenantId } = target;
-  const ns = target.slug === "propfolios" ? "" : `${target.slug}:`;
-  const id = (key: string) => uid(`${ns}${key}`);
-  const staffName = (name: string) => (target.staff ? name : (target.adminName ?? "Advisory team"));
-  const now = Date.now();
-
+async function seedCatalogue(db: DB, tenantId: string, id: (key: string) => string, now: number) {
   /* developers */
   const devId = (k: string) => id(`dev:${k}`);
   await db
@@ -188,11 +184,29 @@ export async function seedTenantData(db: DB, target: SeedTarget) {
         areaSqft: area,
         pricePerSqft: psf,
         kind: p.status === "ready" ? "ready" : "off_plan",
-        source: p.market === "UAE" ? (p.region === "Abu Dhabi" ? "ADREC" : "DLD") : p.region === "Haryana" ? "HRERA / IGR Haryana" : p.region === "Karnataka" ? "Kaveri IGR" : "IGR Maharashtra",
+        source: p.market === "UAE" ? (p.region === "Abu Dhabi" ? "ADREC" : "DLD") : p.region === "Haryana" ? "HRERA / IGR Haryana" : p.region === "Karnataka" ? "Kaveri IGR" : p.region === "Goa" ? "IGR Goa" : "IGR Maharashtra",
       });
     }
   });
   await db.insert(s.transactions).values(txRows).onConflictDoNothing();
+
+  return { propId, devId, prop, txRows };
+}
+
+/**
+ * Loads the demonstration dataset into one tenant: developers, the fifty-five
+ * named projects, transactions, twelve months of market data, five clients
+ * with holdings, three mandates, memos, documents, alerts and messages.
+ * Deterministic ids per tenant make it idempotent.
+ */
+export async function seedTenantData(db: DB, target: SeedTarget) {
+  const { tenantId } = target;
+  const ns = target.slug === "propfolios" ? "" : `${target.slug}:`;
+  const id = (key: string) => uid(`${ns}${key}`);
+  const staffName = (name: string) => (target.staff ? name : (target.adminName ?? "Advisory team"));
+  const now = Date.now();
+
+  const { propId, devId, prop, txRows } = await seedCatalogue(db, tenantId, id, now);
 
   /* market data: 12 months per emirate, ending last month */
   const marketRows: (typeof s.marketData.$inferInsert)[] = [];
@@ -676,6 +690,7 @@ export async function seedTenantData(db: DB, target: SeedTarget) {
   await db.insert(s.auditLogs).values(auditRows).onConflictDoNothing();
 
   await seedTenantIntelligence(db, tenantId);
+  await seedTenantOs(db, { tenantId, slug: target.slug, staff: target.staff, id, adminUserId: target.adminUserId });
 
   return { seeded: true, counts: { properties: PROPERTIES.length, developers: DEVELOPERS.length, clients: CLIENTS.length, holdings: holdingRows.length, mandates: 3, transactions: txRows.length, marketMonths: marketRows.length, documents: docRows.length } };
 }
@@ -728,7 +743,7 @@ async function addAdmin(db: DB, tenantId: string, key: string, u: { name: string
  * (cancelled). Idempotent; `force` wipes and reloads.
  */
 export async function seed(db: DB, opts: { force?: boolean } = {}) {
-  if (!opts.force && (await isSeeded(db))) return { seeded: false };
+  if (!opts.force && (await isSeeded(db))) return { seeded: false, upgraded: await upgrade(db) };
   if (opts.force) await wipe(db);
 
   await addTenant(db, { id: PLATFORM_TENANT_ID, name: "Nakhla", slug: "nakhla", plan: "enterprise", status: "active", config: defaultTenantConfig("Nakhla", { platform: true }), startedMonthsAgo: 14 });
@@ -801,4 +816,28 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   const federation = await seedFederation(db, [TENANT_ID, gulfId, bombayId], alnoorId);
 
   return { ...result, tenants: 6, federation: { learnings: federation.learnings, baselines: federation.baselines } };
+}
+const NAMED_TENANTS = [
+  { tenantId: TENANT_ID, slug: "propfolios", staff: true, admin: null },
+  { tenantId: uid("tenant:gulfrealty"), slug: "gulfrealty", staff: false, admin: "gulfrealty-admin" },
+  { tenantId: uid("tenant:bombay"), slug: "bombay", staff: false, admin: "bombay-admin" },
+] as const;
+
+/**
+ * Brings a workspace seeded by an earlier release up to date: new catalogue
+ * entries and the OS module data. Inserts only what is missing; existing rows,
+ * including anything users changed, are left untouched.
+ */
+async function upgrade(db: DB) {
+  const done: string[] = [];
+  for (const t of NAMED_TENANTS) {
+    const [exists] = await db.select({ id: s.tenants.id }).from(s.tenants).where(eq(s.tenants.id, t.tenantId));
+    if (!exists) continue;
+    const ns = t.slug === "propfolios" ? "" : `${t.slug}:`;
+    const id = (key: string) => uid(`${ns}${key}`);
+    await seedCatalogue(db, t.tenantId, id, Date.now());
+    await seedTenantOs(db, { tenantId: t.tenantId, slug: t.slug, staff: t.staff, id, adminUserId: t.admin ? uid(`user:${t.admin}`) : undefined });
+    done.push(t.slug);
+  }
+  return done;
 }

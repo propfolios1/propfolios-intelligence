@@ -1,20 +1,22 @@
 import "server-only";
 import type { z } from "zod";
-import { type AgentContext, type AgentRun, isAiConfigured, MODELS, type ModelTier, recordAgentRun, runStructured } from "../client";
-import { emptyUsage } from "../cost";
+import { type AgentContext, type AgentRun, isAiConfigured, MODELS, type ModelTier, recordAgentRun } from "../client";
+import type { LLMClient } from "../llm";
+import { AnthropicLLMClient, REPLAY_MODEL, ReplayLLMClient } from "../llm-clients";
+import { agentRuntime } from "../runtime";
 
-export const REPLAY_MODEL = "replay";
+export { REPLAY_MODEL };
 
-const sleep = (ms: number, signal?: AbortSignal) =>
-  new Promise<void>((resolve) => {
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener("abort", () => (clearTimeout(t), resolve()), { once: true });
-  });
+/** The model client for this call: a runtime override, else live when a key is configured, else replay. */
+export function currentLLM(paceMs = 0): LLMClient {
+  return agentRuntime().llm ?? (isAiConfigured() ? new AnthropicLLMClient() : new ReplayLLMClient(paceMs));
+}
 
 /**
- * Runs an agent live when an Anthropic key is configured; otherwise produces
- * the deterministic replay output, paced so the live timeline still animates.
- * Both paths are validated against the same schema and audited the same way.
+ * Runs an agent through the configured LLM client. Live calls use tool-use
+ * structured output; without a key the deterministic replay output is
+ * produced (paced so the live timeline still animates). Every path is
+ * validated against the same schema and audited the same way.
  */
 export async function runAgent<T extends z.ZodType>(opts: {
   agent: string;
@@ -32,21 +34,19 @@ export async function runAgent<T extends z.ZodType>(opts: {
   replay: () => z.infer<T>;
   replayMs?: number;
 }): Promise<AgentRun<z.infer<T>>> {
-  if (isAiConfigured()) {
-    return runStructured({ ...opts, model: opts.modelId ?? MODELS[opts.model ?? "primary"] });
+  const llm = currentLLM(opts.replayMs ?? 2500);
+  const model = opts.modelId ?? MODELS[opts.model ?? "primary"];
+  const res = await llm.structured({ agent: opts.agent, action: opts.action, model, system: opts.system, user: opts.user, schema: opts.schema, toolName: opts.toolName, toolDescription: opts.toolDescription, maxTokens: opts.maxTokens, ctx: opts.ctx, replay: opts.replay });
+  if (!llm.recordsOwnRuns) {
+    const recorder = agentRuntime().recorder;
+    const run = { model: res.replay ? REPLAY_MODEL : res.model, usage: res.usage, costUsd: res.costUsd, durationMs: res.durationMs };
+    if (recorder) {
+      await recorder({ tenantId: opts.ctx.tenantId, agent: opts.agent, action: opts.action, mandateId: opts.ctx.mandateId, model: run.model, inputTokens: res.usage.input_tokens, outputTokens: res.usage.output_tokens, costUsd: res.costUsd, durationMs: res.durationMs, detail: { replay: res.replay, client: llm.name } });
+    } else {
+      await recordAgentRun(opts.ctx, opts.agent, opts.action, run, { replay: res.replay, client: llm.name });
+    }
   }
-  const started = Date.now();
-  const output = opts.schema.parse(opts.replay()) as z.infer<T>;
-  const total = opts.replayMs ?? 2500;
-  const size = JSON.stringify(output).length;
-  const steps = 10;
-  for (let i = 1; i <= steps; i++) {
-    await sleep(total / steps, opts.ctx.signal);
-    opts.ctx.onProgress?.(Math.round((size * i) / steps));
-  }
-  const run = { model: REPLAY_MODEL, usage: emptyUsage(), costUsd: 0, durationMs: Date.now() - started };
-  await recordAgentRun(opts.ctx, opts.agent, opts.action, run, { replay: true });
-  return { output, ...run, attempts: 1, replay: true };
+  return { output: res.output, model: res.replay ? REPLAY_MODEL : res.model, usage: res.usage, costUsd: res.costUsd, durationMs: res.durationMs, attempts: res.attempts, replay: res.replay };
 }
 
 /** User-turn payload: a short instruction followed by the input as JSON. */

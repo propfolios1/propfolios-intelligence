@@ -36,6 +36,15 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/assistant", label: "Assistant", key: "a", feature: "assistant" },
       ],
     },
+    {
+      title: "India",
+      items: [
+        { href: "/analyst/india", label: "Overview" },
+        { href: "/analyst/india/mumbai", label: "Mumbai" },
+        { href: "/analyst/india/goa", label: "Goa" },
+        { href: "/analyst/india/tax-calculator", label: "Tax calculator" },
+      ],
+    },
     { title: "Account", items: [{ href: "/analyst/settings", label: "Settings", key: "s" }] },
   ],
   client: [
@@ -51,6 +60,8 @@ export const NAV: Record<Area, NavSection[]> = {
       title: "Workspace",
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
+        { href: "/client/india", label: "India" },
+        { href: "/client/nri", label: "NRI plan" },
         { href: "/client/messages", label: "Messages", key: "m" },
         { href: "/client/assistant", label: "Assistant", key: "a", feature: "assistant" },
         { href: "/client/settings", label: "Settings", key: "s" },
@@ -119,6 +130,12 @@ export const SEGMENT_LABEL: Record<string, string> = {
   insights: "Insights",
   federation: "Federation",
   "insights-config": "Intelligence",
+  india: "India",
+  mumbai: "Mumbai",
+  goa: "Goa",
+  "tax-calculator": "Tax calculator",
+  records: "Property file",
+  nri: "NRI plan",
 };
 
 export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };

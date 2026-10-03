@@ -293,7 +293,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                 <input type="checkbox" checked={seed} onChange={(e) => setSeed(e.target.checked)} className="mt-0.5 size-4 accent-[var(--navy-900)]" />
                 <span>
                   <span className="block text-ui font-medium text-ink-900">Load the demonstration dataset</span>
-                  <span className="block text-small text-ink-500">Five clients, thirty UAE and India projects, eighteen developers, market data and three mandates, so your team can explore immediately. Remove it later in Administration.</span>
+                  <span className="block text-small text-ink-500">Five clients, fifty-five UAE and India projects, twenty-three developers, market data and three mandates, so your team can explore immediately. Remove it later in Administration.</span>
                 </span>
               </label>
             </div>
