@@ -32,7 +32,7 @@ export function FilterBuilder({ fields, value, onChange }: { fields: FilterField
   return (
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
       {active.map((f) => (
-        <span key={f.key} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-hairline bg-surface pr-1 pl-3 text-small">
+        <span key={f.key} className="inline-flex h-7 items-center gap-2 rounded-full border border-hairline bg-surface pr-1 pl-3 text-small">
           <span className="text-ink-500">{f.label}</span>
           <span className="text-ink-900">{display(f, value[f.key]!)}</span>
           <button
@@ -91,7 +91,7 @@ export function FilterBuilder({ fields, value, onChange }: { fields: FilterField
                       <li key={o.value}>
                         <button
                           type="button"
-                          className="w-full rounded-xs px-2 py-1.5 text-left text-small text-ink-700 hover:bg-ink-100 hover:text-ink-900"
+                          className="w-full rounded-xs px-2 py-2 text-left text-small text-ink-700 hover:bg-ink-100 hover:text-ink-900"
                           onClick={() => {
                             onChange({ ...value, [editing.key]: o.value });
                             setEditing(null);

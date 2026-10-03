@@ -128,7 +128,7 @@ export function BrandingForm({ config, canStyle, canDomain, planName }: { config
       <aside className="xl:col-span-5">
         <div className="sticky top-20">
           <div className="eyebrow mb-3">Live preview</div>
-          <div className="overflow-hidden rounded-md border border-hairline bg-canvas shadow-float" style={{ ["--navy-900" as string]: c.primary_color, ["--gold-500" as string]: c.accent_color }}>
+          <div className="overflow-hidden rounded-md border border-hairline bg-canvas" style={{ ["--navy-900" as string]: c.primary_color, ["--gold-500" as string]: c.accent_color }}>
             <div className="flex h-14 items-center border-b border-hairline bg-surface px-5">
               {c.logo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element

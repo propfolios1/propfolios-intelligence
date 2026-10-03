@@ -102,7 +102,7 @@ export default async function Compliance({ searchParams }: { searchParams: Promi
                     </div>
                     <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                       {r.steps.map((x, i) => (
-                        <li key={i} className={"rounded-md border px-3 py-2.5 text-small " + (x.done ? "border-hairline text-ink-700" : i === next ? "border-hairline border-l-2 border-l-gold-500 text-ink-900" : "border-hairline text-ink-500")}>
+                        <li key={i} className={"rounded-md border px-3 py-3 text-small " + (x.done ? "border-hairline text-ink-700" : i === next ? "border-hairline border-l-2 border-l-gold-500 text-ink-900" : "border-hairline text-ink-500")}>
                           <div className="flex items-baseline gap-2">
                             <span className="num text-axis text-ink-500">{String(i + 1).padStart(2, "0")}</span>
                             <span>{x.step}</span>

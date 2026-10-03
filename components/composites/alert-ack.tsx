@@ -19,7 +19,7 @@ export function AlertAck({ id, acknowledged }: { id: string; acknowledged: boole
     router.refresh();
   }
   return (
-    <button onClick={toggle} className="mt-1.5 text-small text-ink-500 underline decoration-ink-200 underline-offset-4 hover:text-ink-900">
+    <button onClick={toggle} className="mt-2 text-small text-ink-500 underline decoration-ink-200 underline-offset-4 hover:text-ink-900">
       {ack ? "Acknowledged. Re-open" : "Acknowledge"}
     </button>
   );

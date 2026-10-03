@@ -127,7 +127,7 @@ export default async function Journey({ params }: { params: Promise<{ id: string
         <Section title="Timeline">
           <ol className="relative ml-2 border-l border-hairline">
             {items.map((it, i) => (
-              <li key={i} className="relative pb-7 pl-7 last:pb-0">
+              <li key={i} className="relative pb-8 pl-7 last:pb-0">
                 <span className={cn("absolute top-1.5 -left-[5px] size-2.5 rounded-full border-2 border-canvas", it.kind === "stage" ? "bg-navy-700" : "bg-gold-500")} aria-hidden />
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="num text-axis text-ink-500">{formatDate(it.at, "datetime")}</span>
@@ -140,7 +140,7 @@ export default async function Journey({ params }: { params: Promise<{ id: string
                 </div>
                 {it.detail && <p className="mt-0.5 text-small text-ink-700">{it.detail}</p>}
                 {it.agents && it.agents.length > 0 && (
-                  <ul className="mt-2 space-y-1.5">
+                  <ul className="mt-2 space-y-2">
                     {it.agents.map((a, k) => (
                       <li key={k} className="rounded-md border border-hairline bg-surface px-3 py-2 text-small">
                         <div className="flex flex-wrap items-center gap-2">

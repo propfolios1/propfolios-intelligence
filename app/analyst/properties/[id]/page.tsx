@@ -101,7 +101,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               ) : (
                 <ol className="divide-y divide-hairline">
                   {peers.map((x, i) => (
-                    <li key={x.propertyId} className="grid grid-cols-[28px_1fr_auto] items-center gap-3 py-2.5">
+                    <li key={x.propertyId} className="grid grid-cols-[28px_1fr_auto] items-center gap-3 py-3">
                       <span className="num text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
                       <Link href={`/analyst/properties/${x.slug}`} className="min-w-0 hover:underline">
                         <span className="block truncate text-ui text-ink-900">{x.name}</span>
@@ -173,7 +173,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <CardHeader eyebrow="Developer" title={d.name} actions={<span className="num text-small text-ink-500">Risk {d.riskScore.toFixed(1)}</span>} />
             <CardContent>
               <p className="text-small text-ink-700">{d.summary}</p>
-              <dl className="mt-4 flex flex-col gap-2.5">
+              <dl className="mt-4 flex flex-col gap-3">
                 {Object.entries(d.riskBreakdown).map(([k, v]) => (
                   <div key={k}>
                     <div className="flex justify-between text-small">
@@ -197,7 +197,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <CardContent>
                 <ul className="divide-y divide-hairline">
                   {launches.map((l) => (
-                    <li key={l.id} className="py-2.5 text-small">
+                    <li key={l.id} className="py-3 text-small">
                       <div className="flex justify-between">
                         <span className="num text-ink-900">{formatDate(l.launchDate)}</span>
                         <span className="num text-ink-700">{l.soldPct.toFixed(0)}% sold</span>
@@ -217,7 +217,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               {mandates.length === 0 && <p className="text-small text-ink-500">No mandates reference this property.</p>}
               <ul className="divide-y divide-hairline">
                 {mandates.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <li key={m.id} className="flex items-center justify-between gap-3 py-3">
                     <Link href={`/analyst/mandates/${m.id}`} className="min-w-0 text-small hover:underline">
                       <span className="num text-ink-500">{m.reference}</span> <span className="text-ink-900">{m.clientName}</span>
                     </Link>

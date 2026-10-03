@@ -55,7 +55,7 @@ export function EmptyState({
         </div>
       )}
       {secondary && (
-        <Link href={secondary.href} className="mt-3 inline-flex items-center gap-1.5 text-ui text-ink-700 transition-colors duration-150 hover:text-ink-900">
+        <Link href={secondary.href} className="mt-3 inline-flex items-center gap-2 text-ui text-ink-700 transition-colors duration-150 hover:text-ink-900">
           {secondary.label}
           <ArrowRight className="size-3.5 stroke-[1.5]" aria-hidden />
         </Link>

@@ -66,7 +66,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
             <CardContent>
               <ul className="divide-y divide-hairline">
                 {d.users.map((u) => (
-                  <li key={u.id} className="flex items-center justify-between gap-3 py-2.5 text-small">
+                  <li key={u.id} className="flex items-center justify-between gap-3 py-3 text-small">
                     <span className="min-w-0">
                       <span className="block truncate text-ink-900">{u.name}</span>
                       <span className="num block truncate text-ink-500">{u.email}</span>
@@ -85,7 +85,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
             <CardContent>
               <ul className="divide-y divide-hairline">
                 {d.subscriptions.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between py-2.5 text-small">
+                  <li key={s.id} className="flex items-center justify-between py-3 text-small">
                     <span className="text-ink-900">
                       {planById(s.plan).name} <span className="num ml-2 text-ink-500">AED {s.priceAed.toLocaleString("en-US")}</span>
                     </span>

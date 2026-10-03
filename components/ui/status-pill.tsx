@@ -16,7 +16,7 @@ const DOT: Record<PillTone, string> = {
  */
 export function StatusPill({ tone = "neutral", className, children }: { tone?: PillTone; className?: string; children: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex h-5 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-2 text-label leading-none font-medium tracking-[0.06em] whitespace-nowrap text-ink-700 uppercase", className)}>
+    <span className={cn("inline-flex h-5 shrink-0 items-center gap-2 rounded-full border border-hairline bg-surface px-2 text-label leading-none font-medium tracking-[0.06em] whitespace-nowrap text-ink-700 uppercase", className)}>
       <span className={cn("size-1.5 shrink-0 rounded-full", DOT[tone])} aria-hidden />
       {children}
     </span>

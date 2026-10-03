@@ -161,3 +161,24 @@
     }
   }
 }
+
+/*
+ * One-line table cells: stacked blocks inside a cell (a name over its
+ * metadata) flow onto the 40px row as "primary · secondary", truncated.
+ */
+@utility cell-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  & > div:not(.flex),
+  & > p,
+  & > div:not(.flex) > div:not(.flex) {
+    display: inline;
+  }
+  & > div:not(.flex) + div:not(.flex)::before,
+  & > p + p::before,
+  & > div:not(.flex) > div:not(.flex) + div:not(.flex)::before {
+    content: " · ";
+    color: var(--ink-400);
+  }
+}

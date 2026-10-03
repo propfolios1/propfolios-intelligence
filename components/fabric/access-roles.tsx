@@ -18,7 +18,7 @@ export function AccessRoleSelect({ userId, value, options, disabled }: { userId:
     <Select
       value={v}
       disabled={disabled || busy}
-      className="w-52"
+      className="h-8 w-52"
       aria-label="Access role"
       onChange={async (e) => {
         const next = e.target.value;

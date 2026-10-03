@@ -48,7 +48,7 @@ export function TopBar({ area, notifications, viewerName }: { area: Area; notifi
     <header data-no-print className="sticky top-0 z-30 grid h-12 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-hairline bg-canvas px-4 md:px-12 xl:px-20">
       <div className="flex min-w-0 items-center gap-3">
         <MobileNav area={area} />
-        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-meta">
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-meta">
           {crumbs.map((c, i) => (
             <React.Fragment key={c.href}>
               {i > 0 && <ChevronRight className="size-3 shrink-0 stroke-[1.5] text-ink-400" aria-hidden />}
@@ -88,7 +88,7 @@ export function TopBar({ area, notifications, viewerName }: { area: Area; notifi
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-[360px] p-0">
-            <div className="flex items-baseline justify-between border-b border-hairline px-5 py-3.5">
+            <div className="flex items-baseline justify-between border-b border-hairline px-5 py-4">
               <span className="eyebrow">{t("notificationsTitle")}</span>
               <span className="num text-small text-ink-500">{notifications.length}</span>
             </div>
@@ -105,7 +105,7 @@ export function TopBar({ area, notifications, viewerName }: { area: Area; notifi
                   </div>
                   <p className="mt-1 text-small text-ink-700">{n.detail}</p>
                   {n.href && (
-                    <Link href={n.href} className="mt-1.5 inline-block text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
+                    <Link href={n.href} className="mt-2 inline-block text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
                       {t("open")}
                     </Link>
                   )}

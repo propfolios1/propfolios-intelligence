@@ -41,7 +41,7 @@ export function DateRangePicker({ value, onChange }: { value: DateRange; onChang
               <li key={p.label}>
                 <button
                   type="button"
-                  className="w-full rounded-xs px-2 py-1.5 text-left text-small text-ink-700 hover:bg-ink-100 hover:text-ink-900"
+                  className="w-full rounded-xs px-2 py-2 text-left text-small text-ink-700 hover:bg-ink-100 hover:text-ink-900"
                   onClick={() => {
                     onChange(p.range());
                     setOpen(false);

@@ -34,7 +34,7 @@ export function ChartTooltip({ active, payload, label, format }: TooltipContentP
   return (
     <div className="min-w-[148px] rounded-sm border border-hairline bg-surface px-3 py-2">
       <div className="num text-axis text-ink-500">{label}</div>
-      <div className="mt-2 flex flex-col gap-1.5">
+      <div className="mt-2 flex flex-col gap-2">
         {payload.map((p) => (
           <div key={String(p.dataKey)} className="flex items-center justify-between gap-6">
             <span className="flex items-center gap-2 text-small text-ink-700">

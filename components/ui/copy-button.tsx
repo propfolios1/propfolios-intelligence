@@ -26,7 +26,7 @@ export function CopyButton({ value, children, className, label = "Copy" }: { val
           clearTimeout(timer.current);
           timer.current = setTimeout(() => setCopied(false), 1200);
         }}
-        className={cn("relative inline-flex items-center gap-1.5 text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900", className)}
+        className={cn("relative inline-flex items-center gap-2 text-small text-ink-700 transition-[color] duration-120 hover:text-ink-900", className)}
         aria-label={children ? undefined : label}
       >
         {children ?? label}

@@ -21,7 +21,7 @@ export const CommandGroup = React.forwardRef<React.ElementRef<typeof CommandPrim
   <CommandPrimitive.Group
     ref={ref}
     className={cn(
-      "mb-1 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-1.5 [&_[cmdk-group-heading]]:text-axis [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:tracking-[0.05em] [&_[cmdk-group-heading]]:text-ink-500 [&_[cmdk-group-heading]]:uppercase",
+      "mb-1 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:pb-2 [&_[cmdk-group-heading]]:text-axis [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:tracking-[0.05em] [&_[cmdk-group-heading]]:text-ink-500 [&_[cmdk-group-heading]]:uppercase",
       className,
     )}
     {...props}

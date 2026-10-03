@@ -40,12 +40,12 @@ export function ResearchTab({ research }: { research: ResearchDossier }) {
         <div className="eyebrow">Risks identified</div>
         <ul className="mt-4 mb-10 border-t border-hairline">
           {research.risks.map((r) => (
-            <li key={r.title} className="border-b border-hairline py-3.5">
+            <li key={r.title} className="border-b border-hairline py-4">
               <div className="flex items-center gap-2">
                 <SeverityBadge severity={r.severity} />
                 <span className="text-small font-medium text-ink-900">{r.title}</span>
               </div>
-              <p className="mt-1.5 text-small text-ink-700">{r.detail}</p>
+              <p className="mt-2 text-small text-ink-700">{r.detail}</p>
             </li>
           ))}
         </ul>

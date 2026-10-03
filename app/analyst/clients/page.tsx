@@ -32,7 +32,7 @@ export default async function ClientsPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="eyebrow">{c.type}</div>
-                  <h2 className="mt-1.5 font-display text-read text-navy-900">
+                  <h2 className="mt-2 font-display text-read text-navy-900">
                     <Link href={`/analyst/clients/${c.id}`} className="after:absolute after:inset-0">
                       {c.name}
                     </Link>

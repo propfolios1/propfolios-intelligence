@@ -60,16 +60,16 @@ export default async function PlatformFederation() {
                   <tbody className="divide-y divide-hairline-row">
                     {segments.map((b) => (
                       <tr key={b.key}>
-                        <td className="py-2.5 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>
-                        <td className="num py-2.5 text-right">
+                        <td className="py-3 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>
+                        <td className="num py-3 text-right">
                           {b.deals} / {b.advisories}
                         </td>
-                        <td className="num py-2.5 text-right">{pc(b.data.medians.grossYield)}</td>
-                        <td className="num py-2.5 text-right">{pc(b.data.medians.capitalGrowth)}</td>
-                        <td className="num py-2.5 text-right">
+                        <td className="num py-3 text-right">{pc(b.data.medians.grossYield)}</td>
+                        <td className="num py-3 text-right">{pc(b.data.medians.capitalGrowth)}</td>
+                        <td className="num py-3 text-right">
                           {b.data.irr.p50}% ({b.data.irr.p25} to {b.data.irr.p75})
                         </td>
-                        <td className="num py-2.5 text-right">{Math.round(b.data.highSeverityRate * 100)}%</td>
+                        <td className="num py-3 text-right">{Math.round(b.data.highSeverityRate * 100)}%</td>
                       </tr>
                     ))}
                   </tbody>
@@ -81,7 +81,7 @@ export default async function PlatformFederation() {
                 <div className="eyebrow mt-8">Developer signals (hashed)</div>
                 <ul className="mt-3 divide-y divide-hairline border-y border-hairline">
                   {developers.map((b) => (
-                    <li key={b.key} className="flex items-center justify-between gap-4 py-2.5 text-small">
+                    <li key={b.key} className="flex items-center justify-between gap-4 py-3 text-small">
                       <code className="num text-ink-500">{b.developerHash?.slice(0, 12)}…</code>
                       <span className="text-ink-700">
                         {b.deals} deals · {Math.round(b.data.highSeverityRate * 100)}% with serious findings · {Math.round((b.data.recommendationMix.Decline ?? 0) * 100)}% declined

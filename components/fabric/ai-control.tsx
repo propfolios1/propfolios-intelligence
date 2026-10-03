@@ -87,11 +87,11 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                     const cost = r.avgUsd ?? r.estimateUsd;
                     return (
                       <tr key={r.name} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
-                        <td className="num px-3 py-2 text-end text-mono text-ink-500">{String(r.number).padStart(2, "0")}</td>
-                        <td className="px-3 py-2 text-ink-900">{r.label}</td>
-                        <td className="num px-3 py-2 text-axis text-ink-500">{r.model}</td>
-                        <td className="num px-3 py-2 text-end text-mono text-ink-900">{r.runs}</td>
-                        <td className="num px-3 py-2 text-end text-mono whitespace-nowrap">
+                        <td className="num px-3 py-0 text-end text-mono text-ink-500">{String(r.number).padStart(2, "0")}</td>
+                        <td className="px-3 py-0 text-ink-900">{r.label}</td>
+                        <td className="num px-3 py-0 text-axis text-ink-500">{r.model}</td>
+                        <td className="num px-3 py-0 text-end text-mono text-ink-900">{r.runs}</td>
+                        <td className="num px-3 py-0 text-end text-mono whitespace-nowrap">
                           {cost === null ? (
                             <span className="text-ink-400">Not run live</span>
                           ) : (
@@ -101,7 +101,7 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                             </span>
                           )}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-3 py-0">
                           {r.essential ? (
                             <span className="text-axis text-ink-500">Always on</span>
                           ) : (
@@ -121,7 +121,7 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                             </label>
                           )}
                         </td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-3 py-0 text-right">
                           {!r.essential && (
                             <Button
                               size="sm"

@@ -169,7 +169,7 @@ export function ConsentToggle({ clientId, purpose, granted, jurisdiction }: { cl
         setBusy(false);
         if (r) router.refresh();
       }}
-      className="inline-flex h-6 items-center gap-1.5 rounded-full border border-hairline bg-surface px-2 text-axis text-ink-700 transition-colors duration-150 hover:bg-ink-50 disabled:opacity-60"
+      className="inline-flex h-6 items-center gap-2 rounded-full border border-hairline bg-surface px-2 text-axis text-ink-700 transition-colors duration-150 hover:bg-ink-50 disabled:opacity-60"
     >
       <span className={"size-1.5 rounded-full " + (granted ? "bg-success" : granted === false ? "bg-danger" : "bg-ink-400")} aria-hidden />
       {granted ? "Granted" : granted === false ? "Withdrawn" : "Not asked"}

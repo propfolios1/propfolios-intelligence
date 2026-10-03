@@ -4,7 +4,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { DataTable } from "@/components/composites/data-table";
-import { BuildingGlyph } from "@/components/illustrations/building-glyph";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/form";
 import { Segmented } from "@/components/ui/segmented";
@@ -39,14 +38,12 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
     header: "Property",
     size: 300,
     cell: ({ row }) => (
-      <div className="flex items-center gap-4">
-        <BuildingGlyph seed={row.original.id} assetClass={row.original.assetClass} />
-        <div className="min-w-0">
-          <div className="truncate text-ui text-ink-900">{row.original.name}</div>
-          <div className="truncate text-small text-ink-500">
-            {row.original.community}, {row.original.city}
-          </div>
-        </div>
+      <div className="truncate text-ui">
+        <span className="text-ink-900">{row.original.name}</span>
+        <span className="text-ink-500">
+          {" · "}
+          {row.original.community}, {row.original.city}
+        </span>
       </div>
     ),
   },

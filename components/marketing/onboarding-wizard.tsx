@@ -248,12 +248,12 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                 </Button>
               </div>
               <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
-                <li className="flex items-center justify-between py-2.5 text-small">
+                <li className="flex items-center justify-between py-3 text-small">
                   <span className="text-ink-900">{askAdmin ? adminEmail || "Administrator" : defaultEmail}</span>
                   <span className="text-ink-500">Administrator, you</span>
                 </li>
                 {invites.map((i) => (
-                  <li key={i.email} className="flex items-center justify-between py-2.5 text-small">
+                  <li key={i.email} className="flex items-center justify-between py-3 text-small">
                     <span className="text-ink-900">{i.email}</span>
                     <span className="flex items-center gap-4">
                       <span className="text-ink-500">{i.role === "tenant_admin" ? "Administrator" : "Analyst"}</span>
@@ -324,7 +324,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
       <aside className="lg:col-span-5" aria-label="Brand preview">
         <div className="eyebrow mb-3">Preview</div>
         <div
-          className="overflow-hidden rounded-md border border-hairline bg-canvas shadow-float"
+          className="overflow-hidden rounded-md border border-hairline bg-canvas"
           style={{ ["--navy-900" as string]: primary, ["--gold-500" as string]: accent, ["--navy-50" as string]: `color-mix(in oklab, ${primary} 5%, white)` }}
         >
           <div className="flex h-14 items-center border-b border-hairline bg-surface px-5">

@@ -68,7 +68,7 @@ export function ValuationCard({ v }: { v: ValuationView }) {
             Methods disagree by <span className="num">{v.reconciled.dispersionPct}%</span>. Gold rule: asking price.
           </span>
         </div>
-        <ul className="mt-4 space-y-1.5">
+        <ul className="mt-4 space-y-2">
           {v.keyJudgements.map((j) => (
             <li key={j} className="text-small text-ink-700">
               {j}

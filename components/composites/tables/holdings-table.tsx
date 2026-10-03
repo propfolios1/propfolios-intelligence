@@ -1,7 +1,6 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { BuildingGlyph } from "@/components/illustrations/building-glyph";
 import { StatusPill } from "@/components/ui/status-pill";
 import { cn, formatMoney } from "@/lib/utils";
 import { DataTable } from "../data-table";
@@ -26,13 +25,10 @@ const columns: ColumnDef<HoldingRow, unknown>[] = [
     header: "Holding",
     size: 280,
     cell: ({ row }) => (
-      <div className="flex items-center gap-4">
-        <BuildingGlyph seed={row.original.propertyId} assetClass={row.original.assetClass} />
-        <div className="min-w-0">
-          <div className="truncate text-ui text-ink-900">{row.original.property}</div>
-          <div className="truncate text-small text-ink-500">{row.original.community}</div>
-        </div>
-      </div>
+      <span className="truncate text-ui">
+        <span className="text-ink-900">{row.original.property}</span>
+        <span className="text-ink-500"> · {row.original.community}</span>
+      </span>
     ),
   },
   { accessorKey: "costAed", header: "Cost", size: 120, meta: { numeric: true }, cell: ({ getValue }) => formatMoney(getValue<number>(), "AED") },

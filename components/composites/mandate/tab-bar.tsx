@@ -26,7 +26,7 @@ export function TabBar({ id, active, counts = {} }: { id: string; active: Mandat
             scroll={false}
             aria-current={active === key ? "page" : undefined}
             className={cn(
-              "flex h-8 shrink-0 items-center gap-1.5 border-b-2 text-ui transition-[color,border-color] duration-150",
+              "flex h-8 shrink-0 items-center gap-2 border-b-2 text-ui transition-[color,border-color] duration-150",
               active === key ? "border-gold-500 text-ink-900" : "border-transparent text-ink-500 hover:text-ink-900",
             )}
           >

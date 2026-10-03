@@ -15,7 +15,7 @@ const DOT: Record<BadgeTone, string> = {
 export function Badge({ tone = "neutral", dot, className, children }: { tone?: BadgeTone; dot?: boolean; className?: string; children: React.ReactNode }) {
   const showDot = dot ?? tone !== "neutral";
   return (
-    <span className={cn("inline-flex h-5 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-2 text-axis leading-none font-medium whitespace-nowrap text-ink-700", className)}>
+    <span className={cn("inline-flex h-5 shrink-0 items-center gap-2 rounded-full border border-hairline bg-surface px-2 text-axis leading-none font-medium whitespace-nowrap text-ink-700", className)}>
       {showDot && <span className={cn("size-1.5 rounded-full", DOT[tone])} aria-hidden />}
       {children}
     </span>

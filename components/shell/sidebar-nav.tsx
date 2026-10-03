@@ -55,7 +55,7 @@ export function Wordmark({ area }: { area: Area }) {
   }
   const name = area === "platform" || config.platform ? "Nakhla" : (config.brand_name.split(/\s+/)[0] ?? config.brand_name);
   return (
-    <span className="flex h-5 items-baseline gap-1.5 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase" aria-label={`${area === "platform" ? "Nakhla" : config.brand_name} OS`}>
+    <span className="flex h-5 items-baseline gap-2 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase" aria-label={`${area === "platform" ? "Nakhla" : config.brand_name} OS`}>
       {name}
       <span className="text-gold-500">OS</span>
     </span>
@@ -88,7 +88,7 @@ export function NavList({ area, pathname }: { area: Area; pathname: string }) {
                     aria-current={active ? "page" : undefined}
                     title={hint ? `G then ${hint.toUpperCase()}` : undefined}
                     className={cn(
-                      "group relative flex h-8 items-center gap-2.5 rounded-sm px-2 text-ui transition-[background-color,color] duration-150",
+                      "group relative flex h-8 items-center gap-3 rounded-sm px-2 text-ui transition-[background-color,color] duration-150",
                       active ? "bg-ink-100 font-medium text-ink-900" : "text-ink-700 hover:bg-ink-100 hover:text-ink-900",
                     )}
                   >
@@ -127,7 +127,7 @@ export function SidebarNav({ area, viewer }: { area: Area; viewer: ShellViewer }
       </nav>
       <div className="shrink-0 border-t border-hairline p-2">
         <DropdownMenu>
-          <DropdownMenuTrigger className="group flex h-12 w-full items-center gap-2.5 rounded-sm px-2 text-start transition-[background-color] duration-150 hover:bg-ink-100 data-[state=open]:bg-ink-100">
+          <DropdownMenuTrigger className="group flex h-12 w-full items-center gap-3 rounded-sm px-2 text-start transition-[background-color] duration-150 hover:bg-ink-100 data-[state=open]:bg-ink-100">
             <Avatar name={viewer.name} size={24} />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-meta font-medium text-ink-900">{viewer.name}</span>

@@ -54,9 +54,9 @@ export default function PricingPage() {
                 <div className="num mt-4 text-figure text-navy-900">AED {p.priceAed.toLocaleString("en-US")}</div>
                 <div className="text-small text-ink-500">per month</div>
                 <p className="mt-4 text-ui text-ink-700">{p.summary}</p>
-                <ul className="mt-6 flex flex-1 flex-col gap-2.5 border-t border-hairline pt-5">
+                <ul className="mt-6 flex flex-1 flex-col gap-3 border-t border-hairline pt-5">
                   {p.features.map((f) => (
-                    <li key={f} className="flex gap-2.5 text-ui text-ink-900">
+                    <li key={f} className="flex gap-3 text-ui text-ink-900">
                       <Check className="mt-0.5 size-4 shrink-0 stroke-[1.75] text-navy-900" aria-hidden />
                       {f}
                     </li>
@@ -76,9 +76,9 @@ export default function PricingPage() {
             <table className="w-full min-w-[760px] border-separate border-spacing-0 text-ui">
               <thead>
                 <tr>
-                  <th className="eyebrow h-12 border-b border-hairline px-5 text-left font-medium">Capability</th>
+                  <th className="label-caps h-8 border-b border-hairline px-3 text-start">Capability</th>
                   {PLANS.map((p) => (
-                    <th key={p.id} className="eyebrow h-12 w-[15%] border-b border-hairline px-5 text-center font-medium">
+                    <th key={p.id} className="label-caps h-8 w-[15%] border-b border-hairline px-3 text-center">
                       {p.name}
                     </th>
                   ))}
@@ -87,11 +87,11 @@ export default function PricingPage() {
               <tbody>
                 {ROWS.map(([label, cells]) => (
                   <tr key={label}>
-                    <td className="h-12 border-b border-hairline px-5 text-ink-900">{label}</td>
+                    <td className="h-10 border-b border-hairline-row px-3 text-ink-900">{label}</td>
                     {cells.map((c, i) => (
-                      <td key={i} className="h-12 border-b border-hairline px-5 text-center">
+                      <td key={i} className="h-10 border-b border-hairline-row px-3 text-center">
                         {typeof c === "string" ? (
-                          <span className="num text-small text-ink-900">{c}</span>
+                          <span className="num text-mono text-ink-900">{c}</span>
                         ) : c ? (
                           <Check className="mx-auto size-4 stroke-[1.75] text-navy-900" aria-label="Included" />
                         ) : (
@@ -112,7 +112,7 @@ export default function PricingPage() {
             {FAQ.map(([q, a]) => (
               <div key={q} className="py-5">
                 <dt className="text-ui font-medium text-ink-900">{q}</dt>
-                <dd className="mt-1.5 text-ui text-ink-700">{a}</dd>
+                <dd className="mt-2 text-ui text-ink-700">{a}</dd>
               </div>
             ))}
           </dl>

@@ -38,8 +38,8 @@ export function SimpleTable<T>({ rows, columns, empty = "No records yet.", minWi
             rows.map((r, i) => (
               <tr key={i} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
                 {columns.map((c, ci) => (
-                  <td key={c.key} className={cn("px-3 py-2 align-middle first:ps-0", ci === 0 ? "text-ink-900" : "text-ink-700", c.numeric && "num text-end text-mono whitespace-nowrap text-ink-900", c.className)}>
-                    {c.cell(r)}
+                  <td key={c.key} className={cn("px-3 py-0 align-middle first:ps-0", ci === 0 ? "text-ink-900" : "text-ink-700", c.numeric && "num text-end text-mono whitespace-nowrap text-ink-900", c.className)}>
+                    {c.numeric ? c.cell(r) : <div className="cell-line max-w-[28rem]">{c.cell(r)}</div>}
                   </td>
                 ))}
               </tr>

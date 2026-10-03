@@ -25,13 +25,13 @@ export function PropertyCard({ p, href, className, action }: { p: PropertyCardDa
     <article className={cn("group relative flex flex-col rounded-md border border-hairline bg-surface shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400", className)}>
       <div className="flex h-28 items-end justify-between overflow-hidden rounded-t-md border-b border-hairline bg-navy-50 px-5">
         <BuildingGlyph seed={p.slug} assetClass={p.assetClass ?? "Residential"} size={64} framed={false} className="text-navy-700" />
-        <span className="mb-3 rounded-full bg-surface px-2.5 py-0.5 text-axis font-medium text-ink-700">{PROPERTY_STATUS_LABEL[p.status] ?? p.status}</span>
+        <span className="mb-3 rounded-full bg-surface px-3 py-0.5 text-axis font-medium text-ink-700">{PROPERTY_STATUS_LABEL[p.status] ?? p.status}</span>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="eyebrow">
           {p.community}, {p.city}
         </div>
-        <h3 className="mt-1.5 font-display text-read text-navy-900">
+        <h3 className="mt-2 font-display text-read text-navy-900">
           <Link href={href} className="after:absolute after:inset-0">
             {p.name}
           </Link>

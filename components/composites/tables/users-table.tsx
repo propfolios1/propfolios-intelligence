@@ -117,7 +117,7 @@ export function UsersTable({
             The account becomes a client account and sees only this client&apos;s
             portfolio, documents and messages.
           </DialogDescription>
-          <label className="mt-6 flex flex-col gap-1.5">
+          <label className="mt-6 flex flex-col gap-2">
             <span className="text-ui font-medium text-ink-900">Client</span>
             <Select
               value={clientId}

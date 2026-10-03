@@ -78,7 +78,7 @@ export function KeyboardShortcuts({ area }: { area: Area }) {
         <DialogDescription className="mt-1 text-small text-ink-500">Shortcuts are disabled while typing in a field.</DialogDescription>
         <dl className="mt-6 divide-y divide-hairline border-y border-hairline">
           {rows.map(([keys, label], i) => (
-            <div key={i} className="flex items-center justify-between gap-6 py-2.5">
+            <div key={i} className="flex items-center justify-between gap-6 py-3">
               <dt className="text-small text-ink-700">{label}</dt>
               <dd>{keys}</dd>
             </div>

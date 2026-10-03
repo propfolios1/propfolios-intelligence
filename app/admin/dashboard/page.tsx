@@ -84,7 +84,7 @@ export default async function AdminDashboard() {
                 ["Assistant", tenant.configJson.features.assistant ? "Enabled" : "Disabled"],
                 ["Client portal", tenant.configJson.features.clientPortal ? "Enabled" : "Disabled"],
               ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 py-2.5">
+                <div key={k} className="flex justify-between gap-4 py-3">
                   <dt className="text-ink-500">{k}</dt>
                   <dd className="text-right text-ink-900">{v}</dd>
                 </div>

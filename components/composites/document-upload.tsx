@@ -35,7 +35,7 @@ export function DocumentUpload({ defaultType = "kyc", types = ["kyc", "spa", "ti
 
   return (
     <div className="rounded-md border border-hairline bg-surface p-5 shadow-card">
-      <label className="flex flex-col gap-1.5">
+      <label className="flex flex-col gap-2">
         <span className="text-ui font-medium text-ink-900">Document type</span>
         <Select value={type} onChange={(e) => setType(e.target.value)}>
           {types.map((t) => (

@@ -11,7 +11,7 @@ export function AuthFrame({ eyebrow, title, subtitle, children }: { eyebrow: str
     <div className="grid min-h-dvh grid-cols-1 bg-surface lg:grid-cols-[55fr_45fr]">
       <section className="flex flex-col px-4 py-6 md:px-12">
         <Link href="/" aria-label="Home" className="self-start rounded-xs">
-          <span className="flex items-baseline gap-1.5 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase">
+          <span className="flex items-baseline gap-2 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase">
             Nakhla <span className="text-gold-500">OS</span>
           </span>
         </Link>
@@ -30,7 +30,7 @@ export function AuthFrame({ eyebrow, title, subtitle, children }: { eyebrow: str
         <blockquote className="max-w-[520px]">
           <p className="font-display text-title font-medium tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches a client.</p>
         </blockquote>
-        <span className="flex items-baseline gap-1.5 text-meta font-semibold tracking-[0.1em] text-surface uppercase">
+        <span className="flex items-baseline gap-2 text-meta font-semibold tracking-[0.1em] text-surface uppercase">
           Nakhla <span className="text-gold-500">OS</span>
         </span>
       </section>

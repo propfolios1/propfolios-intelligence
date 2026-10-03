@@ -77,9 +77,9 @@ export function MarketTiming({ regions }: { regions: string[] }) {
                   <tbody className="divide-y divide-hairline-row">
                     {result.backtest.bySignal.map((b) => (
                       <tr key={b.signal}>
-                        <td className="py-1.5 text-ink-700">{b.signal}</td>
-                        <td className="num py-1.5 text-right text-ink-900">{b.count}</td>
-                        <td className="num py-1.5 text-right text-ink-900">{b.count ? `${b.avgForwardReturnPct >= 0 ? "+" : ""}${b.avgForwardReturnPct.toFixed(2)}%` : "—"}</td>
+                        <td className="py-2 text-ink-700">{b.signal}</td>
+                        <td className="num py-2 text-right text-ink-900">{b.count}</td>
+                        <td className="num py-2 text-right text-ink-900">{b.count ? `${b.avgForwardReturnPct >= 0 ? "+" : ""}${b.avgForwardReturnPct.toFixed(2)}%` : "—"}</td>
                       </tr>
                     ))}
                   </tbody>

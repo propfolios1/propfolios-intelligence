@@ -59,7 +59,7 @@ export function InsightCard({ insight, onChanged, compact }: { insight: InsightV
             <SeverityBadge severity={insight.severity} />
             <span className="num ms-auto text-axis text-ink-400">{insight.dueAt ? `Due ${formatDate(insight.dueAt)}` : <RelativeTime iso={insight.createdAt} />}</span>
           </div>
-          <h4 className="mt-1.5 text-ui font-medium text-ink-900">{insight.title}</h4>
+          <h4 className="mt-2 text-ui font-medium text-ink-900">{insight.title}</h4>
           {!compact && <p className="mt-1 text-small text-ink-700">{insight.body}</p>}
           {!compact && insight.metrics.length > 0 && (
             <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1">

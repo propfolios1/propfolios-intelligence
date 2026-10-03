@@ -355,7 +355,7 @@ function SourcesColumn({ sections, citations, className }: { sections: MemoDataS
           {open[s.title] && (
             <dl className="pb-2">
               {s.items.map((it) => (
-                <div key={it.label} className="flex h-8 items-center justify-between gap-2 px-4 ps-9 text-meta">
+                <div key={it.label} className="flex h-8 items-center justify-between gap-2 px-4 ps-8 text-meta">
                   <dt className="truncate text-ink-500">{it.label}</dt>
                   <dd className="num shrink-0 text-end text-ink-900">{it.value}</dd>
                 </div>
@@ -367,9 +367,9 @@ function SourcesColumn({ sections, citations, className }: { sections: MemoDataS
       <Row label="Citations" open={open.Citations} onClick={() => toggle("Citations")} count={citations.length} />
       {open.Citations && (
         <ol className="pb-6">
-          {citations.length === 0 && <li className="px-4 ps-9 text-meta text-ink-500">The research dossier has no citations.</li>}
+          {citations.length === 0 && <li className="px-4 ps-8 text-meta text-ink-500">The research dossier has no citations.</li>}
           {citations.map((c) => (
-            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 px-4 py-1.5 ps-4 text-meta">
+            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 px-4 py-2 ps-4 text-meta">
               <span className="num text-gold-600">{c.id}</span>
               <span className="min-w-0">
                 <span className="block truncate text-ink-900">{c.title}</span>
@@ -430,7 +430,7 @@ function AiColumn({ styleMatch, flags, flagged, verifiedClaims, citationCount, c
               <span className={cn("size-1.5 shrink-0 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-gold-500" : "bg-success")} aria-hidden />
               <span className="label-caps">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
             </div>
-            <p className="mt-1.5 text-meta font-medium text-ink-900">{f.claim}</p>
+            <p className="mt-2 text-meta font-medium text-ink-900">{f.claim}</p>
             <p className="mt-0.5 text-meta text-ink-500">{f.suggestion}</p>
           </article>
         ))}

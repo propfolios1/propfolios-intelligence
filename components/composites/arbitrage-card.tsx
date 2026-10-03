@@ -55,7 +55,7 @@ export function ArbitrageCard() {
           {r?.checklist && r.checklist.length > 0 && (
             <details className="mt-4 border-t border-hairline pt-3">
               <summary className="cursor-pointer text-small font-medium text-ink-900">Regulatory checklist ({r.checklist.filter((c) => c.status === "Required").length} required)</summary>
-              <ul className="mt-3 space-y-2.5">
+              <ul className="mt-3 space-y-3">
                 {r.checklist.map((c) => (
                   <li key={c.item} className="grid grid-cols-[88px_1fr] gap-3 text-small">
                     <StatusPill tone={c.status === "Required" ? "progress" : "neutral"}>{c.status === "Not applicable" ? "N/A" : c.status}</StatusPill>

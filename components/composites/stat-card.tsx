@@ -55,14 +55,14 @@ export function StatCard({
         <div className="label-caps min-w-0 truncate">{label}</div>
         {spark && <Sparkline data={spark} label={`${label} trend`} />}
       </div>
-      <div className="mt-2 flex min-w-0 items-baseline gap-1.5">
+      <div className="mt-2 flex min-w-0 items-baseline gap-2">
         <span className={cn("min-w-0 truncate leading-[1.1] text-ink-900", numeric ? "num text-figure" : "font-sans text-section font-medium")} title={value}>
           {value}
         </span>
         {unit && <span className="shrink-0 text-axis whitespace-nowrap text-ink-500">{unit}</span>}
       </div>
       {(delta !== undefined || deltaLabel || note) && (
-        <div className="mt-1.5 flex min-w-0 items-baseline gap-2 text-axis">
+        <div className="mt-2 flex min-w-0 items-baseline gap-2 text-axis">
           {delta !== undefined && <Delta value={delta} unit={deltaUnit} invert={invert} />}
           {deltaLabel && <span className="truncate text-ink-500">{deltaLabel}</span>}
           {note && <span className="truncate text-ink-500">{note}</span>}

@@ -18,7 +18,7 @@ export function FormField({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-1.5", className)}>
+    <div className={cn("flex flex-col gap-2", className)}>
       <label htmlFor={htmlFor} className="text-ui font-medium text-ink-900">
         {label}
       </label>
@@ -37,7 +37,7 @@ export function FormField({
 /** Kept for existing call sites: label and control in one. */
 export function Field({ label, hint, children, className }: { label: string; hint?: string; children: React.ReactNode; className?: string }) {
   return (
-    <label className={cn("flex flex-col gap-1.5", className)}>
+    <label className={cn("flex flex-col gap-2", className)}>
       <span className="text-ui font-medium text-ink-900">{label}</span>
       {children}
       {hint && <span className="text-ui text-ink-500">{hint}</span>}

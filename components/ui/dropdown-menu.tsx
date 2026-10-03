@@ -30,7 +30,7 @@ export const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "flex h-8 cursor-default items-center gap-2.5 rounded-xs px-2.5 text-ui text-ink-900 outline-none select-none data-[disabled]:opacity-40 data-[highlighted]:bg-ink-100 [&_svg]:size-4 [&_svg]:stroke-[1.75] [&_svg]:text-ink-500",
+      "flex h-8 cursor-default items-center gap-3 rounded-xs px-3 text-ui text-ink-900 outline-none select-none data-[disabled]:opacity-40 data-[highlighted]:bg-ink-100 [&_svg]:size-4 [&_svg]:stroke-[1.75] [&_svg]:text-ink-500",
       destructive && "text-danger [&_svg]:text-danger",
       className,
     )}
@@ -55,7 +55,7 @@ export const DropdownMenuCheckboxItem = React.forwardRef<
 DropdownMenuCheckboxItem.displayName = "DropdownMenuCheckboxItem";
 
 export function DropdownMenuLabel({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("eyebrow px-2.5 pt-2 pb-1", className)} {...props} />;
+  return <div className={cn("eyebrow px-3 pt-2 pb-1", className)} {...props} />;
 }
 
 export const DropdownMenuSeparator = React.forwardRef<

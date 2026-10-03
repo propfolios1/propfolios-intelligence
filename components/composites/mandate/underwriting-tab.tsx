@@ -76,7 +76,7 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
             {a.rationale && (
               <div className="mt-6">
                 <div className="eyebrow">Basis</div>
-                <ul className="mt-2 flex flex-col gap-2.5">
+                <ul className="mt-2 flex flex-col gap-3">
                   {a.rationale.map((r) => (
                     <li key={r.assumption} className="text-small">
                       <span className="font-medium text-ink-900">{r.assumption}.</span> <span className="text-ink-700">{r.basis}</span>

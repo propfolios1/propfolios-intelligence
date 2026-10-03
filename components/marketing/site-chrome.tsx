@@ -1,7 +1,7 @@
 import Link from "next/link";
 function Wordmark({ name }: { name?: string }) {
   return (
-    <span className="flex items-baseline gap-1.5 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase">
+    <span className="flex items-baseline gap-2 text-meta font-semibold tracking-[0.1em] text-ink-900 uppercase">
       {name ? name.split(/\s+/)[0] : "Nakhla"} <span className="text-gold-500">OS</span>
     </span>
   );

@@ -53,7 +53,7 @@ export function MessageThread({ clientId, initial, viewerIsClient, viewerName }:
           const mine = viewerIsClient ? m.authorRole === "client" : m.authorRole !== "client";
           return (
             <li key={m.id} className={cn("max-w-[80%]", mine ? "self-end text-right" : "self-start")}>
-              <div className={cn("rounded-md px-4 py-2.5 text-ui", mine ? "bg-navy-900 text-surface" : "bg-ink-100 text-ink-900")}>{m.body}</div>
+              <div className={cn("rounded-md px-4 py-3 text-ui", mine ? "bg-navy-900 text-surface" : "bg-ink-100 text-ink-900")}>{m.body}</div>
               <div className="mt-1 text-axis text-ink-500">
                 {m.authorName} · <span className="num">{formatDate(m.createdAt, "datetime")}</span>
               </div>

@@ -36,13 +36,13 @@ const columns: ColumnDef<TenantRow, unknown>[] = [
     header: "Tenant",
     size: 260,
     cell: ({ row }) => (
-      <div className="flex items-center gap-3">
-        <span className="size-6 shrink-0 rounded-xs" style={{ background: row.original.primary }} aria-hidden />
-        <div className="min-w-0">
-          <div className="truncate font-medium text-ink-900">{row.original.name}</div>
-          <div className="num truncate text-small text-ink-500">{row.original.slug}</div>
-        </div>
-      </div>
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="size-2 shrink-0 rounded-full" style={{ background: row.original.primary }} aria-hidden />
+        <span className="truncate">
+          <span className="font-medium text-ink-900">{row.original.name}</span>
+          <span className="num text-mono text-ink-500"> · {row.original.slug}</span>
+        </span>
+      </span>
     ),
   },
   { accessorKey: "plan", header: "Plan", size: 130, cell: ({ getValue }) => PLAN_LABEL[getValue<string>()] ?? getValue<string>() },

@@ -33,11 +33,11 @@ export function ActivityFeed({ items, linkMandates = true, className }: { items:
               {a.reference &&
                 !a.action.includes(a.reference) &&
                 (linkMandates && a.mandateId ? (
-                  <Link href={`/analyst/mandates/${a.mandateId}`} className="num ms-1.5 text-mono text-ink-500 hover:text-ink-900">
+                  <Link href={`/analyst/mandates/${a.mandateId}`} className="num ms-2 text-mono text-ink-500 hover:text-ink-900">
                     {a.reference}
                   </Link>
                 ) : (
-                  <span className="num ms-1.5 text-mono text-ink-500">{a.reference}</span>
+                  <span className="num ms-2 text-mono text-ink-500">{a.reference}</span>
                 ))}
             </div>
             {meta && <span className="num hidden max-w-[40%] min-w-0 truncate text-axis text-ink-400 2xl:inline">{meta}</span>}

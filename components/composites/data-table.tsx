@@ -189,7 +189,7 @@ export function DataTable<T>({
                         {h.isPlaceholder ? null : h.column.getCanSort() ? (
                           <button
                             onClick={h.column.getToggleSortingHandler()}
-                            className={cn("inline-flex items-center gap-1.5 uppercase transition-[color] duration-150 hover:text-ink-900", sorted && "text-ink-900", meta?.numeric && "flex-row-reverse")}
+                            className={cn("inline-flex items-center gap-2 uppercase transition-[color] duration-150 hover:text-ink-900", sorted && "text-ink-900", meta?.numeric && "flex-row-reverse")}
                           >
                             {flexRender(h.column.columnDef.header, h.getContext())}
                             <span className={cn("text-[8px] leading-none", !sorted && "opacity-0 group-hover/th:opacity-50")} aria-hidden>
@@ -263,7 +263,7 @@ export function DataTable<T>({
                           key={cell.id}
                           style={{ width: cell.column.getSize(), maxWidth: cell.column.getSize() }}
                           className={cn(
-                            "truncate border-b border-hairline-row px-3 text-ui",
+                            "cell-line border-b border-hairline-row px-3 text-ui",
                             ci === 0 ? "relative text-ink-900" : "text-ink-700",
                             meta?.numeric && "num text-end text-mono text-ink-900",
                             meta?.id && "num text-mono",

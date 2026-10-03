@@ -47,7 +47,7 @@ export function PortfolioView({ p, recommendationsHref }: { p: Portfolio; recomm
             <ul className="divide-y divide-hairline-row">
               {p.alerts.slice(0, 6).map((a) => (
                 <li key={a.id} className="flex min-h-[60px] items-start gap-3 py-3">
-                  <span className={"mt-1.5 size-1.5 shrink-0 rounded-full " + (a.severity === "HIGH" || a.severity === "CRITICAL" ? "bg-danger" : a.severity === "MEDIUM" ? "bg-gold-500" : "bg-ink-400")} aria-label={a.severity} />
+                  <span className={"mt-2 size-1.5 shrink-0 rounded-full " + (a.severity === "HIGH" || a.severity === "CRITICAL" ? "bg-danger" : a.severity === "MEDIUM" ? "bg-gold-500" : "bg-ink-400")} aria-label={a.severity} />
                   <div className="min-w-0 flex-1">
                     <p className="text-meta font-medium text-ink-900">{a.title}</p>
                     <p className="mt-0.5 line-clamp-2 text-meta text-ink-500">{a.detail}</p>

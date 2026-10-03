@@ -35,7 +35,7 @@ export function TenantControls({ tenantId, plan, status, features }: { tenantId:
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1.5">
+        <label className="flex flex-col gap-2">
           <span className="text-ui font-medium text-ink-900">Plan</span>
           <Select value={plan} disabled={busy} onChange={(e) => patch({ plan: e.target.value }, "Plan updated")}>
             {PLANS.map((p) => (
@@ -45,7 +45,7 @@ export function TenantControls({ tenantId, plan, status, features }: { tenantId:
             ))}
           </Select>
         </label>
-        <label className="flex flex-col gap-1.5">
+        <label className="flex flex-col gap-2">
           <span className="text-ui font-medium text-ink-900">Status</span>
           <Select value={status} disabled={busy} onChange={(e) => patch({ status: e.target.value }, "Status updated")}>
             <option value="trial">Trial</option>

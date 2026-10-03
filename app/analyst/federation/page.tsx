@@ -61,16 +61,16 @@ export default async function AnalystFederation() {
                   <tbody className="divide-y divide-hairline-row">
                     {relevant.map((b) => (
                       <tr key={b.key}>
-                        <td className="py-2.5 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>
-                        <td className="num py-2.5 text-right text-ink-900">
+                        <td className="py-3 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>
+                        <td className="num py-3 text-right text-ink-900">
                           {b.deals}
                           <span className="text-ink-500"> / {b.advisories}</span>
                         </td>
-                        <td className="num py-2.5 text-right">{pc(b.data.medians.grossYield)}</td>
-                        <td className="num py-2.5 text-right">{pc(b.data.medians.capitalGrowth)}</td>
-                        <td className="num py-2.5 text-right">{pc(b.data.medians.vacancy)}</td>
-                        <td className="num py-2.5 text-right">{b.data.irr.p50}%</td>
-                        <td className="py-2.5 pl-4 text-ink-700">{b.data.topRisks[0] ? `${b.data.topRisks[0].category} (${Math.round(b.data.topRisks[0].share * 100)}%)` : "None"}</td>
+                        <td className="num py-3 text-right">{pc(b.data.medians.grossYield)}</td>
+                        <td className="num py-3 text-right">{pc(b.data.medians.capitalGrowth)}</td>
+                        <td className="num py-3 text-right">{pc(b.data.medians.vacancy)}</td>
+                        <td className="num py-3 text-right">{b.data.irr.p50}%</td>
+                        <td className="py-3 pl-4 text-ink-700">{b.data.topRisks[0] ? `${b.data.topRisks[0].category} (${Math.round(b.data.topRisks[0].share * 100)}%)` : "None"}</td>
                       </tr>
                     ))}
                   </tbody>

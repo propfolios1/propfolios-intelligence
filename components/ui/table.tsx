@@ -19,5 +19,5 @@ export function TR({ className, ...props }: React.HTMLAttributes<HTMLTableRowEle
   return <tr className={cn("group transition-colors duration-150 hover:bg-ink-50", className)} {...props} />;
 }
 export function TD({ className, numeric, ...props }: React.TdHTMLAttributes<HTMLTableCellElement> & { numeric?: boolean }) {
-  return <td className={cn("h-10 border-b border-hairline-row px-3 py-2 align-middle text-ink-700 first:ps-0 first:text-ink-900", numeric && "num text-end text-mono text-ink-900", className)} {...props} />;
+  return <td className={cn("cell-line h-10 max-w-[28rem] border-b border-hairline-row px-3 py-0 align-middle text-ink-700 first:ps-0 first:text-ink-900", numeric && "num text-end text-mono text-ink-900", className)} {...props} />;
 }

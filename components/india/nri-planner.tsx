@@ -66,7 +66,7 @@ export function NriPlanner({ properties, clientId, initial }: { properties: { id
             <ol className="relative space-y-5 border-l border-hairline pl-6">
               {o.steps.map((s, i) => (
                 <li key={i}>
-                  <span className="absolute -left-[5px] mt-1.5 size-2.5 rounded-full border border-navy-900 bg-surface" />
+                  <span className="absolute -left-[5px] mt-2 size-2.5 rounded-full border border-navy-900 bg-surface" />
                   <div className="flex flex-wrap items-baseline gap-x-3">
                     <span className="num text-axis text-ink-500">Day {s.dayOffset}</span>
                     <span className="text-small font-medium text-ink-900">{s.step}</span>
