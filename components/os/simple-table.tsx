@@ -33,7 +33,7 @@ export function SimpleTable<T>({ rows, columns, empty = "No records.", minWidth 
             rows.map((r, i) => (
               <tr key={i} className="border-t border-ink-200 align-top first:border-t-0 hover:bg-navy-50/50">
                 {columns.map((c) => (
-                  <td key={c.key} className={cn("px-4 py-3 text-ink-700", c.numeric && "num text-right text-ink-900", c.className)}>
+                  <td key={c.key} className={cn("px-4 py-3 text-ink-700", c.numeric && "num text-right whitespace-nowrap text-ink-900", c.className)}>
                     {c.cell(r)}
                   </td>
                 ))}

@@ -11,8 +11,18 @@ function Cell({ v }: { v: unknown }) {
   if (typeof v === "boolean") return <span>{v ? "Yes" : "No"}</span>;
   if (typeof v === "number") return <span className="num">{Number.isInteger(v) ? v.toLocaleString("en-IN") : v.toFixed(2)}</span>;
   if (typeof v === "string") return TONES[v] ? <StatusPill tone={TONES[v]}>{v.replace(/_/g, " ")}</StatusPill> : <span>{v}</span>;
+  if (Array.isArray(v) && v.length === 0) return <span className="text-ink-400">None</span>;
   if (Array.isArray(v)) return <span>{v.map((x) => (typeof x === "object" ? JSON.stringify(x) : String(x))).join(", ")}</span>;
-  return <span>{Object.entries(v as Record<string, unknown>).map(([k, x]) => `${label(k)}: ${typeof x === "object" ? JSON.stringify(x) : String(x)}`).join("; ")}</span>;
+  return (
+    <span className="block space-y-0.5">
+      {Object.entries(v as Record<string, unknown>).map(([k, x]) => (
+        <span key={k} className="flex justify-between gap-4">
+          <span className="text-ink-500">{label(k.replace(/^d(\d)/, "$1").replace(/_/g, " to "))}</span>
+          <Cell v={x} />
+        </span>
+      ))}
+    </span>
+  );
 }
 
 /** Renders the agent-specific part of an output: scalar fields as a definition list, arrays of records as tables. */

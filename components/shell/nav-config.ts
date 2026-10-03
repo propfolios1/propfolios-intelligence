@@ -23,6 +23,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/insights", label: "Insights", key: "i" },
         { href: "/analyst/mandates", label: "Mandates", key: "m" },
         { href: "/analyst/deals", label: "Deals", key: "e" },
+        { href: "/analyst/commissions", label: "My commissions" },
         { href: "/analyst/memos", label: "Memos", key: "o" },
         { href: "/analyst/clients", label: "Clients", key: "c" },
       ],
@@ -62,6 +63,7 @@ export const NAV: Record<Area, NavSection[]> = {
       title: "Workspace",
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
+        { href: "/client/invoices", label: "Invoices" },
         { href: "/client/india", label: "India" },
         { href: "/client/nri", label: "NRI plan" },
         { href: "/client/messages", label: "Messages", key: "m" },
@@ -77,6 +79,13 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/admin/users", label: "Users", key: "u" },
         { href: "/admin/branding", label: "Branding", key: "b" },
         { href: "/admin/billing", label: "Billing", key: "i" },
+      ],
+    },
+    {
+      title: "Revenue",
+      items: [
+        { href: "/admin/commissions", label: "Commissions", key: "c" },
+        { href: "/admin/invoices", label: "Invoices", key: "v" },
       ],
     },
     {
@@ -139,6 +148,9 @@ export const SEGMENT_LABEL: Record<string, string> = {
   records: "Property file",
   nri: "NRI plan",
   deals: "Deals",
+  commissions: "Commissions",
+  structures: "Structures",
+  invoices: "Invoices",
 };
 
 export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };
