@@ -7,6 +7,7 @@ import { Markets } from "@/components/home/markets";
 import { Modules } from "@/components/home/modules";
 import { Numbers } from "@/components/home/numbers";
 import { Problem } from "@/components/home/problem";
+import { Screenshots } from "@/components/home/screenshots";
 import "@/components/home/home.css";
 import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ export default async function Landing() {
         <Modules />
         <Agents />
         <Markets />
+        <Screenshots />
       </main>
     </AccessProvider>
   );
