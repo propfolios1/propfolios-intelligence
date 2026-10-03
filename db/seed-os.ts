@@ -1,4 +1,5 @@
 import type { DB } from "@/db";
+import { seedPlatformBi, seedTenantBi } from "./seed-bi";
 import { seedClientLayer } from "./seed-client";
 import { seedCommissions } from "./seed-commission";
 import { seedDeals } from "./seed-deals";
@@ -27,6 +28,12 @@ export async function seedTenantOs(db: DB, t: OsSeedTarget) {
     const commissions = await seedCommissions(db, t);
     const deals = await seedDeals(db, t);
     const client = await seedClientLayer(db, t);
-    return { india: true, ...deals, ...commissions, ...client };
+    const bi = await seedTenantBi(db, t.tenantId);
+    return { india: true, ...deals, ...commissions, ...client, ...bi };
   });
+}
+
+/** Platform-wide OS data, after every tenant: benchmarks across firms and the data product catalogue. */
+export function seedPlatformOs(db: DB, subs: { tenantId: string; slugs: string[] }[]) {
+  return withSeedRuntime(db, () => seedPlatformBi(db, subs));
 }

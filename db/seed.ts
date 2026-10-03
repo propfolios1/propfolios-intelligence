@@ -1,5 +1,5 @@
 import { seedFederation, seedTenantIntelligence } from "./seed-intelligence";
-import { seedTenantOs } from "./seed-os";
+import { seedPlatformOs, seedTenantOs } from "./seed-os";
 import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { embed } from "@/lib/ai/embed";
@@ -814,9 +814,16 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
 
   // Layer 6: PropFolios, Gulf Realty and Bombay contribute; Al Noor contributed before leaving.
   const federation = await seedFederation(db, [TENANT_ID, gulfId, bombayId], alnoorId);
+  await seedPlatformOs(db, PLATFORM_SUBSCRIPTIONS(gulfId, bombayId));
 
   return { ...result, tenants: 6, federation: { learnings: federation.learnings, baselines: federation.baselines } };
 }
+const PLATFORM_SUBSCRIPTIONS = (gulfId: string, bombayId: string) => [
+  { tenantId: TENANT_ID, slugs: ["market-pulse", "quarterly-benchmarks"] },
+  { tenantId: gulfId, slugs: ["developer-risk-index", "market-pulse"] },
+  { tenantId: bombayId, slugs: ["comparable-transactions"] },
+];
+
 const NAMED_TENANTS = [
   { tenantId: TENANT_ID, slug: "propfolios", staff: true, admin: null },
   { tenantId: uid("tenant:gulfrealty"), slug: "gulfrealty", staff: false, admin: "gulfrealty-admin" },
@@ -839,5 +846,6 @@ async function upgrade(db: DB) {
     await seedTenantOs(db, { tenantId: t.tenantId, slug: t.slug, staff: t.staff, id, adminUserId: t.admin ? uid(`user:${t.admin}`) : undefined });
     done.push(t.slug);
   }
+  if (done.length) await seedPlatformOs(db, PLATFORM_SUBSCRIPTIONS(uid("tenant:gulfrealty"), uid("tenant:bombay")));
   return done;
 }

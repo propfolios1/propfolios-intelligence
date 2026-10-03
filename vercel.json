@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/client-servicing",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/bi",
+      "schedule": "0 23 * * *"
     }
   ]
 }

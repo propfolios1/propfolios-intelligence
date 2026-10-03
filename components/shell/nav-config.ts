@@ -35,6 +35,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/developers", label: "Developers", key: "v" },
         { href: "/analyst/market", label: "Market", key: "k" },
         { href: "/analyst/federation", label: "Federation", key: "f" },
+        { href: "/analyst/benchmarks", label: "Benchmarks", key: "b" },
         { href: "/analyst/assistant", label: "Assistant", key: "a", feature: "assistant" },
       ],
     },
@@ -55,6 +56,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/client/portfolio", label: "Portfolio", key: "p" },
         { href: "/client/deals", label: "Transactions", key: "t" },
         { href: "/client/insights", label: "Insights", key: "i" },
+        { href: "/client/market-insights", label: "Market insights" },
         { href: "/client/opportunities", label: "Opportunities", key: "o" },
         { href: "/client/recommendations", label: "Recommendations", key: "r" },
       ],
@@ -103,6 +105,7 @@ export const NAV: Record<Area, NavSection[]> = {
       items: [
         { href: "/admin/kyc", label: "KYC and AML", key: "k" },
         { href: "/admin/reports", label: "Reports", key: "r" },
+        { href: "/admin/data-products", label: "Data products", key: "p" },
       ],
     },
     {
@@ -122,6 +125,8 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/platform/tenants", label: "Tenants", key: "t" },
         { href: "/platform/metrics", label: "Metrics", key: "m" },
         { href: "/platform/federation", label: "Federation", key: "f" },
+        { href: "/platform/federation/dashboard", label: "Federation dashboard" },
+        { href: "/platform/bi", label: "Business intelligence", key: "b" },
       ],
     },
   ],
@@ -174,6 +179,10 @@ export const SEGMENT_LABEL: Record<string, string> = {
   goals: "Goals",
   "tax-documents": "Tax documents",
   "private-banking": "Private banking",
+  benchmarks: "Benchmarks",
+  bi: "Business intelligence",
+  "data-products": "Data products",
+  "market-insights": "Market insights",
 };
 
 export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };

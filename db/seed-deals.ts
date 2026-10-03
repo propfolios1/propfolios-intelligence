@@ -15,14 +15,16 @@ const cr = (x: number) => Math.round(x * 10_000_000);
  * negotiation in Goa, one out for signature in Abu Dhabi. Skipped when the
  * tenant already has its first deal (idempotent).
  */
-export async function seedDeals(db: DB, t: { tenantId: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
+export async function seedDeals(db: DB, t: { tenantId: string; slug?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
   const [exists] = await db.select({ id: s.deals.id }).from(s.deals).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.reference, "DL-0001"))).limit(1);
   if (exists) return { deals: 0 };
   const owner = (k: "aisha" | "rohan") => (t.staff ? t.id(`user:${k}`) : (t.adminUserId ?? null));
   const actor = (k: "aisha" | "rohan") => ({ tenantId: t.tenantId, name: t.staff ? (k === "aisha" ? "Aisha Rahman" : "Rohan Mehta") : "Advisory team", id: owner(k) ?? undefined });
   const client = (k: string) => ({ id: t.id(`client:${k}`), ...CLIENTS.find((c) => c.key === k)! });
   const prop = (slug: string) => t.id(`prop:${slug}`);
-  const ago = (d: number) => new Date(Date.now() - d * DAY);
+  // Each firm's history runs at its own pace, so cross-firm benchmarks differ.
+  const pace = t.slug === "gulfrealty" ? 1.18 : t.slug === "bombay" ? 0.86 : 1;
+  const ago = (d: number) => new Date(Date.now() - d * pace * DAY);
   const doneAll = async (dealId: string, a: ReturnType<typeof actor>, keepOpen = 0) => {
     const items = await db.select().from(s.closingChecklists).where(and(eq(s.closingChecklists.tenantId, t.tenantId), eq(s.closingChecklists.dealId, dealId)));
     for (const it of items.slice(0, items.length - keepOpen)) await updateChecklistItem(db, a, it.id, "done");

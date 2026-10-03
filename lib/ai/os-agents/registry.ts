@@ -1,6 +1,7 @@
 import "server-only";
 import type { z } from "zod";
 import type { AgentModule, DefinedAgent } from "../agents/define";
+import { BI_AGENTS } from "./bi";
 import { CLIENT_AGENTS } from "./client";
 import { COMMISSION_AGENTS } from "./commission";
 import { DEAL_AGENTS } from "./deals";
@@ -10,7 +11,7 @@ import { INDIA_AGENTS } from "./india";
 export type AnyOsAgent = DefinedAgent<z.ZodType<any>, z.ZodType<any>>;
 
 /** Every vertical-OS agent, in catalogue order (numbered from 14; 1 to 13 are the core mandate agents). */
-export const OS_AGENTS: AnyOsAgent[] = [...INDIA_AGENTS, ...DEAL_AGENTS, ...COMMISSION_AGENTS, ...CLIENT_AGENTS] as unknown as AnyOsAgent[];
+export const OS_AGENTS: AnyOsAgent[] = [...INDIA_AGENTS, ...DEAL_AGENTS, ...COMMISSION_AGENTS, ...CLIENT_AGENTS, ...BI_AGENTS] as unknown as AnyOsAgent[];
 
 export const OS_AGENT_INDEX: Record<string, AnyOsAgent> = Object.fromEntries(OS_AGENTS.map((a) => [a.name, a]));
 
