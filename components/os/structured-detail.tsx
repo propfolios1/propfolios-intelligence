@@ -18,7 +18,8 @@ function Cell({ v }: { v: unknown }) {
 /** Renders the agent-specific part of an output: scalar fields as a definition list, arrays of records as tables. */
 export function StructuredDetail({ output, className }: { output: Record<string, unknown>; className?: string }) {
   const entries = Object.entries(output).filter(([k]) => !CORE.has(k));
-  const scalars = entries.filter(([, v]) => !Array.isArray(v) || !v.length || typeof v[0] !== "object");
+  const lists = entries.filter(([, v]) => Array.isArray(v) && v.length > 1 && typeof v[0] === "string") as [string, string[]][];
+  const scalars = entries.filter(([, v]) => (!Array.isArray(v) || !v.length || typeof v[0] !== "object") && !(Array.isArray(v) && v.length > 1 && typeof v[0] === "string"));
   const tables = entries.filter(([, v]) => Array.isArray(v) && v.length && typeof v[0] === "object") as [string, Record<string, unknown>[]][];
   return (
     <div className={cn("space-y-6", className)}>
@@ -34,6 +35,16 @@ export function StructuredDetail({ output, className }: { output: Record<string,
           ))}
         </dl>
       )}
+      {lists.map(([k, items]) => (
+        <div key={k}>
+          <div className="eyebrow mb-2">{label(k)}</div>
+          <ul className="list-disc space-y-1 pl-5 text-small text-ink-700">
+            {items.map((x, i) => (
+              <li key={i}>{x}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
       {tables.map(([k, rows]) => {
         const cols = Object.keys(rows[0]!);
         return (

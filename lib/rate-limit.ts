@@ -12,6 +12,7 @@ const LIMITS = {
   assistant: { limit: 20, windowSec: 60 },
   upload: { limit: 20, windowSec: 60 },
   write: { limit: 120, windowSec: 60 },
+  sign: { limit: 10, windowSec: 60 },
 } as const;
 export type Bucket = keyof typeof LIMITS;
 
@@ -52,4 +53,13 @@ export async function enforceRateLimit(user: Pick<CurrentUser, "id" | "tenantId"
   const window = Math.floor(Date.now() / (windowSec * 1000));
   const count = await hit(`rl:${user.tenantId}:${user.id}:${bucket}:${window}`, windowSec);
   if (count > limit) throw new HttpError(429, `Rate limit reached: ${limit} requests per minute for this action. Retry shortly.`);
+}
+
+/** Unauthenticated endpoints (public signing): limited per client address. */
+export async function enforcePublicRateLimit(req: Request, bucket: Bucket) {
+  const { limit, windowSec } = LIMITS[bucket];
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+  const window = Math.floor(Date.now() / (windowSec * 1000));
+  const count = await hit(`rl:public:${ip}:${bucket}:${window}`, windowSec);
+  if (count > limit) throw new HttpError(429, "Too many attempts. Retry in a minute.");
 }

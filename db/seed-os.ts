@@ -1,5 +1,7 @@
 import type { DB } from "@/db";
+import { seedDeals } from "./seed-deals";
 import { seedIndia } from "./seed-india";
+import { withSeedRuntime } from "./seed-runtime";
 
 export interface OsSeedTarget {
   tenantId: string;
@@ -19,5 +21,8 @@ export interface OsSeedTarget {
  */
 export async function seedTenantOs(db: DB, t: OsSeedTarget) {
   await seedIndia(db, t.tenantId, t.id);
-  return { india: true };
+  return withSeedRuntime(db, async () => {
+    const deals = await seedDeals(db, t);
+    return { india: true, ...deals };
+  });
 }

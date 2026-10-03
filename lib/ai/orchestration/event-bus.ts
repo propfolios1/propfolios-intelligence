@@ -27,6 +27,8 @@ export interface OsEventInput {
   clientId?: string | null;
   actor: string;
   payload?: Record<string, unknown>;
+  /** Event time (defaults to now; the seed back-dates events to match the records). */
+  at?: Date;
 }
 
 export type OsEvent = typeof s.osEvents.$inferSelect;
@@ -50,7 +52,7 @@ async function later(fn: () => Promise<void>) {
 export async function publish(db: DB, ev: OsEventInput, opts: { inline?: boolean } = {}): Promise<OsEvent> {
   const [row] = await db
     .insert(s.osEvents)
-    .values({ tenantId: ev.tenantId, type: ev.type, entityType: ev.entityType, entityId: ev.entityId, mandateId: ev.mandateId ?? null, dealId: ev.dealId ?? null, clientId: ev.clientId ?? null, actor: ev.actor, payload: ev.payload ?? {} })
+    .values({ tenantId: ev.tenantId, type: ev.type, entityType: ev.entityType, entityId: ev.entityId, mandateId: ev.mandateId ?? null, dealId: ev.dealId ?? null, clientId: ev.clientId ?? null, actor: ev.actor, payload: ev.payload ?? {}, ...(ev.at ? { createdAt: ev.at } : {}) })
     .returning();
   const work = () => dispatch(db, row!).then(() => undefined, (e: Error) => console.error(`event ${ev.type} dispatch failed`, e));
   if (opts.inline) await work();
