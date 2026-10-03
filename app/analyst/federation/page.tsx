@@ -48,7 +48,7 @@ export default async function AnalystFederation() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] text-small">
                   <thead>
-                    <tr className="text-left text-axis uppercase tracking-[0.12em] text-ink-500">
+                    <tr className="label-caps h-8 border-b border-hairline text-start">
                       <th className="py-2 font-normal">Segment</th>
                       <th className="py-2 text-right font-normal">Deals</th>
                       <th className="py-2 text-right font-normal">Gross yield</th>
@@ -58,7 +58,7 @@ export default async function AnalystFederation() {
                       <th className="py-2 pl-4 font-normal">Most frequent serious finding</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-hairline border-t border-hairline">
+                  <tbody className="divide-y divide-hairline-row">
                     {relevant.map((b) => (
                       <tr key={b.key}>
                         <td className="py-2.5 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>

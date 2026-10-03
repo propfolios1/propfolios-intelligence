@@ -8,15 +8,20 @@ export interface Column<T> {
   className?: string;
 }
 
-/** Dense bordered table with horizontal scroll on narrow screens; numeric columns right-aligned in mono. */
-export function SimpleTable<T>({ rows, columns, empty = "No records.", minWidth = 720, className }: { rows: T[]; columns: Column<T>[]; empty?: string; minWidth?: number; className?: string }) {
+/**
+ * Stripe-style table: no outer border, no cell borders, no zebra. Header 32px
+ * in 11px uppercase over a hairline; rows exactly 40px with a row hairline;
+ * 12px cell padding; numbers right-aligned in 13px mono. Scrolls sideways on
+ * narrow screens.
+ */
+export function SimpleTable<T>({ rows, columns, empty = "No records yet.", minWidth = 720, className }: { rows: T[]; columns: Column<T>[]; empty?: string; minWidth?: number; className?: string }) {
   return (
-    <div className={cn("overflow-x-auto rounded-md border border-hairline bg-surface shadow-card", className)}>
-      <table className="w-full text-small" style={{ minWidth }}>
-        <thead className="border-b border-hairline bg-navy-50 text-left">
-          <tr>
+    <div className={cn("overflow-x-auto", className)}>
+      <table className="w-full text-ui" style={{ minWidth }}>
+        <thead className="text-start">
+          <tr className="h-8 border-b border-hairline">
             {columns.map((c) => (
-              <th key={c.key} className={cn("px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase", c.numeric && "text-right")}>
+              <th key={c.key} className={cn("label-caps px-3 text-start align-middle whitespace-nowrap first:ps-0", c.numeric && "text-end")}>
                 {c.header}
               </th>
             ))}
@@ -25,15 +30,15 @@ export function SimpleTable<T>({ rows, columns, empty = "No records.", minWidth 
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-10 text-center text-ink-500">
+              <td colSpan={columns.length} className="py-8 text-start text-ui text-ink-500">
                 {empty}
               </td>
             </tr>
           ) : (
             rows.map((r, i) => (
-              <tr key={i} className="border-t border-hairline align-top first:border-t-0 hover:bg-navy-50/50">
-                {columns.map((c) => (
-                  <td key={c.key} className={cn("px-4 py-3 text-ink-700", c.numeric && "num text-right whitespace-nowrap text-ink-900", c.className)}>
+              <tr key={i} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
+                {columns.map((c, ci) => (
+                  <td key={c.key} className={cn("px-3 py-2 align-middle first:ps-0", ci === 0 ? "text-ink-900" : "text-ink-700", c.numeric && "num text-end text-mono whitespace-nowrap text-ink-900", c.className)}>
                     {c.cell(r)}
                   </td>
                 ))}
@@ -53,7 +58,7 @@ export function Section({ title, eyebrow, description, actions, children, classN
         <div>
           {eyebrow && <div className="eyebrow mb-2">{eyebrow}</div>}
           <h2 className="font-display text-section text-navy-900">{title}</h2>
-          {description && <p className="mt-1 max-w-[70ch] text-small text-ink-700">{description}</p>}
+          {description && <p className="mt-1 max-w-[70ch] text-small text-ink-500">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
       </div>

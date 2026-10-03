@@ -230,26 +230,26 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
                 ))}
               </div>
             )}
-            <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
+            <div className="overflow-x-auto">
               <table className="w-full min-w-[620px] text-small">
-                <thead className="bg-navy-50 text-left text-axis tracking-[0.06em] text-ink-500 uppercase">
+                <thead className="label-caps text-start">
                   <tr>
-                    <th className="px-4 py-2.5 font-medium">Item</th>
-                    <th className="px-4 py-2.5 font-medium">Payer</th>
-                    <th className="px-4 py-2.5 text-right font-medium">Amount</th>
-                    <th className="px-4 py-2.5 font-medium">Reference</th>
+                    <th className="h-8 px-3 font-medium">Item</th>
+                    <th className="h-8 px-3 font-medium">Payer</th>
+                    <th className="h-8 px-3 text-end font-medium">Amount</th>
+                    <th className="h-8 px-3 font-medium">Reference</th>
                   </tr>
                 </thead>
                 <tbody>
                   {quote.breakdown.lines.map((l, i) => (
-                    <tr key={i} className="border-t border-hairline align-top">
-                      <td className="px-4 py-3 text-ink-900">
+                    <tr key={i} className="h-10 border-b border-hairline-row align-top transition-colors duration-150 hover:bg-ink-50">
+                      <td className="px-3 py-2 text-ink-900">
                         {l.label}
                         {l.note && <div className="mt-1 text-ink-500">{l.note}</div>}
                       </td>
-                      <td className="px-4 py-3 text-ink-700">{l.payer}</td>
-                      <td className="num px-4 py-3 text-right text-ink-900">{formatLocal(l.amount, quote.breakdown.currency, { compact: false })}</td>
-                      <td className="px-4 py-3 text-ink-700">{l.reference}</td>
+                      <td className="px-3 py-2 text-ink-700">{l.payer}</td>
+                      <td className="num px-3 py-2 text-end text-mono text-ink-900">{formatLocal(l.amount, quote.breakdown.currency, { compact: false })}</td>
+                      <td className="px-3 py-2 text-ink-700">{l.reference}</td>
                     </tr>
                   ))}
                 </tbody>

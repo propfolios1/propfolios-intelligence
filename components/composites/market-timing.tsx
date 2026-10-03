@@ -68,13 +68,13 @@ export function MarketTiming({ regions }: { regions: string[] }) {
                 </div>
                 <table className="mt-2 w-full text-small">
                   <thead>
-                    <tr className="text-left text-axis uppercase tracking-[0.12em] text-ink-500">
+                    <tr className="label-caps h-8 border-b border-hairline text-start">
                       <th className="py-1 font-normal">Signal</th>
                       <th className="py-1 text-right font-normal">Times given</th>
                       <th className="py-1 text-right font-normal">Avg {result.backtest.horizonMonths}-month move</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-hairline border-t border-hairline">
+                  <tbody className="divide-y divide-hairline-row">
                     {result.backtest.bySignal.map((b) => (
                       <tr key={b.signal}>
                         <td className="py-1.5 text-ink-700">{b.signal}</td>

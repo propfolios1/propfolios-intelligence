@@ -48,7 +48,7 @@ export default async function PlatformFederation() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[620px] text-small">
                   <thead>
-                    <tr className="text-left text-axis uppercase tracking-[0.12em] text-ink-500">
+                    <tr className="label-caps h-8 border-b border-hairline text-start">
                       <th className="py-2 font-normal">Segment</th>
                       <th className="py-2 text-right font-normal">Deals / firms</th>
                       <th className="py-2 text-right font-normal">Yield</th>
@@ -57,7 +57,7 @@ export default async function PlatformFederation() {
                       <th className="py-2 text-right font-normal">Serious findings</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-hairline border-t border-hairline">
+                  <tbody className="divide-y divide-hairline-row">
                     {segments.map((b) => (
                       <tr key={b.key}>
                         <td className="py-2.5 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>

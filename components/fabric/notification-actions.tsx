@@ -38,10 +38,10 @@ export function PreferencesForm({ initial }: { initial: Pref[] }) {
     <div className="rounded-md border border-hairline bg-surface shadow-card">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-small">
-          <thead className="border-b border-hairline bg-navy-50 text-left">
+          <thead className="border-b border-hairline text-start">
             <tr>
               {["Category", "In app", "Email", "Delivery"].map((h) => (
-                <th key={h} className="px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase">
+                <th key={h} className="label-caps h-8 px-3">
                   {h}
                 </th>
               ))}
@@ -49,18 +49,18 @@ export function PreferencesForm({ initial }: { initial: Pref[] }) {
           </thead>
           <tbody>
             {prefs.map((p, i) => (
-              <tr key={p.category} className="border-t border-hairline first:border-t-0">
-                <td className="px-4 py-3">
+              <tr key={p.category} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
+                <td className="px-3 py-2">
                   <div className="text-ink-900">{p.label}</div>
                   <div className="text-axis text-ink-500">{p.note}</div>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <input type="checkbox" className="size-4 accent-[var(--navy-900)]" checked={p.inApp} onChange={(e) => set(i, { inApp: e.target.checked })} aria-label={`${p.label} in app`} />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <input type="checkbox" className="size-4 accent-[var(--navy-900)]" checked={p.email} onChange={(e) => set(i, { email: e.target.checked })} aria-label={`${p.label} by email`} />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <Select value={p.digest} disabled={!p.email} onChange={(e) => set(i, { digest: e.target.value as Pref["digest"] })} className="w-40" aria-label={`${p.label} delivery`}>
                     <option value="off">Immediately</option>
                     <option value="daily">Daily digest</option>
@@ -72,7 +72,7 @@ export function PreferencesForm({ initial }: { initial: Pref[] }) {
           </tbody>
         </table>
       </div>
-      <div className="flex justify-end border-t border-hairline px-4 py-3">
+      <div className="flex justify-end border-t border-hairline px-3 py-2">
         <Button
           disabled={busy}
           onClick={async () => {

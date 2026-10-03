@@ -34,14 +34,14 @@ export function FederatedBaselineCard({ baseline, assumptions }: { baseline: Bas
             </p>
             <table className="mt-4 w-full text-small">
               <thead>
-                <tr className="text-left text-axis uppercase tracking-[0.12em] text-ink-500">
+                <tr className="label-caps h-8 border-b border-hairline text-start">
                   <th className="py-2 font-normal">Assumption</th>
                   <th className="py-2 text-right font-normal">This deal</th>
                   <th className="py-2 text-right font-normal">Federation median</th>
                   <th className="py-2 text-right font-normal">Gap</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-hairline border-t border-hairline">
+              <tbody className="divide-y divide-hairline-row">
                 {ROWS.map((r) => {
                   const mine = assumptions[r.key] ?? 0;
                   const fed = baseline.data.medians[r.key];

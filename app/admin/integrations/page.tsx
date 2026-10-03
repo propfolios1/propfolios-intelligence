@@ -47,7 +47,7 @@ export default async function IntegrationsPage() {
         </thead>
         <tbody>
           {rows.map(([name, purpose, env, ok]) => (
-            <tr key={name} className="h-14 transition-[background-color] duration-120 hover:bg-ink-100">
+            <tr key={name} className="h-10 transition-colors duration-150 hover:bg-ink-50">
               <td className="border-b border-hairline text-ui text-ink-900">{name}</td>
               <td className="border-b border-hairline px-4 text-ui text-ink-700">{purpose}</td>
               <td className="num border-b border-hairline px-4 text-small text-ink-700">{env}</td>

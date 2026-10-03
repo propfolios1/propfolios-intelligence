@@ -68,12 +68,12 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
       {modules.map((m) => (
         <section key={m}>
           <h3 className="eyebrow mb-3">{m}</h3>
-          <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[860px] text-small">
-              <thead className="border-b border-hairline bg-navy-50 text-left">
+              <thead className="border-b border-hairline text-start">
                 <tr>
                   {["No.", "Agent", "Model", "Runs", "Avg cost / run", "Status", ""].map((h, i) => (
-                    <th key={i} className={cn("px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase", (i === 0 || i === 3 || i === 4) && "text-right")}>
+                    <th key={i} className={cn("label-caps h-8 px-3", (i === 0 || i === 3 || i === 4) && "text-right")}>
                       {h}
                     </th>
                   ))}
@@ -86,12 +86,12 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                     const on = !disabled.has(r.name);
                     const cost = r.avgUsd ?? r.estimateUsd;
                     return (
-                      <tr key={r.name} className="border-t border-hairline first:border-t-0">
-                        <td className="num px-4 py-3 text-right text-ink-500">{String(r.number).padStart(2, "0")}</td>
-                        <td className="px-4 py-3 text-ink-900">{r.label}</td>
-                        <td className="num px-4 py-3 text-axis text-ink-500">{r.model}</td>
-                        <td className="num px-4 py-3 text-right text-ink-900">{r.runs}</td>
-                        <td className="num px-4 py-3 text-right whitespace-nowrap">
+                      <tr key={r.name} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
+                        <td className="num px-3 py-2 text-end text-mono text-ink-500">{String(r.number).padStart(2, "0")}</td>
+                        <td className="px-3 py-2 text-ink-900">{r.label}</td>
+                        <td className="num px-3 py-2 text-axis text-ink-500">{r.model}</td>
+                        <td className="num px-3 py-2 text-end text-mono text-ink-900">{r.runs}</td>
+                        <td className="num px-3 py-2 text-end text-mono whitespace-nowrap">
                           {cost === null ? (
                             <span className="text-ink-400">Not run live</span>
                           ) : (
@@ -101,7 +101,7 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           {r.essential ? (
                             <span className="text-axis text-ink-500">Always on</span>
                           ) : (
@@ -121,7 +121,7 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                             </label>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-3 py-2 text-right">
                           {!r.essential && (
                             <Button
                               size="sm"

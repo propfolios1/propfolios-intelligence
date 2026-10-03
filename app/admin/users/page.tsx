@@ -44,12 +44,12 @@ export default async function UsersPage() {
       </div>
 
       <Section title="Access roles" description="Each person's base role decides which workspace they use; the access role inside it decides what they may do. Changes take effect on the next request and are recorded in the audit log.">
-        <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-small">
-            <thead className="border-b border-hairline bg-navy-50 text-left">
+            <thead className="border-b border-hairline text-start">
               <tr>
                 {["Person", "Workspace", "Access role", "Permissions"].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase">
+                  <th key={h} className="label-caps h-8 px-3">
                     {h}
                   </th>
                 ))}
@@ -61,16 +61,16 @@ export default async function UsersPage() {
                 const current = (u.accessRole ?? DEFAULT_ACCESS[base]) as AccessRole;
                 const options = FIRM_ROLES.filter((r) => BASE_ROLE[r] === base && (r !== "tenant_owner" || user.accessRole === "tenant_owner" || current === "tenant_owner")).map((r) => ({ value: r, label: ROLE_LABEL[r] }));
                 return (
-                  <tr key={u.id} className="border-t border-hairline first:border-t-0">
-                    <td className="px-4 py-3">
+                  <tr key={u.id} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
+                    <td className="px-3 py-2">
                       <div className="text-ink-900">{u.name}</div>
                       <div className="text-axis text-ink-500">{u.title ?? u.email}</div>
                     </td>
-                    <td className="px-4 py-3 text-ink-700">{base === "client" ? "Client portal" : base === "tenant_admin" ? "Administration" : "Analyst desk"}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 text-ink-700">{base === "client" ? "Client portal" : base === "tenant_admin" ? "Administration" : "Analyst desk"}</td>
+                    <td className="px-3 py-2">
                       <AccessRoleSelect userId={u.id} value={current} options={options} disabled={u.id === user.id || options.length < 2} />
                     </td>
-                    <td className="num px-4 py-3 text-ink-700">{MATRIX[current].length}</td>
+                    <td className="num px-3 py-2 text-ink-700">{MATRIX[current].length}</td>
                   </tr>
                 );
               })}
@@ -84,13 +84,13 @@ export default async function UsersPage() {
       </Section>
 
       <Section title="Permission matrix" description="What each firm role may do. Client roles apply inside the client portal only.">
-        <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[1080px] text-small">
-            <thead className="border-b border-hairline bg-navy-50 text-left">
+            <thead className="border-b border-hairline text-start">
               <tr>
-                <th className="sticky left-0 bg-navy-50 px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase">Permission</th>
+                <th className="sticky left-0 bg-navy-50 label-caps h-8 px-3">Permission</th>
                 {FIRM_ROLES.map((r) => (
-                  <th key={r} className="px-2 py-2.5 text-center text-axis font-medium tracking-[0.04em] text-ink-500 uppercase">
+                  <th key={r} className="label-caps h-8 px-2 text-center">
                     {ROLE_LABEL[r]}
                   </th>
                 ))}
@@ -101,7 +101,7 @@ export default async function UsersPage() {
                 .filter((p) => !p.startsWith("platform"))
                 .map((p) => (
                   <tr key={p} className="border-t border-hairline">
-                    <td className="sticky left-0 bg-surface px-4 py-2 text-ink-700">{PERMISSIONS[p]}</td>
+                    <td className="sticky left-0 bg-canvas px-3 py-2 text-ink-700">{PERMISSIONS[p]}</td>
                     {FIRM_ROLES.map((r) => (
                       <td key={r} className="px-2 py-2 text-center">
                         <span className={cn("inline-block size-2 rounded-full", MATRIX[r].includes(p) ? "bg-navy-900" : "bg-ink-200")} aria-label={MATRIX[r].includes(p) ? "Allowed" : "Not allowed"} />

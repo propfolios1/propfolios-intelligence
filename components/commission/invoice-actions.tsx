@@ -110,9 +110,9 @@ export function ReconcilePanel() {
         </div>
       </div>
       {preview && (
-        <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-small">
-            <thead className="bg-navy-50 text-left text-axis tracking-[0.06em] text-ink-500 uppercase">
+            <thead className="label-caps text-start">
               <tr>
                 <th className="px-4 py-2">Line</th>
                 <th className="px-4 py-2">Date</th>
@@ -167,7 +167,7 @@ export function TaxReportPanel() {
           <table className="mt-3 w-full text-small">
             <tbody>
               {report.data.rows.map((r) => (
-                <tr key={r.label} className="border-t border-hairline first:border-t-0">
+                <tr key={r.label} className="h-10 border-b border-hairline-row transition-colors duration-150 hover:bg-ink-50">
                   <td className="py-2 pr-4 text-ink-700">{r.label}</td>
                   <td className="num py-2 text-right text-ink-900">
                     {report.data.currency} {Math.round(r.amount).toLocaleString(report.data.currency === "INR" ? "en-IN" : "en-US")}
