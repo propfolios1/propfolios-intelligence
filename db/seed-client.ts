@@ -21,7 +21,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 export async function seedClientLayer(db: DB, t: { tenantId: string; id: (k: string) => string }) {
   const actor = { tenantId: t.tenantId, name: "Scheduler" };
   const cid = (k: string) => t.id(`client:${k}`);
-  const [done] = await db.select({ id: s.kycRecords.id }).from(s.kycRecords).where(and(eq(s.kycRecords.tenantId, t.tenantId), eq(s.kycRecords.clientId, cid("ahmed"))));
+  const [done] = await db.select({ id: s.statements.id }).from(s.statements).where(and(eq(s.statements.tenantId, t.tenantId), eq(s.statements.clientId, cid("ahmed")))).limit(1);
   if (done) return { client: 0 };
   const now = Date.now();
   const verified = async (key: string, opts: { expiresInDays: number; sof: string; pep?: boolean; status?: "verified" | "in_review" }) => {

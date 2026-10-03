@@ -100,3 +100,53 @@ export async function seedDeals(db: DB, t: { tenantId: string; slug?: string; id
   }
   return { deals: 4 };
 }
+
+/**
+ * One complete journey per tenant, end to end through the event bus:
+ * mandate MND-0001 (created, researched, approved) becomes a deal on the
+ * recommended Burj Crown unit, which is negotiated, signed, closed,
+ * commissioned, invoiced and paid. Skipped once the mandate has a deal.
+ */
+export async function seedJourney(db: DB, t: { tenantId: string; slug?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
+  const [m] = await db.select().from(s.mandates).where(and(eq(s.mandates.tenantId, t.tenantId), eq(s.mandates.reference, "MND-0001")));
+  if (!m || m.status !== "DELIVERED") return { journeys: 0 };
+  const [linked] = await db.select({ id: s.deals.id }).from(s.deals).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.mandateId, m.id))).limit(1);
+  if (linked) return { journeys: 0 };
+  const { publish } = await import("@/lib/ai/orchestration/event-bus");
+  const { recordPayment } = await import("@/lib/commission/service");
+  const name = t.staff ? "Aisha Rahman" : "Advisory team";
+  const a = { tenantId: t.tenantId, name, id: (t.staff ? t.id("user:aisha") : t.adminUserId) ?? undefined };
+  const c = { id: t.id("client:ahmed"), ...CLIENTS.find((x) => x.key === "ahmed")! };
+  const stageDone = (stage: string) => {
+    const r = m.timeline.find((x) => x.stage === stage);
+    return r?.completedAt ? new Date(r.completedAt) : null;
+  };
+  const created = m.createdAt;
+  const researched = stageDone("RESEARCH") ?? new Date(created.getTime() + 4 * 3_600_000);
+  // Back-dated so the whole journey, payment included, sits before today.
+  const delivered = new Date(Math.min((stageDone("DELIVERED") ?? m.deliveredAt ?? new Date(created.getTime() + DAY)).getTime(), Date.now() - 21 * DAY));
+  const href = `/analyst/mandates/${m.id}`;
+  const base = { tenantId: t.tenantId, entityType: "mandate" as const, entityId: m.id, mandateId: m.id, clientId: m.clientId };
+  await publish(db, { ...base, type: "mandate.created", actor: name, payload: { label: `${m.reference}: ${m.title}`, href }, at: created }, { inline: true });
+  await publish(db, { ...base, type: "mandate.researched", actor: "Pipeline", payload: { label: `${m.reference}: research complete`, href: `${href}?tab=research` }, at: researched }, { inline: true });
+  await publish(db, { ...base, type: "mandate.approved", actor: name, payload: { label: `${m.reference}: memo approved and delivered`, href: `${href}/journey` }, at: delivered }, { inline: true });
+
+  const at = (days: number) => new Date(delivered.getTime() + days * DAY);
+  const d = await createDeal(db, a, { clientId: m.clientId, propertyId: m.propertyId, mandateId: m.id, side: "buy", value: 2_960_000, counterparty: "Marcus and Helen Whitfield", ownerUserId: a.id ?? null, notes: "Two-bedroom on the 31st floor, Burj Khalifa view, the unit recommended in the Allocation Memo. Sellers relocating to Singapore.", targetCloseDate: at(20).toISOString().slice(0, 10) }, { inline: true, createdAt: at(1) });
+  const o1 = await createOffer(db, a, d.id, { type: "offer", party: "buyer", amount: 2_820_000, submit: true, terms: { depositPct: 10, completionDays: 30, conditions: ["Developer NOC", "Tenancy vacated at transfer"] } }, { inline: true, at: at(2) });
+  const o2 = await createOffer(db, a, d.id, { type: "counter", party: "seller", amount: 3_010_000, submit: true, parentOfferId: o1.id, terms: { depositPct: 10, completionDays: 30 } }, { inline: true, at: at(3) });
+  const o3 = await createOffer(db, a, d.id, { type: "final", party: "buyer", amount: 2_960_000, submit: true, parentOfferId: o2.id, terms: { depositPct: 10, completionDays: 30, conditions: ["Developer NOC", "Tenancy vacated at transfer"] } }, { inline: true, at: at(4) });
+  await respondOffer(db, a, o3.id, "accepted", "Accepted at the memo's P50 entry price.", at(5));
+  const k = await generateContract(db, a, d.id, "form_f", at(5));
+  await sendForSignature(db, a, k.id, [{ party: "buyer", name: c.name, email: c.email }, { party: "seller", name: "Marcus Whitfield", email: "marcus.whitfield@counterparty.example" }], { at: at(6), skipEmail: true, forceNative: true });
+  await signAllForSeed(db, t.tenantId, k.id, at(6));
+  const items = await db.select().from(s.closingChecklists).where(and(eq(s.closingChecklists.tenantId, t.tenantId), eq(s.closingChecklists.dealId, d.id)));
+  for (const it of items) await updateChecklistItem(db, a, it.id, "done");
+  const pays = await db.select().from(s.paymentsSchedule).where(and(eq(s.paymentsSchedule.tenantId, t.tenantId), eq(s.paymentsSchedule.dealId, d.id)));
+  for (const p of pays) await updatePayment(db, a, p.id, { status: "paid", reference: `ENBD-${p.milestone.slice(0, 3).toUpperCase()}-7720` });
+  await closeDeal(db, a, d.id, { inline: true, at: at(14) });
+  const [inv] = await db.select().from(s.invoices).where(and(eq(s.invoices.tenantId, t.tenantId), eq(s.invoices.dealId, d.id))).limit(1);
+  if (inv && inv.status !== "paid") await recordPayment(db, a, inv.id, { amount: inv.total, method: "bank_transfer", reference: "ENBD-FT-2609-4418", receivedAt: at(19) }, { inline: true });
+  await runDealAgent(db, a, d.id, "deal-predictor");
+  return { journeys: 1 };
+}
