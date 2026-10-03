@@ -3,6 +3,7 @@ import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
 import { Agents } from "@/components/home/agents";
 import { Hero } from "@/components/home/hero";
+import { Markets } from "@/components/home/markets";
 import { Modules } from "@/components/home/modules";
 import { Numbers } from "@/components/home/numbers";
 import { Problem } from "@/components/home/problem";
@@ -55,6 +56,7 @@ export default async function Landing() {
         <Problem />
         <Modules />
         <Agents />
+        <Markets />
       </main>
     </AccessProvider>
   );
