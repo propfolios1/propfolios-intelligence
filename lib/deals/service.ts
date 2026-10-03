@@ -51,6 +51,8 @@ export async function setStage(db: DB, actor: Actor, dealId: string, stage: Deal
     .where(scope(s.dealStages, actor.tenantId, eq(s.dealStages.dealId, dealId), sql`${s.dealStages.order} < ${to}`, sql`${s.dealStages.completedAt} is null`));
   await db.update(s.dealStages).set({ enteredAt: now, notes: notes ?? null }).where(scope(s.dealStages, actor.tenantId, eq(s.dealStages.dealId, dealId), eq(s.dealStages.name, stage)));
   const [u] = await db.update(s.deals).set({ stage }).where(scope(s.deals, actor.tenantId, eq(s.deals.id, dealId))).returning();
+  const { factsFor, runAutomations } = await import("@/lib/os/automations");
+  await runAutomations(db, actor.tenantId, "deal.stage_changed", await factsFor(db, actor.tenantId, { dealId, label: `${d.reference} moved to ${stage}`, href: `/analyst/deals/${dealId}` }));
   return u!;
 }
 

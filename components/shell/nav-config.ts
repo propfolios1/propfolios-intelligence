@@ -60,10 +60,20 @@ export const NAV: Record<Area, NavSection[]> = {
       ],
     },
     {
+      title: "Reporting",
+      items: [
+        { href: "/client/reports", label: "Reports" },
+        { href: "/client/statements", label: "Statements" },
+        { href: "/client/goals", label: "Goals", key: "g" },
+        { href: "/client/private-banking", label: "Private banking" },
+      ],
+    },
+    {
       title: "Workspace",
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
         { href: "/client/invoices", label: "Invoices" },
+        { href: "/client/tax-documents", label: "Tax documents" },
         { href: "/client/india", label: "India" },
         { href: "/client/nri", label: "NRI plan" },
         { href: "/client/messages", label: "Messages", key: "m" },
@@ -86,6 +96,13 @@ export const NAV: Record<Area, NavSection[]> = {
       items: [
         { href: "/admin/commissions", label: "Commissions", key: "c" },
         { href: "/admin/invoices", label: "Invoices", key: "v" },
+      ],
+    },
+    {
+      title: "Clients",
+      items: [
+        { href: "/admin/kyc", label: "KYC and AML", key: "k" },
+        { href: "/admin/reports", label: "Reports", key: "r" },
       ],
     },
     {
@@ -151,6 +168,12 @@ export const SEGMENT_LABEL: Record<string, string> = {
   commissions: "Commissions",
   structures: "Structures",
   invoices: "Invoices",
+  kyc: "KYC",
+  reports: "Reports",
+  statements: "Statements",
+  goals: "Goals",
+  "tax-documents": "Tax documents",
+  "private-banking": "Private banking",
 };
 
 export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };

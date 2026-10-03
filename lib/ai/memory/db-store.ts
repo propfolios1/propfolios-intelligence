@@ -14,6 +14,8 @@ const toRecord = (r: typeof s.agentMemories.$inferSelect): MemoryRecord => ({
   updatedAt: r.updatedAt.toISOString(),
 });
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** agent_memories in Postgres. Every read and write is scoped to the tenant. */
 export function dbMemoryStore(db: DB): MemoryStore {
   return {
@@ -29,7 +31,7 @@ export function dbMemoryStore(db: DB): MemoryStore {
       const where: SQL[] = [eq(s.agentMemories.tenantId, tenantId)];
       if (filter.agentName) where.push(eq(s.agentMemories.agentName, filter.agentName));
       if (filter.memoryType) where.push(eq(s.agentMemories.memoryType, filter.memoryType));
-      if (filter.entityId !== undefined) where.push(filter.entityId === null ? isNull(s.agentMemories.entityId) : eq(s.agentMemories.entityId, filter.entityId));
+      if (filter.entityId !== undefined) where.push(filter.entityId === null ? isNull(s.agentMemories.entityId) : eq(s.agentMemories.scopeKey, filter.entityId));
       const rows = await db.select().from(s.agentMemories).where(and(...where)).orderBy(desc(s.agentMemories.updatedAt)).limit(500);
       return rows.map(toRecord);
     },
@@ -37,7 +39,7 @@ export function dbMemoryStore(db: DB): MemoryStore {
       const values = { memory: value.memory, confidence: value.confidence ?? null, sampleSize: value.sampleSize ?? null, updatedAt: new Date() };
       await db
         .insert(s.agentMemories)
-        .values({ tenantId: key.tenantId, agentName: key.agentName, memoryType: key.memoryType, entityId: key.entityId ?? null, scopeKey: scopeKey(key.entityId), ...values })
+        .values({ tenantId: key.tenantId, agentName: key.agentName, memoryType: key.memoryType, entityId: key.entityId && UUID.test(key.entityId) ? key.entityId : null, scopeKey: scopeKey(key.entityId), ...values })
         .onConflictDoUpdate({ target: [s.agentMemories.tenantId, s.agentMemories.agentName, s.agentMemories.memoryType, s.agentMemories.scopeKey], set: values });
     },
   };

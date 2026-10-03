@@ -70,6 +70,20 @@ const collections: EventHandler = {
   },
 };
 
+/** Wraps a client agent; the client comes from the event. */
+function clientAgent(agent: "kyc-analyzer" | "aml-screener" | "client-success-agent" | "goal-tracker"): EventHandler {
+  return {
+    agent,
+    skipReason: "No client on the event.",
+    run: async (db, ev) => {
+      if (!ev.clientId) return null;
+      const { CLIENT_AGENT_RUNNERS } = await import("@/lib/client/agents");
+      const r = await CLIENT_AGENT_RUNNERS[agent](db, system(ev), ev.clientId);
+      return { costUsd: r.costUsd, summary: r.output.headline };
+    },
+  };
+}
+
 /**
  * Which agents each OS event triggers (one to three per event), in order.
  * Commission, client and BI handlers are registered by their modules below.
@@ -78,7 +92,10 @@ export const HANDLERS: Partial<Record<OsEventType, EventHandler[]>> = {
   "deal.created": [dealAgent("deal-predictor"), dealAgent("offer-strategist"), dealAgent("closing-coordinator")],
   "deal.offer_sent": [dealAgent("negotiation-coach"), dealAgent("deal-predictor")],
   "deal.contract_signed": [dealAgent("closing-coordinator"), dealAgent("payment-reminder"), dealAgent("deal-predictor")],
-  "deal.closed": [commissionChain],
+  "mandate.created": [clientAgent("kyc-analyzer"), clientAgent("goal-tracker")],
+  "mandate.researched": [clientAgent("aml-screener")],
+  "mandate.approved": [clientAgent("client-success-agent")],
+  "deal.closed": [commissionChain, clientAgent("client-success-agent")],
   "commission.computed": [commissionAgent("anomaly-detector"), commissionAgent("tax-advisor")],
   "invoice.paid": [collections],
 };

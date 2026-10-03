@@ -1,4 +1,5 @@
 import type { DB } from "@/db";
+import { seedClientLayer } from "./seed-client";
 import { seedCommissions } from "./seed-commission";
 import { seedDeals } from "./seed-deals";
 import { seedIndia } from "./seed-india";
@@ -25,6 +26,7 @@ export async function seedTenantOs(db: DB, t: OsSeedTarget) {
   return withSeedRuntime(db, async () => {
     const commissions = await seedCommissions(db, t);
     const deals = await seedDeals(db, t);
-    return { india: true, ...deals, ...commissions };
+    const client = await seedClientLayer(db, t);
+    return { india: true, ...deals, ...commissions, ...client };
   });
 }
