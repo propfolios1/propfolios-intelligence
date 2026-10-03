@@ -19,7 +19,7 @@ export default async function ClientStatements() {
     <PageContainer>
       <PageHeader eyebrow="Reporting" title="Statements" subtitle="Your monthly statement: rent received, costs paid and the value of each holding, issued on the first of each month." />
       <div className="mt-8 space-y-8">
-        {!p?.statements.length && <EmptyState glyph="documents" headline="No statements yet." />}
+        {!p?.statements.length && <EmptyState glyph="documents" headline="No statements yet" note="A statement of value, income and movements is issued on the first of each month for the month before." primary={{ label: "View portfolio", href: "/client/portfolio" }} secondary={{ label: "View reports", href: "/client/reports" }} />}
         {p?.statements.map((st) => (
           <article key={st.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card">
             <div className="flex flex-wrap items-baseline justify-between gap-3">

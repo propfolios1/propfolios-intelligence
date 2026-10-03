@@ -18,7 +18,7 @@ export default async function ClientInvoices() {
     <PageContainer>
       <PageHeader eyebrow="Account" title="Invoices" subtitle="Advisory fees invoiced to you, with the tax shown. Transfer quoting the invoice number; your adviser confirms receipt." />
       <div className="mt-4 space-y-2">
-        {rows.length === 0 && <EmptyState glyph="documents" headline="No invoices." className="mt-8" />}
+        {rows.length === 0 && <EmptyState glyph="documents" headline="No invoices" note="Advisory fees are invoiced when a transaction completes, with VAT or GST shown separately. Each invoice appears here with its payment status." primary={{ label: "View transactions", href: "/client/deals" }} secondary={{ label: "View tax documents", href: "/client/tax-documents" }} />}
         {rows.map((r) => (
           <InvoiceDocument key={r.invoice.id} invoice={r.invoice} firm={t?.name ?? ""} dealReference={r.deal} />
         ))}

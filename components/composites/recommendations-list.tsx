@@ -39,7 +39,7 @@ export function RecommendationsList({ items, assistantHref = "/client/assistant"
     });
   }
 
-  if (!shown.length) return <EmptyState className="mt-8" glyph="opportunities" headline="No open recommendations." note="New recommendations appear when your advisory team or the recommender agent identifies an action." />;
+  if (!shown.length) return <EmptyState glyph="opportunities" headline="No open recommendations" note="New recommendations appear when your advisory team or the recommender agent identifies an action." primary={{ label: "View portfolio", href: "/client/portfolio" }} secondary={{ label: "View opportunities", href: "/client/opportunities" }} />;
   return (
     <ol className="mt-6 flex max-w-[900px] flex-col gap-4">
       {shown.map((r, i) => (

@@ -47,7 +47,7 @@ export function MemosTable({ rows, base = "/analyst/memos" }: { rows: MemoRow[];
           <div className="text-small text-ink-500">{r.clientName}</div>
         </div>
       )}
-      empty={{ glyph: "documents", headline: "No memos yet. Memos appear when a mandate reaches the memo stage." }}
+      empty={{ glyph: "documents", headline: "No memos yet", note: "The memo agent writes an Allocation Memo in your house style once a mandate clears research, underwriting, due diligence and debate.", primary: { label: "Create mandate", href: "/analyst/mandates/new" }, secondary: { label: "View mandates", href: "/analyst/mandates" } }}
     />
   );
 }

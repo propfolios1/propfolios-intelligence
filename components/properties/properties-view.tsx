@@ -143,7 +143,7 @@ export function PropertiesView({ rows, basePath = "/analyst/properties" }: { row
                 </div>
               </div>
             )}
-            empty={{ glyph: "opportunities", headline: "No properties match these filters." }}
+            empty={{ glyph: "opportunities", headline: "No properties match these filters", note: "Widen the price band or clear the market filter. Fifty-five projects across Dubai, Abu Dhabi, Mumbai and Goa are on file.", primary: { label: "Clear filters", href: "/analyst/properties" }, secondary: { label: "Open the India desk", href: "/analyst/india" } }}
           />
         )}
       </div>

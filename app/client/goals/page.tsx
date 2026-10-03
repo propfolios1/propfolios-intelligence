@@ -19,7 +19,7 @@ export default async function ClientGoals() {
     <PageContainer>
       <PageHeader eyebrow="Planning" title="Your goals" subtitle="The objectives you set with your advisers, measured against your portfolio as it stands today." />
       <div className="mt-8 grid gap-4 md:grid-cols-2">
-        {!p?.goals.length && <EmptyState glyph="opportunities" headline="No goals set yet. Your adviser will agree them with you at your next review." />}
+        {!p?.goals.length && <EmptyState glyph="opportunities" headline="No goals set yet" note="Your adviser agrees target value, income and allocation goals with you at your next review, then tracks progress here every month." primary={{ label: "Message your adviser", href: "/client/messages" }} secondary={{ label: "View portfolio", href: "/client/portfolio" }} />}
         {p?.goals.map((g) => (
           <article key={g.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
             <div className="eyebrow">{g.goalType}</div>

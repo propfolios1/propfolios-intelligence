@@ -45,7 +45,7 @@ export default async function ClientDocuments() {
               </div>
             </section>
           )}
-          {docs.length === 0 && <EmptyState glyph="documents" headline="No documents yet." />}
+          {docs.length === 0 && <EmptyState glyph="documents" headline="No documents yet" note="Memos, contracts, title documents and statements your adviser shares with you are filed here, newest first." primary={{ label: "View reports", href: "/client/reports" }} secondary={{ label: "Message your adviser", href: "/client/messages" }} />}
           {types.map((t) => (
             <section key={t} className="mb-10">
               <h2 className="eyebrow mb-3">{DOC_TYPE_LABEL[t] ?? t}</h2>

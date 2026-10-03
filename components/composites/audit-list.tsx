@@ -109,7 +109,7 @@ export function AuditList({ events, showMandate = false, dense = false, advanced
         </div>
       )}
       {filtered.length === 0 ? (
-        <EmptyState glyph="documents" headline="No events match this filter." />
+        <EmptyState glyph="documents" headline="No events match this filter" note="Every agent run, approval and change is recorded here with its actor, time and cost. Widen the filter to see more." compact />
       ) : (
         <ol className="border-t border-hairline">
           {filtered.map((e) => {

@@ -13,12 +13,12 @@ import {
 } from "@tanstack/react-table";
 import { ChevronRight, MoreHorizontal, type LucideIcon } from "lucide-react";
 import * as React from "react";
-import type { GlyphName } from "@/components/illustrations/empty-glyphs";
+import type { GlyphName } from "./empty-state";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { EmptyState } from "./empty-state";
+import { EmptyState, type EmptyAction } from "./empty-state";
 
 declare module "@tanstack/react-table" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -67,7 +67,7 @@ export function DataTable<T>({
   initialSorting?: SortingState;
   globalFilter?: string;
   showFilters?: boolean;
-  empty?: { glyph: GlyphName; headline: string; action?: React.ReactNode };
+  empty?: { glyph: GlyphName; headline: string; note?: string; action?: React.ReactNode; primary?: EmptyAction; secondary?: EmptyAction };
   className?: string;
   maxHeight?: string;
   /** On small screens, render rows as cards instead of a table. */
@@ -163,7 +163,7 @@ export function DataTable<T>({
               )}
             </li>
           ))}
-          {!loading && rows.length === 0 && <EmptyState glyph={empty?.glyph ?? "mandates"} headline={empty?.headline ?? "No rows match these filters."} action={empty?.action} />}
+          {!loading && rows.length === 0 && <EmptyState glyph={empty?.glyph ?? "mandates"} headline={empty?.headline ?? "No rows match these filters"} note={empty?.note ?? "Clear a filter or widen the search to see more."} action={empty?.action} primary={empty?.primary} secondary={empty?.secondary} compact />}
         </ul>
       )}
       <div className={cn("scrollbar-thin overflow-auto", mobileCard && "hidden md:block")} style={{ maxHeight }}>
@@ -284,7 +284,7 @@ export function DataTable<T>({
                 ))}
           </tbody>
         </table>
-        {!loading && rows.length === 0 && <EmptyState glyph={empty?.glyph ?? "mandates"} headline={empty?.headline ?? "No rows match these filters."} action={empty?.action} />}
+        {!loading && rows.length === 0 && <EmptyState glyph={empty?.glyph ?? "mandates"} headline={empty?.headline ?? "No rows match these filters"} note={empty?.note ?? "Clear a filter or widen the search to see more."} action={empty?.action} primary={empty?.primary} secondary={empty?.secondary} compact />}
       </div>
       {!loading && allRows.length > 0 && (
         <div className={cn("flex h-10 items-center justify-between", mobileCard && "hidden md:flex")}>

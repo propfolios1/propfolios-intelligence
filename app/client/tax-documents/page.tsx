@@ -21,7 +21,7 @@ export default async function ClientTaxDocuments() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Tax" title="Tax documents" subtitle="Annual statements for your returns in the UAE and India, and tax invoices for fees paid. Prepared each April for the previous year; confirm with your tax adviser before filing." />
-      {!p?.taxDocs.length && <EmptyState className="mt-8" glyph="documents" headline="No tax documents yet." />}
+      {!p?.taxDocs.length && <EmptyState glyph="documents" headline="No tax documents yet" note="Annual rental income, capital gains and TDS summaries are prepared each April for the year just ended, for the UAE and India." primary={{ label: "View statements", href: "/client/statements" }} secondary={{ label: "View invoices", href: "/client/invoices" }} />}
       {p?.taxDocs.map((d) => (
         <Section key={d.id} title={d.title} eyebrow={`${d.jurisdiction} · ${d.year}`}>
           <SimpleTable

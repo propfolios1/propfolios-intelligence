@@ -19,7 +19,7 @@ export default async function PortfolioPage() {
   if (!user.clientId) {
     return (
       <PageContainer>
-        <EmptyState glyph="documents" headline="No client record is linked to this account." note="Ask your relationship manager to link your account." />
+        <EmptyState glyph="documents" headline="No client record is linked to this account" note="Your relationship manager links your login to your client record. Once linked, your holdings, reports and statements appear here." primary={{ label: "Message your adviser", href: "/client/messages" }} secondary={{ label: "Account settings", href: "/client/settings" }} />
       </PageContainer>
     );
   }

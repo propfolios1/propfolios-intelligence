@@ -10,7 +10,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
     <div className="mx-auto flex min-h-[60dvh] max-w-[1440px] items-center px-6 md:px-12 xl:px-20" role="alert">
       <EmptyState
         glyph="documents"
-        headline="This page could not be loaded."
+        headline="This page could not be loaded"
         note={`The error has been logged${error.digest ? ` (reference ${error.digest})` : ""}. Retry, or return to the dashboard.`}
         action={
           <div className="flex gap-2">

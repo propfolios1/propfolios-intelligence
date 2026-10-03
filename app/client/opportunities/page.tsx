@@ -27,7 +27,7 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
     <PageContainer>
       <PageHeader eyebrow="Screened against your investment policy" title="Opportunities" subtitle={`${lots.length} projects in ${markets.join(" and ")} that you do not already hold, ranked by gross yield.${q ? ` Filtered by “${q}”.` : ""}`} />
       {lots.length === 0 ? (
-        <EmptyState glyph="opportunities" headline="No opportunities match your policy." />
+        <EmptyState glyph="opportunities" headline="No opportunities match your policy" note="Nothing currently on file fits your allocation policy and return hurdle. New launches are screened against it as they arrive." primary={{ label: "View recommendations", href: "/client/recommendations" }} secondary={{ label: "Message your adviser", href: "/client/messages" }} />
       ) : (
         <ul className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {lots.map((p) => (

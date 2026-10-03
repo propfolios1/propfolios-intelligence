@@ -18,7 +18,7 @@ export default async function ClientReports() {
     <PageContainer>
       <PageHeader eyebrow="Reporting" title="Reports" subtitle="Quarterly reviews and annual letters from your advisers on performance, allocation and your goals." />
       <div className="mt-8 space-y-6">
-        {!p?.reports.length && <EmptyState glyph="documents" headline="No reports yet. Your first quarterly report arrives at the start of next quarter." />}
+        {!p?.reports.length && <EmptyState glyph="documents" headline="No reports yet" note="Your first quarterly report arrives at the start of next quarter: performance, income, valuations and the outlook for each holding." primary={{ label: "View statements", href: "/client/statements" }} secondary={{ label: "View portfolio", href: "/client/portfolio" }} />}
         {p?.reports.map((r) => (
           <article key={r.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card md:p-10">
             <div className="eyebrow">

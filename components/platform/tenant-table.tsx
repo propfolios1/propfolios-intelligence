@@ -75,7 +75,7 @@ export function TenantTable({ rows }: { rows: TenantRow[] }) {
           </div>
         </div>
       )}
-      empty={{ glyph: "mandates", headline: "No tenants yet." }}
+      empty={{ glyph: "mandates", headline: "No firms on the platform yet", note: "Firms join through self-serve sign-up, or you can create one with its plan, branding and administrator.", primary: { label: "Create tenant", href: "/platform/tenants/new" }, secondary: { label: "View pricing", href: "/pricing" } }}
     />
   );
 }

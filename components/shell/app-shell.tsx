@@ -81,7 +81,7 @@ export async function AppShell({ area, children }: { area: Area; children: React
   if (area === "client" && user.role === "client" && !(await tenantFeatures(user.tenantId)).clientPortal) {
     return (
       <div className="mx-auto flex min-h-dvh max-w-[960px] items-center px-6">
-        <EmptyState glyph="documents" headline="Your advisory firm has not enabled the client portal." note="Statements and memos continue to reach you from your relationship manager. Contact them to request portal access." />
+        <EmptyState glyph="documents" headline="The client portal is not enabled for your firm" note="Statements and memos continue to reach you from your relationship manager by email. Ask them to enable portal access." primary={{ label: "Return to sign-in", href: "/sign-in" }} secondary={{ label: "About Nakhla", href: "/" }} />
       </div>
     );
   }

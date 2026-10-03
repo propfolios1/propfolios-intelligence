@@ -1,10 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/form";
 import { Segmented } from "@/components/ui/segmented";
 import { toast } from "@/components/ui/toaster";
@@ -145,12 +143,12 @@ export function MandatesView({ rows, clients }: { rows: MandateRowView[]; client
           )}
           empty={{
             glyph: "mandates",
-            headline: rows.length ? "No mandates match these filters." : "No mandates yet.",
-            action: (
-              <Button asChild>
-                <Link href="/analyst/mandates/new">Create Mandate</Link>
-              </Button>
-            ),
+            headline: rows.length ? "No mandates match these filters" : "No mandates yet",
+            note: rows.length
+              ? "Clear a filter to see every mandate in the pipeline."
+              : "Create your first mandate and Nakhla produces research, underwriting, due diligence, a bull and bear debate and a client-ready memo in under fifteen minutes.",
+            primary: { label: "Create mandate", href: "/analyst/mandates/new" },
+            secondary: { label: "Browse properties", href: "/analyst/properties" },
           }}
         />
       )}

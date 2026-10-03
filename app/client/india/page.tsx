@@ -22,7 +22,7 @@ export default async function ClientIndiaPage() {
       <PageHeader eyebrow="India" title="Your India holdings" subtitle="Regulatory standing of each Indian property and a calculator for acquisition costs in Mumbai and Goa. Figures are computed from dated rates; your advisor confirms them before any transaction." actions={<Link href="/client/nri" className="text-small text-navy-900 underline decoration-ink-200 underline-offset-4">NRI purchase and sale plan</Link>} />
       <Section title="Holdings">
         {rows.length === 0 ? (
-          <EmptyState glyph="opportunities" headline="No Indian holdings on record." note="Your advisor can model an Indian acquisition with the calculator below." />
+          <EmptyState glyph="opportunities" headline="No Indian holdings on record" note="Model an acquisition in Mumbai or Goa with the calculator below: stamp duty, registration, TDS and repatriation, before you commit." primary={{ label: "Open the NRI plan", href: "/client/nri" }} secondary={{ label: "Message your adviser", href: "/client/messages" }} compact />
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {rows.map((r) => (

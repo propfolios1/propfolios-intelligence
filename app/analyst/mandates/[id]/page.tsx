@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 function Pending({ stage }: { stage: string }) {
-  return <EmptyState glyph="mandates" headline={`The ${stage.toLowerCase()} agent has not run yet.`} note="Run or resume the agents from the controls above. This tab fills in as soon as the stage completes." />;
+  return <EmptyState glyph="mandates" headline={`The ${stage.toLowerCase()} agent has not run yet`} note="Run or resume the pipeline from the controls above. This tab fills in the moment the stage completes, with its sources and cost." secondary={{ label: "View the audit trail", href: "?tab=audit" }} compact />;
 }
 
 /** Compares every key metric in the memo with the engine's figures. */

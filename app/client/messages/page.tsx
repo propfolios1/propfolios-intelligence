@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MessagesPage() {
   const user = await requireRole(["tenant_admin", "analyst", "client"]);
-  if (!user.clientId) return <PageContainer><EmptyState glyph="documents" headline="No client record is linked to this account." /></PageContainer>;
+  if (!user.clientId) return <PageContainer><EmptyState glyph="documents" headline="No client record is linked to this account" note="Messages are kept against your client record. Ask your relationship manager to link your login." primary={{ label: "View portfolio", href: "/client/portfolio" }} secondary={{ label: "Account settings", href: "/client/settings" }} /></PageContainer>;
   const msgs = await listMessages(await getDb(), user, user.clientId);
   return (
     <PageContainer className="max-w-[960px]">

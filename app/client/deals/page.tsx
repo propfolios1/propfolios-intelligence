@@ -20,7 +20,7 @@ export default async function ClientDeals() {
     <PageContainer>
       <PageHeader eyebrow="Transactions" title="Your transactions" subtitle="Each purchase or sale your advisers are running for you, the stage it has reached and what comes next." />
       <div className="mt-8 space-y-4">
-        {rows.length === 0 && <EmptyState glyph="mandates" headline="No transactions in progress." />}
+        {rows.length === 0 && <EmptyState glyph="mandates" headline="No transactions in progress" note="When your adviser opens a purchase or sale for you, every offer, contract, signature and payment appears here as it happens." primary={{ label: "View opportunities", href: "/client/opportunities" }} secondary={{ label: "Message your adviser", href: "/client/messages" }} />}
         {rows.map((r) => {
           const idx = DEAL_STAGES.indexOf(r.deal.stage);
           return (

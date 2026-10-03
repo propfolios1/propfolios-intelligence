@@ -17,7 +17,7 @@ export default async function MarketInsights() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Research" title="Market insights" subtitle="Your advisers' monthly reading of Dubai, Abu Dhabi, Mumbai and Goa: prices, volumes, supply, yields and what it means for your holdings." />
-      {!reports.length && <EmptyState className="mt-8" glyph="opportunities" headline="No market reports yet; the first arrives at the start of next month." />}
+      {!reports.length && <EmptyState glyph="opportunities" headline="No market reports yet" note="The first monthly market pulse arrives at the start of next month: prices, transactions and a timing signal for each market you hold." primary={{ label: "View portfolio", href: "/client/portfolio" }} secondary={{ label: "View insights", href: "/client/insights" }} />}
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {[...latest.values()].map((r) => (
           <article key={r.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card">
