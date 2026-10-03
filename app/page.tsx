@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
 import { Hero } from "@/components/home/hero";
+import { Numbers } from "@/components/home/numbers";
 import "@/components/home/home.css";
 import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ export default async function Landing() {
     <AccessProvider>
       <main className="overflow-x-clip bg-canvas">
         <Hero clientHref={clientHref} />
+        <Numbers />
       </main>
     </AccessProvider>
   );
