@@ -40,7 +40,7 @@ export function ActivityFeed({ items, linkMandates = true, className }: { items:
                   <span className="num ms-1.5 text-mono text-ink-500">{a.reference}</span>
                 ))}
             </div>
-            {meta && <span className="num hidden shrink-0 text-axis text-ink-400 xl:inline">{meta}</span>}
+            {meta && <span className="num hidden max-w-[40%] min-w-0 truncate text-axis text-ink-400 2xl:inline">{meta}</span>}
             <time className="num shrink-0 text-axis text-ink-400" dateTime={new Date(a.createdAt).toISOString()}>
               <RelativeTime iso={new Date(a.createdAt).toISOString()} />
             </time>

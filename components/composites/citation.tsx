@@ -12,7 +12,7 @@ export interface CitationSource {
   href?: string;
 }
 
-/** A superscript numeral in mono. Hover or focus opens the source. */
+/** A gold 12px mono superscript. Hover, focus or a click opens the source in a 320px popover. */
 export function CitationPill({ n, source }: { n: number; source?: CitationSource }) {
   const [open, setOpen] = React.useState(false);
   return (
@@ -22,16 +22,16 @@ export function CitationPill({ n, source }: { n: number; source?: CitationSource
           type="button"
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
-          className="num relative -top-[0.45em] mx-px inline-flex h-4 min-w-4 items-center justify-center rounded-xs border border-hairline px-1 align-baseline text-hint leading-none text-ink-700 transition-[border-color,color] duration-120 hover:border-hairline hover:text-ink-900"
+          className="num relative -top-[0.5em] mx-px inline align-baseline text-axis leading-none text-gold-600 transition-colors duration-150 hover:text-navy-900"
           aria-label={`Source ${n}${source ? `: ${source.title}` : ""}`}
         >
           {n}
         </button>
       </PopoverTrigger>
       {source && (
-        <PopoverContent side="top" align="center" className="w-80" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+        <PopoverContent side="top" align="center" className="w-[320px]" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
           <div className="flex items-baseline justify-between gap-4">
-            <span className="eyebrow">{source.source ?? "Source"}</span>
+            <span className="label-caps">{source.source ?? "Source"}</span>
             {source.date && <span className="num text-axis text-ink-500">{source.date}</span>}
           </div>
           <p className="mt-2 text-small font-medium text-ink-900">{source.title}</p>

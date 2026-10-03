@@ -6,7 +6,7 @@
 
 .prose-pf {
   color: var(--ink-900);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.7;
 }
 .prose-pf > * + * {
@@ -26,16 +26,16 @@
   margin: 0 0 1.5rem;
 }
 .prose-pf h2 {
-  font-size: 2rem;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   margin: 3rem 0 1rem;
 }
 .prose-pf h2:first-child {
   margin-top: 0;
 }
 .prose-pf h3 {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   line-height: 1.3;
   margin: 2rem 0 0.75rem;
 }

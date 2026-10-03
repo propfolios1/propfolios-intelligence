@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Circle, CircleCheck, CircleX } from "lucide-react";
 import { LiveDot } from "@/components/ui/live-dot";
 import { STAGE_AGENT_LABEL, STAGE_LABEL, type MandateStage, type StageRun } from "@/lib/domain";
 import { cn } from "@/lib/utils";
@@ -9,52 +9,39 @@ function duration(ms?: number) {
 }
 
 /**
- * Vertical pipeline timeline. Each stage shows its agent, model, duration and
- * cost; the running stage carries the live dot and streamed progress.
+ * Vertical pipeline: 32px steps. A 16px state icon on the left (green check
+ * done, gold dot running, ink-300 circle pending, red cross failed), the
+ * stage in 14px Inter, its agent or progress in ink-500, and duration and
+ * cost right-aligned in 12px mono ink-400.
  */
 export function Timeline({ runs, progress, compact }: { runs: StageRun[]; progress?: Record<string, number>; compact?: boolean }) {
   return (
-    <ol className="relative" aria-label="Agent pipeline">
-      {runs.map((r, i) => {
+    <ol className="divide-y divide-hairline-row" aria-label="Agent pipeline">
+      {runs.map((r) => {
         const stage = r.stage as MandateStage;
-        const last = i === runs.length - 1;
+        const note =
+          r.status === "running"
+            ? stage === "REVIEW"
+              ? "Awaiting committee approval"
+              : progress?.[r.stage]
+                ? `Writing, ${Math.round(progress[r.stage]! / 100) / 10}k characters`
+                : "Working"
+            : r.status === "failed"
+              ? "Failed. Re-run from this stage."
+              : compact
+                ? null
+                : `${STAGE_AGENT_LABEL[stage] ?? r.agent}${r.model && r.model !== "human" && r.model !== "system" ? ` · ${r.model === "replay" ? "replay" : r.model}` : ""}`;
         return (
-          <li key={r.stage} className={cn("relative grid grid-cols-[24px_1fr] gap-x-4", !last && (compact ? "pb-4" : "pb-6"))}>
-            {!last && <span aria-hidden className={cn("absolute top-6 bottom-0 left-[11px] w-px", r.status === "complete" ? "bg-navy-900" : "bg-ink-200")} />}
-            <span
-              className={cn(
-                "relative z-10 mt-0.5 flex size-6 items-center justify-center rounded-full border text-surface",
-                r.status === "complete" && "border-navy-900 bg-navy-900",
-                r.status === "running" && "border-gold-500 bg-surface",
-                r.status === "failed" && "border-danger bg-danger",
-                r.status === "pending" && "border-hairline bg-surface",
-              )}
-              aria-hidden
-            >
-              {r.status === "complete" && <Check className="size-3.5 stroke-[2]" />}
-              {r.status === "failed" && <X className="size-3.5 stroke-[2]" />}
+          <li key={r.stage} className="flex h-8 items-center gap-3">
+            <span className="flex size-4 shrink-0 items-center justify-center" aria-hidden>
+              {r.status === "complete" && <CircleCheck className="size-4 stroke-[1.5] text-success" />}
               {r.status === "running" && <LiveDot />}
+              {r.status === "failed" && <CircleX className="size-4 stroke-[1.5] text-danger" />}
+              {r.status === "pending" && <Circle className="size-4 stroke-[1.5] text-ink-300" />}
             </span>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-                <span className={cn("text-ui font-medium", r.status === "pending" ? "text-ink-500" : "text-ink-900")}>{STAGE_LABEL[stage] ?? r.stage}</span>
-                <span className="num text-axis text-ink-500">
-                  {[duration(r.durationMs), r.costUsd ? `$${r.costUsd.toFixed(3)}` : null].filter(Boolean).join(" · ")}
-                </span>
-              </div>
-              {!compact && (
-                <div className="mt-0.5 text-small text-ink-500">
-                  {STAGE_AGENT_LABEL[stage] ?? r.agent}
-                  {r.model && r.model !== "human" && r.model !== "system" && <span className="num"> · {r.model === "replay" ? "replay mode" : r.model}</span>}
-                </div>
-              )}
-              {r.status === "running" && (
-                <div className="mt-1 text-small text-gold-600" aria-live="polite">
-                  {stage === "REVIEW" ? "Awaiting committee approval" : progress?.[r.stage] ? `Writing output, ${Math.round(progress[r.stage]! / 100) / 10}k characters` : "Working"}
-                </div>
-              )}
-              {r.status === "failed" && <div className="mt-1 text-small text-danger">Stage failed. Re-run from this stage.</div>}
-            </div>
+            <span className={cn("shrink-0 text-ui", r.status === "pending" ? "text-ink-500" : "text-ink-900")}>{STAGE_LABEL[stage] ?? r.stage}</span>
+            {note && <span className={cn("min-w-0 flex-1 truncate text-meta", r.status === "running" ? "text-gold-600" : r.status === "failed" ? "text-danger" : "text-ink-500")} aria-live={r.status === "running" ? "polite" : undefined}>{note}</span>}
+            <span className="num ms-auto shrink-0 text-axis text-ink-400">{[duration(r.durationMs), r.costUsd ? `$${r.costUsd.toFixed(3)}` : null].filter(Boolean).join(" · ")}</span>
           </li>
         );
       })}

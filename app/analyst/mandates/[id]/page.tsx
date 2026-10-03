@@ -79,8 +79,8 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
               {m.priority === "priority" && <span className="eyebrow text-gold-600">Priority</span>}
               {d.crossValidation && <CrossValidationBadge agreement={d.crossValidation.agreement} consensus={d.crossValidation.consensus} flagged={m.requiresReview} />}
             </div>
-            <h1 className="mt-3 font-display text-section text-navy-900 md:text-title">{m.title}</h1>
-            <p className="mt-2 text-body text-ink-700">
+            <h1 className="mt-3 font-display text-page-sm font-medium text-navy-900 md:text-title">{m.title}</h1>
+            <p className="mt-2 text-ui text-ink-500">
               {client.name} · {p.name}, {p.community} · {formatAed(m.ticketSizeAed)} over {m.horizonYears} years
             </p>
             <div className="mt-2">
