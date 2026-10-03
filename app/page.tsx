@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
 import { Agents } from "@/components/home/agents";
+import { Customers } from "@/components/home/customers";
 import { Hero } from "@/components/home/hero";
 import { Markets } from "@/components/home/markets";
 import { Modules } from "@/components/home/modules";
@@ -59,6 +60,7 @@ export default async function Landing() {
         <Agents />
         <Markets />
         <Screenshots />
+        <Customers />
       </main>
     </AccessProvider>
   );
