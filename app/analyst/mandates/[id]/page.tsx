@@ -13,14 +13,16 @@ import { ResearchTab } from "@/components/composites/mandate/research-tab";
 import { RunControls } from "@/components/composites/mandate/run-controls";
 import { MANDATE_TABS, TabBar, type MandateTab } from "@/components/composites/mandate/tab-bar";
 import { UnderwritingTab } from "@/components/composites/mandate/underwriting-tab";
-import { MemoEditor, type MemoFlag } from "@/components/composites/memo-editor";
+import { markCitations } from "@/components/composites/memo-citation";
+import { type MemoFlag } from "@/components/composites/memo-editor";
+import { buttonVariants } from "@/components/ui/button";
 import { MemoStatusPill, StagePill } from "@/components/composites/status";
 import { Crumb } from "@/components/shell/crumb";
 import { PageContainer } from "@/components/shell/page-container";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getDb } from "@/db";
 import { requireRole } from "@/lib/auth";
-import { formatAed, formatLocal, STAGE_LABEL } from "@/lib/domain";
+import { formatAed, STAGE_LABEL } from "@/lib/domain";
 import { getMandateDetail, type MandateDetail } from "@/lib/queries";
 import { formatDate } from "@/lib/utils";
 
@@ -122,32 +124,32 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
             ))}
           {tab === "memo" &&
             (d.memo ? (
-              <div>
-                <div className="mb-6 flex flex-wrap items-center gap-3">
-                  <h2 className="font-display text-section text-navy-900">{d.memo.title}</h2>
-                  <MemoStatusPill status={d.memo.status} />
-                  <span className="num text-small text-ink-500">
-                    v{d.memo.version} · {d.memo.lastEditedBy ?? "Memo agent"}
-                    {d.memo.approvedBy && ` · approved by ${d.memo.approvedBy}`}
-                  </span>
-                  <Link href={`/analyst/memos/${d.memo.id}`} className="ml-auto text-small text-ink-700 hover:text-ink-900">
-                    Open in memo workspace
+              <div className="grid grid-cols-1 gap-10 xl:grid-cols-[minmax(0,720px)_280px]">
+                <article>
+                  <div className="mb-6 flex flex-wrap items-center gap-3">
+                    <MemoStatusPill status={d.memo.status} />
+                    <span className="num text-axis text-ink-500">
+                      v{d.memo.version} · {d.memo.lastEditedBy ?? "Memo agent"}
+                      {d.memo.approvedBy && ` · approved by ${d.memo.approvedBy}`}
+                    </span>
+                  </div>
+                  <h2 className="font-display text-page-sm text-ink-900">{d.memo.title}</h2>
+                  <div className="memo-sheet mt-8" dangerouslySetInnerHTML={{ __html: `<div class="prose-pf">${markCitations(d.memo.contentHtml)}</div>` }} />
+                </article>
+                <aside className="xl:sticky xl:top-28 xl:self-start">
+                  <Link href={`/analyst/memos/${d.memo.id}`} className={buttonVariants({ variant: "primary" }) + " w-full"}>
+                    {memoReadOnly ? "Open memo" : "Open memo editor"}
                   </Link>
-                </div>
-                <MemoEditor
-                  key={`${d.memo.id}-${d.memo.version}`}
-                  memoId={d.memo.id}
-                  version={d.memo.version}
-                  readOnly={memoReadOnly}
-                  initialHtml={d.memo.contentHtml}
-                  flags={factCheck(d)}
-                  citations={(d.research?.citations ?? []).map((c) => ({ id: c.id, title: c.title, source: c.source, date: c.accessed }))}
-                  dataSources={[
-                    { title: "Key metrics", items: d.memo.keyMetrics },
-                    ...(d.simulation ? [{ title: "Scenarios", items: d.simulation.scenarios.map((s) => ({ label: `${s.label} IRR`, value: `${s.irr.toFixed(1)}%` })) }] : []),
-                    { title: "Asset", items: [{ label: "Price per sq ft", value: `${p.currency} ${Math.round(p.pricePerSqft).toLocaleString("en-US")}` }, { label: "Gross yield", value: `${p.grossYield.toFixed(1)}%` }, { label: "Range", value: `${formatLocal(p.priceMin, p.currency)} to ${formatLocal(p.priceMax, p.currency)}` }] },
-                  ]}
-                />
+                  <dl className="mt-6">
+                    {d.memo.keyMetrics.map((k) => (
+                      <div key={k.label} className="flex h-8 items-center justify-between gap-3 border-b border-hairline-row text-meta">
+                        <dt className="truncate text-ink-500">{k.label}</dt>
+                        <dd className="num shrink-0 text-ink-900">{k.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="mt-4 text-meta text-ink-500">{factCheck(d).filter((f) => f.issue !== "verified").length} figures need attention in the fact check.</p>
+                </aside>
               </div>
             ) : (
               <Pending stage={STAGE_LABEL.MEMO} />

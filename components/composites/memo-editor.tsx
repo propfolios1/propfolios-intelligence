@@ -4,11 +4,12 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
+import { Bold, ChevronRight, Heading2, Italic, List, Quote } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Kbd } from "@/components/ui/kbd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Citation, markCitations } from "./memo-citation";
 
 export interface MemoDataSection {
   title: string;
@@ -55,9 +56,11 @@ interface SlashState {
 }
 
 /**
- * Three columns: data sources, a 680px sheet of white paper with a faint grain,
- * and a rail of suggestions, fact-check flags and citations. The toolbar only
- * exists while text is selected. Type / for blocks.
+ * Four columns, Notion meets Stripe: the app navigation, a 280px sources
+ * column on ink-50, the editor (white, content at most 720px, 96px from the
+ * top) and a 320px AI column on ink-50. No fixed toolbar: formatting appears
+ * above a selection. Citations are gold mono superscripts that open their
+ * source. Saves on its own and says so for two seconds.
  */
 export function MemoEditor({
   memoId,
@@ -67,6 +70,11 @@ export function MemoEditor({
   dataSources,
   citations,
   flags,
+  title,
+  meta,
+  actions,
+  styleMatch,
+  verifiedClaims,
 }: {
   memoId: string;
   version: number;
@@ -75,6 +83,11 @@ export function MemoEditor({
   dataSources: MemoDataSection[];
   citations: MemoCitation[];
   flags: MemoFlag[];
+  title: string;
+  meta?: React.ReactNode;
+  actions?: React.ReactNode;
+  styleMatch: number | null;
+  verifiedClaims?: number;
 }) {
   const [saved, setSaved] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | false>(false);
@@ -82,6 +95,7 @@ export function MemoEditor({
   const [slash, setSlash] = React.useState<SlashState | null>(null);
   const slashRef = React.useRef<SlashState | null>(null);
   slashRef.current = slash;
+  const [cite, setCite] = React.useState<{ id: number; top: number; left: number } | null>(null);
   const sheetRef = React.useRef<HTMLDivElement>(null);
   const saveTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const holdTimer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -95,12 +109,12 @@ export function MemoEditor({
     async (html: string) => {
       const res = await fetch(`/api/memos/${memoId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ contentHtml: html, version: versionRef.current }) });
       const json = await res.json().catch(() => ({}));
-      setSaveError(res.ok ? false : (json.error ?? "Not saved. Retry."));
+      setSaveError(res.ok ? false : (json.error ?? "Not saved. Your edits are kept in this window; retry in a moment."));
       if (res.ok) {
         versionRef.current = json.version;
         setSaved(true);
         clearTimeout(holdTimer.current);
-        holdTimer.current = setTimeout(() => setSaved(false), 1500);
+        holdTimer.current = setTimeout(() => setSaved(false), 2000);
       }
     },
     [memoId],
@@ -117,8 +131,8 @@ export function MemoEditor({
   const editor = useEditor({
     immediatelyRender: false,
     editable: !readOnly,
-    extensions: [StarterKit.configure({ heading: { levels: [2, 3] } }), Placeholder.configure({ placeholder: "Write, or type / for a block." })],
-    content: initialHtml,
+    extensions: [StarterKit.configure({ heading: { levels: [2, 3] } }), Citation, Placeholder.configure({ placeholder: "Write, or type / for a block." })],
+    content: markCitations(initialHtml),
     editorProps: {
       attributes: { class: "prose-pf tiptap", "aria-label": "Memo" },
       handleKeyDown: (_view, event) => {
@@ -165,61 +179,67 @@ export function MemoEditor({
     [],
   );
 
-  return (
-    <div className="grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,680px)_minmax(240px,1fr)] 2xl:grid-cols-[180px_minmax(0,680px)_minmax(220px,1fr)] 2xl:gap-10">
-      <SourcesRail sections={dataSources} className="hidden 2xl:block" />
+  React.useEffect(() => {
+    if (!cite) return;
+    const close = (e: KeyboardEvent) => e.key === "Escape" && setCite(null);
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [cite]);
 
-      <div className="min-w-0">
-        <div className="mb-4 flex items-center justify-between gap-4" data-no-print>
-          <span className="flex items-center gap-2 text-small text-ink-500">
-            {readOnly ? "Locked after delivery" : (
-              <>
-                <Kbd>/</Kbd> for blocks · saves automatically
-              </>
-            )}
-          </span>
-          <div className="flex items-center gap-3">
-            <span className={cn("text-small transition-opacity", saveError ? "text-danger opacity-100" : "text-ink-500", saved || saveError ? "opacity-100 duration-150" : "opacity-0 duration-250")} aria-live="polite">
+  const openCitation = (e: React.MouseEvent) => {
+    const sup = (e.target as HTMLElement).closest("sup[data-cite]");
+    if (!sup || !sheetRef.current) return setCite(null);
+    const r = sup.getBoundingClientRect();
+    const box = sheetRef.current.getBoundingClientRect();
+    setCite({ id: Number(sup.getAttribute("data-cite")), top: r.bottom - box.top + 8, left: Math.max(0, Math.min(r.left - box.left - 12, box.width - 336)) });
+  };
+  const source = cite ? citations.find((c) => c.id === cite.id) : undefined;
+  const cited = new Set([...initialHtml.matchAll(/\[(\d{1,2})\]|data-cite="(\d{1,2})"/g)].map((m) => Number(m[1] ?? m[2])));
+  const flagged = flags.filter((f) => f.issue !== "verified").length;
+
+  return (
+    <div className="grid min-h-[calc(100dvh-48px)] grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+      <SourcesColumn sections={dataSources} citations={citations} className="hidden border-e border-hairline bg-ink-50 lg:block" />
+
+      <div className="relative min-w-0 bg-surface">
+        <div className="sticky top-12 z-10 flex h-12 items-center justify-between gap-4 border-b border-hairline bg-surface/95 px-6 backdrop-blur-sm" data-no-print>
+          <div className="flex min-w-0 items-center gap-3 text-meta text-ink-500">{meta}</div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className={cn("num text-axis transition-opacity duration-250", saveError ? "text-danger opacity-100" : "text-ink-400", saved || saveError ? "opacity-100" : "opacity-0")} aria-live="polite">
               {saveError ? saveError : saved ? "Saved" : ""}
             </span>
-            {!readOnly && (
-              <Button variant="secondary" size="sm" onClick={() => editor && save(editor.getHTML())}>
-                Save
+            {readOnly && <span className="text-axis text-ink-400">Locked after delivery</span>}
+            {actions ?? (
+              <Button variant="ghost" size="sm" asChild>
+                <a href={`/api/memos/${memoId}/export`} target="_blank" rel="noreferrer">
+                  Export PDF
+                </a>
               </Button>
             )}
-            <Button variant="ghost" size="sm" asChild>
-              <a href={`/api/memos/${memoId}/export`} target="_blank" rel="noreferrer">
-                Export PDF
-              </a>
-            </Button>
           </div>
         </div>
 
-        <details className="mb-6 border-y border-hairline 2xl:hidden" data-no-print>
-          <summary className="eyebrow flex h-11 cursor-pointer items-center">Data sources</summary>
-          <SourcesGrid sections={dataSources} />
-        </details>
-
-        <div ref={sheetRef} className="paper-grain relative border border-hairline px-8 py-12 md:px-14 md:py-16">
+        <div ref={sheetRef} onClick={openCitation} className="memo-sheet relative mx-auto max-w-[800px] px-6 pt-12 pb-24 sm:px-10 lg:pt-24">
+          <h1 className="mb-6 font-display text-page-sm text-ink-900 md:text-title">{title}</h1>
           {editor ? (
             <>
-              <BubbleMenu editor={editor} options={{ placement: "top", offset: 10 }}>
-                <div className="flex items-center rounded-sm border border-hairline bg-canvas px-1 py-1">
+              <BubbleMenu editor={editor} options={{ placement: "top", offset: 8 }}>
+                <div className="flex items-center gap-px rounded-md border border-hairline bg-surface p-1 shadow-drag">
                   <Tool label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
-                    <span className="font-semibold">B</span>
+                    <Bold className="size-3.5 stroke-[1.75]" />
                   </Tool>
                   <Tool label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}>
-                    <span className="font-display italic">I</span>
+                    <Italic className="size-3.5 stroke-[1.75]" />
                   </Tool>
-                  <span className="mx-1 h-4 w-px bg-ink-200" />
+                  <span className="mx-1 h-4 w-px bg-hairline" />
                   <Tool label="Section heading" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
-                    <span className="font-display text-ui">H</span>
+                    <Heading2 className="size-3.5 stroke-[1.75]" />
                   </Tool>
                   <Tool label="Pull quote" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
-                    <span className="font-display text-ui">“</span>
+                    <Quote className="size-3.5 stroke-[1.75]" />
                   </Tool>
                   <Tool label="List" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}>
-                    –
+                    <List className="size-3.5 stroke-[1.75]" />
                   </Tool>
                 </div>
               </BubbleMenu>
@@ -229,11 +249,30 @@ export function MemoEditor({
             <MemoSkeleton />
           )}
 
+          {cite && (
+            <div role="dialog" aria-label={`Source ${cite.id}`} className="absolute z-30 w-[320px] rounded-md border border-hairline bg-surface p-4 shadow-float animate-fade" style={{ top: cite.top, left: cite.left }}>
+              <div className="flex items-baseline gap-2">
+                <span className="num text-axis text-gold-600">[{cite.id}]</span>
+                <span className="label-caps">Source</span>
+              </div>
+              {source ? (
+                <>
+                  <p className="mt-2 text-ui font-medium text-ink-900">{source.title}</p>
+                  <p className="mt-1 text-meta text-ink-500">
+                    {source.source} · accessed <span className="num">{source.date}</span>
+                  </p>
+                </>
+              ) : (
+                <p className="mt-2 text-meta text-ink-500">This reference is not in the research dossier. Re-run research or remove the citation.</p>
+              )}
+            </div>
+          )}
+
           {slash && editor && filtered.length > 0 && (
             <div
               role="listbox"
               aria-label="Insert block"
-              className="absolute z-30 w-64 rounded-sm border border-hairline bg-canvas py-1 animate-fade"
+              className="absolute z-30 w-64 rounded-md border border-hairline bg-surface p-1 shadow-float animate-fade"
               style={{ top: slash.top, left: Math.max(16, Math.min(slash.left, (sheetRef.current?.clientWidth ?? 600) - 272)) }}
             >
               {filtered.map((c, i) => (
@@ -246,11 +285,11 @@ export function MemoEditor({
                     runSlash(editor, c);
                   }}
                   onMouseEnter={() => setSlash({ ...slash, index: i })}
-                  className={cn("flex w-full items-center gap-3 px-3 py-2 text-left", i === slash.index && "bg-ink-100")}
+                  className={cn("flex h-10 w-full items-center gap-3 rounded-sm px-2 text-start", i === slash.index && "bg-ink-100")}
                 >
-                  <span className="num flex w-6 justify-center text-small text-ink-500">{c.glyph}</span>
+                  <span className="num flex w-6 justify-center text-meta text-ink-500">{c.glyph}</span>
                   <span className="min-w-0">
-                    <span className="block text-small text-ink-900">{c.label}</span>
+                    <span className="block text-meta text-ink-900">{c.label}</span>
                     <span className="block truncate text-axis text-ink-500">{c.hint}</span>
                   </span>
                 </button>
@@ -258,9 +297,16 @@ export function MemoEditor({
             </div>
           )}
         </div>
+
+        <div className="space-y-px border-t border-hairline lg:hidden" data-no-print>
+          <details className="px-6">
+            <summary className="label-caps flex h-12 cursor-pointer items-center">Sources</summary>
+            <SourcesColumn sections={dataSources} citations={citations} />
+          </details>
+        </div>
       </div>
 
-      <RightRail citations={citations} flags={flags} />
+      <AiColumn className="border-t border-hairline bg-ink-50 xl:border-t-0 xl:border-s" styleMatch={styleMatch} flags={flags} flagged={flagged} verifiedClaims={verifiedClaims} citationCount={cited.size} citations={citations.length} />
     </div>
   );
 }
@@ -270,25 +316,25 @@ function Tool({ label, active, onClick, children }: { label: string; active: boo
     <button
       type="button"
       aria-label={label}
+      title={label}
       aria-pressed={active}
       onClick={onClick}
-      className={cn("flex h-7 min-w-7 items-center justify-center rounded-xs px-1.5 text-small text-ink-700 transition-[color,background-color] duration-120 hover:text-ink-900", active && "bg-ink-100 text-navy-900")}
+      className={cn("press flex size-8 items-center justify-center rounded-sm text-ink-700 hover:bg-ink-100 hover:text-ink-900", active && "bg-ink-100 text-ink-900")}
     >
       {children}
     </button>
   );
 }
 
-/** Mirrors the memo: a section heading, its gold mark, three paragraphs. */
+/** Mirrors the memo: a title, then sections of heading and paragraphs at their final widths. */
 function MemoSkeleton() {
   return (
     <div aria-hidden>
       {[0, 1].map((s) => (
         <div key={s} className={cn(s > 0 && "mt-12")}>
-          <Skeleton className="h-8 w-2/5" />
-          <span className="mt-6 block h-0.5 w-8 bg-gold-100" />
+          <Skeleton className="h-6 w-2/5" />
           {[100, 96, 88, 62].map((w, i) => (
-            <Skeleton key={i} className="mt-4 h-3.5" style={{ width: `${w}%` }} />
+            <Skeleton key={i} className="mt-4 h-4" style={{ width: `${w}%` }} />
           ))}
         </div>
       ))}
@@ -296,52 +342,54 @@ function MemoSkeleton() {
   );
 }
 
-function SourcesGrid({ sections }: { sections: MemoDataSection[] }) {
+/** Sources: collapsible 32px rows of the figures the memo draws on, then the dossier's citations. */
+function SourcesColumn({ sections, citations, className }: { sections: MemoDataSection[]; citations: MemoCitation[]; className?: string }) {
+  const [open, setOpen] = React.useState<Record<string, boolean>>(() => Object.fromEntries([...sections.map((s) => [s.title, true]), ["Citations", true]]));
+  const toggle = (k: string) => setOpen((o) => ({ ...o, [k]: !o[k] }));
   return (
-    <div className="grid grid-cols-2 gap-x-10 gap-y-6 pb-6 md:grid-cols-3">
+    <aside className={cn("lg:sticky lg:top-12 lg:max-h-[calc(100dvh-48px)] lg:self-start lg:overflow-y-auto", className)} data-no-print>
+      <div className="label-caps px-4 pt-6 pb-2">Sources</div>
       {sections.map((s) => (
-        <dl key={s.title}>
-          <div className="eyebrow mb-2 text-ink-500">{s.title}</div>
-          {s.items.map((it) => (
-            <div key={it.label} className="flex justify-between gap-3 border-t border-hairline py-1.5 text-small">
-              <dt className="text-ink-700">{it.label}</dt>
-              <dd className="num text-right text-ink-900">{it.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ))}
-    </div>
-  );
-}
-
-function SourcesRail({ sections, className }: { sections: MemoDataSection[]; className?: string }) {
-  const [open, setOpen] = React.useState<Record<string, boolean>>(() => Object.fromEntries(sections.map((s, i) => [s.title, i < 3])));
-  return (
-    <aside className={cn("sticky top-20 self-start", className)}>
-      <div className="eyebrow mb-4">Sources</div>
-      {sections.map((s) => (
-        <div key={s.title} className="border-t border-hairline">
-          <button
-            onClick={() => setOpen((o) => ({ ...o, [s.title]: !o[s.title] }))}
-            className="flex h-10 w-full items-center justify-between text-left text-small text-ink-900 transition-[color] duration-120 hover:text-navy-900"
-            aria-expanded={open[s.title]}
-          >
-            {s.title}
-            <span className="num text-axis text-ink-500">{open[s.title] ? "−" : "+"}</span>
-          </button>
+        <div key={s.title}>
+          <Row label={s.title} open={open[s.title]} onClick={() => toggle(s.title)} count={s.items.length} />
           {open[s.title] && (
-            <dl className="pb-4">
+            <dl className="pb-2">
               {s.items.map((it) => (
-                <div key={it.label} className="flex justify-between gap-2 py-1 text-small">
+                <div key={it.label} className="flex h-8 items-center justify-between gap-2 px-4 ps-9 text-meta">
                   <dt className="truncate text-ink-500">{it.label}</dt>
-                  <dd className="num shrink-0 text-right text-ink-900">{it.value}</dd>
+                  <dd className="num shrink-0 text-end text-ink-900">{it.value}</dd>
                 </div>
               ))}
             </dl>
           )}
         </div>
       ))}
+      <Row label="Citations" open={open.Citations} onClick={() => toggle("Citations")} count={citations.length} />
+      {open.Citations && (
+        <ol className="pb-6">
+          {citations.length === 0 && <li className="px-4 ps-9 text-meta text-ink-500">The research dossier has no citations.</li>}
+          {citations.map((c) => (
+            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 px-4 py-1.5 ps-4 text-meta">
+              <span className="num text-gold-600">{c.id}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-ink-900">{c.title}</span>
+                <span className="block truncate text-axis text-ink-500">{c.source}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
     </aside>
+  );
+}
+
+function Row({ label, open, onClick, count }: { label: string; open?: boolean; onClick: () => void; count: number }) {
+  return (
+    <button onClick={onClick} aria-expanded={open} className="flex h-8 w-full items-center gap-2 px-4 text-start text-ui text-ink-900 transition-colors duration-150 hover:bg-ink-100">
+      <ChevronRight className={cn("size-3 shrink-0 stroke-[1.5] text-ink-500 transition-transform duration-150", open && "rotate-90")} aria-hidden />
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className="num text-axis text-ink-400">{count}</span>
+    </button>
   );
 }
 
@@ -354,41 +402,40 @@ const ISSUE_LABEL: Record<string, string> = {
   verified: "Verified",
 };
 
-function RightRail({ citations, flags }: { citations: MemoCitation[]; flags: MemoFlag[] }) {
+/** AI column: style match, fact check and citation counts, then each flag as a card with a 6px dot. */
+function AiColumn({ styleMatch, flags, flagged, verifiedClaims, citationCount, citations, className }: { styleMatch: number | null; flags: MemoFlag[]; flagged: number; verifiedClaims?: number; citationCount: number; citations: number; className?: string }) {
   return (
-    <aside className="scrollbar-thin xl:sticky xl:top-20 xl:max-h-[calc(100dvh-104px)] xl:self-start xl:overflow-y-auto" data-no-print>
-      <section>
-        <div className="eyebrow mb-3">Fact check</div>
-        {flags.length === 0 && <p className="text-small text-ink-500">No figures to check.</p>}
+    <aside className={cn("xl:sticky xl:top-12 xl:max-h-[calc(100dvh-48px)] xl:self-start xl:overflow-y-auto", className)} data-no-print>
+      <div className="flex items-center gap-2 px-4 pt-6 pb-2">
+        <span className="size-1.5 rounded-full bg-gold-500" aria-hidden />
+        <span className="label-caps">Memo agent</span>
+      </div>
+      <dl className="grid grid-cols-3 border-y border-hairline">
+        {[
+          ["Style", styleMatch === null ? "None" : `${styleMatch}%`],
+          ["Checks", flagged ? `${flagged} open` : `${verifiedClaims ?? flags.length} ok`],
+          ["Cited", `${citationCount}/${citations}`],
+        ].map(([k, v], i) => (
+          <div key={k} className={cn("px-4 py-3", i > 0 && "border-s border-hairline")}>
+            <dt className="label-caps truncate">{k}</dt>
+            <dd className="num mt-1 text-ui text-ink-900">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="space-y-2 p-4">
+        {styleMatch === null && <p className="text-meta text-ink-500">Style match appears once the firm has approved its first memo; the agent learns headings and cadence from it.</p>}
         {flags.map((f, i) => (
-          <article key={i} className="mb-2 rounded-md border border-hairline bg-surface p-4">
+          <article key={i} className="rounded-sm border border-hairline bg-surface p-3">
             <div className="flex items-center gap-2">
-              <span className={cn("size-1.5 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-warning" : "bg-success")} aria-hidden />
-              <span className="eyebrow">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
+              <span className={cn("size-1.5 shrink-0 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-gold-500" : "bg-success")} aria-hidden />
+              <span className="label-caps">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
             </div>
-            <p className="mt-2 text-small font-medium text-ink-900">{f.claim}</p>
-            <p className="mt-1 text-small text-ink-700">{f.suggestion}</p>
+            <p className="mt-1.5 text-meta font-medium text-ink-900">{f.claim}</p>
+            <p className="mt-0.5 text-meta text-ink-500">{f.suggestion}</p>
           </article>
         ))}
-      </section>
-
-      <section className="mt-10">
-        <div className="eyebrow mb-3">Citations</div>
-        {citations.length === 0 && <p className="text-small text-ink-500">No citations in the research dossier.</p>}
-        <ol>
-          {citations.map((c) => (
-            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 border-t border-hairline py-2.5 text-small">
-              <span className="num text-ink-500">{c.id}</span>
-              <span>
-                <span className="block text-ink-900">{c.title}</span>
-                <span className="text-ink-500">
-                  {c.source}, <span className="num">{c.date}</span>
-                </span>
-              </span>
-            </li>
-          ))}
-        </ol>
-      </section>
+        {flags.length === 0 && <p className="text-meta text-ink-500">No figures to check in this memo.</p>}
+      </div>
     </aside>
   );
 }

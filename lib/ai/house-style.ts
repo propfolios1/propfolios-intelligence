@@ -50,3 +50,27 @@ export async function learnHouseStyle(db: DB, tenantId: string, excludeMandateId
   return { exemplars, headingOrder, avgSentenceWords, learnedFrom: rows.length };
 }
 
+
+/**
+ * How closely a memo follows the firm's learned house style, 0 to 100:
+ * section headings present in the usual order (70%) and average sentence
+ * length within the firm's range (30%). Null when no approved memo exists yet.
+ */
+export function styleMatch(html: string, learned: LearnedStyle | null): number | null {
+  if (!learned || !learned.headingOrder.length) return null;
+  const headings = [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => strip(m[1]!).toLowerCase());
+  let last = -1;
+  let inOrder = 0;
+  for (const h of learned.headingOrder.map((x) => x.toLowerCase())) {
+    const i = headings.indexOf(h);
+    if (i > last) {
+      inOrder++;
+      last = i;
+    }
+  }
+  const headingScore = inOrder / learned.headingOrder.length;
+  const sentences = strip(html).split(/(?<=[.!?])\s+/).filter((x) => x.split(" ").length > 2);
+  const avg = sentences.reduce((a, x) => a + x.split(" ").length, 0) / Math.max(1, sentences.length);
+  const lengthScore = Math.max(0, 1 - Math.abs(avg - learned.avgSentenceWords) / Math.max(1, learned.avgSentenceWords));
+  return Math.round((headingScore * 0.7 + lengthScore * 0.3) * 100);
+}

@@ -192,3 +192,59 @@
     widows: 3;
   }
 }
+
+/* Memo editor typography: H1 40, H2 24 with 48px above, body 17 at 1.75, 20px paragraphs. */
+.memo-sheet .prose-pf {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--ink-900);
+}
+.memo-sheet .prose-pf h1 {
+  font-size: 2.5rem;
+  margin: 0 0 1.5rem;
+  color: var(--ink-900);
+}
+.memo-sheet .prose-pf h2 {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 3rem 0 1rem;
+  color: var(--ink-900);
+}
+.memo-sheet .prose-pf h2:first-child {
+  margin-top: 0;
+}
+.memo-sheet .prose-pf h3 {
+  font-size: 1.125rem;
+  margin: 2rem 0 0.75rem;
+  color: var(--ink-900);
+}
+.memo-sheet .prose-pf p {
+  margin: 0 0 1.25rem;
+}
+.memo-sheet .prose-pf :is(h2, h3) + p::before {
+  display: none;
+}
+.memo-sheet .prose-pf :is(h2, h3) + p {
+  padding-top: 0;
+}
+
+/* Citation superscripts: 12px mono, gold, clickable. */
+sup.memo-cite,
+sup[data-cite] {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--gold-600);
+  cursor: pointer;
+  padding-inline: 1px;
+  vertical-align: super;
+  line-height: 0;
+}
+sup.memo-cite:hover {
+  color: var(--navy-900);
+}
+sup[data-cite] + sup[data-cite]::before {
+  content: ",";
+  color: var(--ink-400);
+}
