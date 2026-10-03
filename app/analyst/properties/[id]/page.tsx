@@ -58,7 +58,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         subtitle={p.description}
         actions={
           <Button asChild>
-            <Link href={`/analyst/mandates/new?property=${p.id}`}>Create Mandate</Link>
+            <Link href={`/analyst/mandates/new?property=${p.id}`}>Create mandate</Link>
           </Button>
         }
         meta={

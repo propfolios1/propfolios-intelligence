@@ -61,7 +61,7 @@ export function DataRequestForm({ clients }: { clients: { id: string; name: stri
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
-        const r = await post("/api/compliance/request", { clientId: clientId || null, subjectEmail: email, type, regime }, { ok: "Request logged", fail: "Request not logged" });
+        const r = await post("/api/compliance/request", { clientId: clientId || null, subjectEmail: email, type, regime }, { fail: "Request not logged" });
         setBusy(false);
         if (r) router.refresh();
       }}
@@ -119,7 +119,7 @@ export function StepButton({ requestId, index, label, destructive }: { requestId
       onClick={async () => {
         if (destructive && !window.confirm("Erase this client's personal data? Records required under AML and tax law are kept in pseudonymised form. This cannot be undone.")) return;
         setBusy(true);
-        const r = await post("/api/compliance/step", { requestId, index }, { ok: destructive ? "Personal data erased" : "Step completed", fail: "Step not completed" });
+        const r = await post("/api/compliance/step", { requestId, index }, { ok: destructive ? "Personal data erased; regulated records kept in pseudonymised form" : undefined, fail: "Step not completed" });
         setBusy(false);
         if (r) router.refresh();
       }}
@@ -140,7 +140,7 @@ export function ExportButton({ clientId }: { clientId: string }) {
         setBusy(true);
         const res = await fetch("/api/compliance/export", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ clientId }) });
         setBusy(false);
-        if (!res.ok) return void toast.error("Export not generated");
+        if (!res.ok) return void toast.error("Export not generated", { description: "The data subject export could not be compiled. Retry; the request stays open and its due date is unchanged." });
         const blob = await res.blob();
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -165,7 +165,7 @@ export function ConsentToggle({ clientId, purpose, granted, jurisdiction }: { cl
       aria-pressed={granted === true}
       onClick={async () => {
         setBusy(true);
-        const r = await post("/api/compliance/consent", { clientId, purpose, granted: !granted, jurisdiction }, { ok: granted ? "Consent withdrawn" : "Consent recorded" });
+        const r = await post("/api/compliance/consent", { clientId, purpose, granted: !granted, jurisdiction }, { fail: "Consent not recorded" });
         setBusy(false);
         if (r) router.refresh();
       }}

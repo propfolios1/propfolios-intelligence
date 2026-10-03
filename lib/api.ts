@@ -4,6 +4,8 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { auditLogs } from "@/db/schema";
 import { HttpError, type CurrentUser } from "./auth";
+import { APIError } from "@anthropic-ai/sdk";
+import { AgentDisabledError } from "./ai/agents/define";
 import { DomainError } from "./errors";
 
 /** Wraps a route handler: maps HttpError and Zod errors to JSON responses. */
@@ -13,9 +15,13 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
       return await fn(...args);
     } catch (err) {
       if (err instanceof HttpError || err instanceof DomainError) return NextResponse.json({ error: err.message }, { status: err.status });
-      if (err instanceof z.ZodError) return NextResponse.json({ error: "Invalid request.", issues: z.flattenError(err) }, { status: 422 });
+      if (err instanceof z.ZodError) return NextResponse.json({ error: "Some fields are missing or invalid. Correct the highlighted fields and submit again.", issues: z.flattenError(err) }, { status: 422 });
+      if (err instanceof AgentDisabledError) return NextResponse.json({ error: err.message }, { status: 409 });
+      if (err instanceof APIError && err.status === 429) return NextResponse.json({ error: "Anthropic rate limit reached. Retry in 30 seconds, or move the agent to a lighter model tier in Administration, AI control." }, { status: 429 });
+      if (err instanceof APIError && (err.status === 529 || err.status === 503)) return NextResponse.json({ error: "Anthropic is temporarily overloaded. Retry in a minute; completed stages are kept and the run resumes where it stopped." }, { status: 503 });
+      if (err instanceof APIError && err.status === 401) return NextResponse.json({ error: "The Anthropic API key was refused. Check ANTHROPIC_API_KEY in Vercel, then redeploy." }, { status: 502 });
       console.error(err);
-      return NextResponse.json({ error: "Unexpected error. The incident has been logged." }, { status: 500 });
+      return NextResponse.json({ error: "Something went wrong on our side and the change was not saved. Retry; if it happens again, the incident is in the logs under this time." }, { status: 500 });
     }
   };
 }

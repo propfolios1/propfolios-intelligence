@@ -9,7 +9,7 @@ import { FormField, Input, Textarea } from "@/components/ui/form";
 export function DocStatus({ clientId, type, status, expiresAt }: { clientId: string; type: string; status: string; expiresAt: string | null }) {
   const router = useRouter();
   const [exp, setExp] = React.useState(expiresAt ?? "");
-  const set = async (st: string) => void ((await post(`/api/kyc/${clientId}/document`, { type, status: st, expiresAt: exp || null }, { ok: "Document updated" })) && router.refresh());
+  const set = async (st: string) => void ((await post(`/api/kyc/${clientId}/document`, { type, status: st, expiresAt: exp || null }, {})) && router.refresh());
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Input type="date" value={exp} onChange={(e) => setExp(e.target.value)} className="h-8 w-40" aria-label="Expiry date" />

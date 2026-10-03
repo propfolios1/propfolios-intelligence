@@ -16,7 +16,7 @@ export function ForgetMemory({ id }: { id: string }) {
       onClick={async () => {
         if (!window.confirm("Clear this memory? The agent will relearn from the firm's records on its next runs.")) return;
         setBusy(true);
-        const r = await post(`/api/ai-memory/${id}`, {}, { method: "DELETE", ok: "Memory cleared", fail: "Memory not cleared" });
+        const r = await post(`/api/ai-memory/${id}`, {}, { method: "DELETE", fail: "Memory not cleared" });
         setBusy(false);
         if (r) router.refresh();
       }}

@@ -22,13 +22,13 @@ export function TenantControls({ tenantId, plan, status, features }: { tenantId:
   const [busy, setBusy] = React.useState(false);
   const [flags, setFlags] = React.useState(features);
 
-  async function patch(body: object, ok: string) {
+  async function patch(body: object, _ok: string) {
+    void _ok;
     setBusy(true);
     const res = await fetch(`/api/platform/tenants/${tenantId}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const json = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return void toast.error("Not updated", { description: json.error });
-    toast.success(ok);
     router.refresh();
   }
 

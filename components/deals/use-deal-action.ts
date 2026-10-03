@@ -8,7 +8,9 @@ import { toast } from "@/components/ui/toaster";
 export function useDealAction(dealId: string) {
   const router = useRouter();
   const [busy, setBusy] = React.useState<string | null>(null);
-  const run = async (action: string, body: Record<string, unknown>, done?: string) => {
+  // The third argument (a success message) is accepted for compatibility; outcomes show in the page itself, so no toast is raised.
+  const run = async (action: string, body: Record<string, unknown>, _done?: string) => {
+    void _done;
     setBusy(action);
     const res = await fetch(`/api/deals/${dealId}/${action}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     const json = await res.json().catch(() => ({}));
@@ -17,7 +19,6 @@ export function useDealAction(dealId: string) {
       toast.error("Not completed", { description: json.error });
       return null;
     }
-    if (done) toast.success(done);
     router.refresh();
     return json;
   };

@@ -27,7 +27,7 @@ export function ClientActions({ clientId }: { clientId: string }) {
         <a href={`/api/demo/persona?as=analyst&client=${clientId}&to=/client/portfolio`}>Preview client portal</a>
       </Button>
       <Button asChild>
-        <Link href={`/analyst/mandates/new?client=${clientId}`}>Create Mandate</Link>
+        <Link href={`/analyst/mandates/new?client=${clientId}`}>Create mandate</Link>
       </Button>
     </div>
   );

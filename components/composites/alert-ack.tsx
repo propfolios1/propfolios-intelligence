@@ -14,7 +14,7 @@ export function AlertAck({ id, acknowledged }: { id: string; acknowledged: boole
     const res = await fetch("/api/alerts", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, acknowledged: next }) });
     if (!res.ok) {
       setAck(!next);
-      return void toast.error("Alert not updated");
+      return void toast.error("Alert not updated", { description: "The connection dropped before the change was saved. Retry; the alert stays open until it is acknowledged." });
     }
     router.refresh();
   }

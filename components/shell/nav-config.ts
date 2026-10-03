@@ -197,7 +197,7 @@ export const SEGMENT_LABEL: Record<string, string> = {
   admin: "Admin",
   dashboard: "Dashboard",
   mandates: "Mandates",
-  new: "Create Mandate",
+  new: "Create mandate",
   memos: "Memos",
   clients: "Clients",
   properties: "Properties",

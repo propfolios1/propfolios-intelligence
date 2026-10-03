@@ -25,7 +25,7 @@ export default async function MandatesPage() {
         subtitle={`${rows.length} mandates across ${clients.length} clients; ${open} open. Drag a card back to re-open a stage.`}
         actions={
           <Button asChild>
-            <Link href="/analyst/mandates/new">Create Mandate</Link>
+            <Link href="/analyst/mandates/new">Create mandate</Link>
           </Button>
         }
       />

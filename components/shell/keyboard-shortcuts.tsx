@@ -51,7 +51,7 @@ export function KeyboardShortcuts({ area }: { area: Area }) {
   const rows: [React.ReactNode, string][] = [
     [<Kbd key="k">⌘K</Kbd>, "Search mandates, properties, clients and actions"],
     [<Kbd key="s">⌘/</Kbd>, "Show keyboard shortcuts"],
-    ...(area === "analyst" ? ([[<Kbd key="n">N</Kbd>, "Create Mandate"]] as [React.ReactNode, string][]) : []),
+    ...(area === "analyst" ? ([[<Kbd key="n">N</Kbd>, "Create mandate"]] as [React.ReactNode, string][]) : []),
     [
       <span key="arrows" className="flex gap-1">
         <Kbd>↑</Kbd>

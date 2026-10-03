@@ -33,7 +33,7 @@ interface PropertyOpt {
 type Errors = Partial<Record<string, string>>;
 
 /**
- * Create Mandate. On submit the mandate is created, the agent pipeline is
+ * Create mandate. On submit the mandate is created, the agent pipeline is
  * started and the analyst lands on the live timeline.
  */
 export function CreateMandateForm({ clients, properties, defaultClientId, defaultPropertyId }: { clients: ClientOpt[]; properties: PropertyOpt[]; defaultClientId?: string; defaultPropertyId?: string }) {
@@ -161,7 +161,7 @@ export function CreateMandateForm({ clients, properties, defaultClientId, defaul
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-hairline pt-6">
           <Button type="submit" size="lg" disabled={submitting}>
-            {submitting ? "Creating mandate" : "Create Mandate and run agents"}
+            {submitting ? "Creating mandate" : "Create mandate and run agents"}
           </Button>
           <Button type="button" variant="ghost" onClick={() => router.back()}>
             Cancel

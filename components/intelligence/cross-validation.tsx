@@ -48,7 +48,6 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
     const json = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return void toast.error("Cross-validation not run", { description: json.error });
-    toast.success(json.flagged ? "The models disagree" : "The models agree", { description: json.flagged ? "The mandate is flagged for human review." : undefined });
     router.refresh();
   }
 
@@ -58,7 +57,6 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
     const json = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return void toast.error("Not resolved", { description: json.error });
-    toast.success("Disagreement resolved", { description: "Recorded in the audit log." });
     setNote("");
     router.refresh();
   }

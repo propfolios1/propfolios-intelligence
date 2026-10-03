@@ -19,7 +19,7 @@ export function RecordPayment({ id, currency, outstanding }: { id: string; curre
       className="grid gap-3 rounded-md border border-hairline bg-surface p-5 shadow-card sm:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (await post(`/api/invoices/${id}/payment`, { amount, method, reference, receivedAt: date }, { ok: "Payment recorded" })) router.refresh();
+        if (await post(`/api/invoices/${id}/payment`, { amount, method, reference, receivedAt: date }, {})) router.refresh();
       }}
     >
       <FormField label="Amount received">
@@ -61,7 +61,7 @@ export function InvoiceButtons({ id, status, email }: { id: string; status: stri
         Print
       </Button>
       {status !== "paid" && status !== "void" && (
-        <Button variant="destructive" onClick={async () => void ((await post(`/api/invoices/${id}/void`, {}, { ok: "Invoice voided; the commission is open for re-invoicing" })) && router.refresh())}>
+        <Button variant="destructive" onClick={async () => void ((await post(`/api/invoices/${id}/void`, {}, {})) && router.refresh())}>
           Void
         </Button>
       )}

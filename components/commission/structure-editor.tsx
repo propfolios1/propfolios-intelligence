@@ -174,7 +174,7 @@ export function DeactivateStructure({ id }: { id: string }) {
       variant="ghost"
       size="sm"
       onClick={async () => {
-        if (await post(`/api/commissions/structures/${id}`, {}, { method: "DELETE", ok: "Structure deactivated" })) router.refresh();
+        if (await post(`/api/commissions/structures/${id}`, {}, { method: "DELETE" })) router.refresh();
       }}
     >
       Deactivate

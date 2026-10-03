@@ -20,7 +20,7 @@ export function SeedButton() {
             const r = await fetch("/api/admin/reseed", { method: "POST" });
             setState("idle");
             if (r.ok) toast.success("Demonstration data restored");
-            else toast.error("Reset failed");
+            else toast.error("Reset not completed", { description: "The database refused the reset. Retry, or run /api/setup with your setup secret from the deployment." });
             router.refresh();
           }}
         >

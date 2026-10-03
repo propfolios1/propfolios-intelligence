@@ -76,7 +76,7 @@ export function DemoConsole({ assets }: { assets: Asset[] }) {
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
       <form onSubmit={run} className="flex flex-col gap-5 xl:col-span-4">
         <Card>
-          <CardHeader eyebrow="Your allocation" title="Create Mandate" />
+          <CardHeader eyebrow="Your allocation" title="Create mandate" />
           <CardContent className="grid gap-5">
             <FormField label="Asset" htmlFor="asset">
               <Select id="asset" value={slug} onChange={(e) => setSlug(e.target.value)}>

@@ -25,7 +25,7 @@ export function AccessRoleSelect({ userId, value, options, disabled }: { userId:
         const prev = v;
         setV(next);
         setBusy(true);
-        const r = await post("/api/admin/access-roles", { userId, accessRole: next }, { ok: "Access role updated", fail: "Access role not changed" });
+        const r = await post("/api/admin/access-roles", { userId, accessRole: next }, { fail: "Access role not changed" });
         setBusy(false);
         if (r) router.refresh();
         else setV(prev);

@@ -5,7 +5,7 @@ import { getDb } from "@/db";
 import { requireRole } from "@/lib/auth";
 import { listClients, listProperties } from "@/lib/queries";
 
-export const metadata = { title: "Create Mandate" };
+export const metadata = { title: "Create mandate" };
 export const dynamic = "force-dynamic";
 
 export default async function NewMandatePage({ searchParams }: { searchParams: Promise<{ client?: string; property?: string }> }) {
@@ -15,7 +15,7 @@ export default async function NewMandatePage({ searchParams }: { searchParams: P
   const [clients, properties] = await Promise.all([listClients(db, user), listProperties(db, user.tenantId)]);
   return (
     <PageContainer>
-      <PageHeader eyebrow="New engagement" title="Create Mandate" subtitle="The agent pipeline starts as soon as the mandate is created. Expect a draft memo in under a minute in replay mode, a few minutes with live models." />
+      <PageHeader eyebrow="New engagement" title="Create mandate" subtitle="The agent pipeline starts as soon as the mandate is created. Expect a draft memo in under a minute in replay mode, a few minutes with live models." />
       <CreateMandateForm
         defaultClientId={sp.client}
         defaultPropertyId={sp.property}

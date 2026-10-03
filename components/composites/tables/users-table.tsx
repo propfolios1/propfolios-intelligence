@@ -50,12 +50,6 @@ export function UsersTable({
     const json = await res.json().catch(() => ({}));
     if (!res.ok)
       return void toast.error("Role not changed", { description: json.error });
-    toast.success(
-      `${u.name} is now ${role === "tenant_admin" ? "an administrator" : `an ${role}`}`.replace(
-        "an client",
-        "a client",
-      ),
-    );
     router.refresh();
   }
   const columns: ColumnDef<UserRow, unknown>[] = [
@@ -180,7 +174,6 @@ export function UsersTable({
               if (u.id === selfId) return void toast.error("You cannot remove your own account.");
               const res = await fetch(`/api/admin/users?id=${u.id}`, { method: "DELETE" });
               if (!res.ok) return void toast.error("Not removed", { description: (await res.json().catch(() => ({}))).error });
-              toast.success(`${u.name} removed`);
               router.refresh();
             },
           },

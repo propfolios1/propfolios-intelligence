@@ -51,7 +51,7 @@ export function AutomationBuilder() {
     }
   };
   const save = async () => {
-    const r = await post("/api/automations", draft, { ok: "Automation saved and enabled", fail: "Automation not saved" });
+    const r = await post("/api/automations", draft, { fail: "Automation not saved" });
     if (r) {
       setDraft({ name: "", trigger: "deal.closed", conditions: [], actions: [{ type: "notify_team" }] });
       setAgent(null);
@@ -158,7 +158,7 @@ export function AutomationToggle({ id, enabled }: { id: string; enabled: boolean
       <Button size="sm" variant="secondary" onClick={async () => void ((await post(`/api/automations/${id}`, { enabled: !enabled }, { method: "PATCH", ok: enabled ? "Paused" : "Enabled" })) && router.refresh())}>
         {enabled ? "Pause" : "Enable"}
       </Button>
-      <Button size="sm" variant="ghost" onClick={async () => void ((await post(`/api/automations/${id}`, {}, { method: "DELETE", ok: "Deleted" })) && router.refresh())}>
+      <Button size="sm" variant="ghost" onClick={async () => void ((await post(`/api/automations/${id}`, {}, { method: "DELETE" })) && router.refresh())}>
         Delete
       </Button>
     </div>

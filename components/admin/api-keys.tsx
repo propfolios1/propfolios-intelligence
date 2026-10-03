@@ -40,8 +40,7 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyRow[] }) {
   }
   async function revoke(id: string) {
     const res = await fetch(`/api/admin/api-keys?id=${id}`, { method: "DELETE" });
-    if (!res.ok) return void toast.error("Key not revoked");
-    toast.success("Key revoked", { description: "Requests with it are refused from now on." });
+    if (!res.ok) return void toast.error("Key not revoked", { description: "The key still works. Retry, or remove it from the integration first if the request timed out." });
     router.refresh();
   }
   return (

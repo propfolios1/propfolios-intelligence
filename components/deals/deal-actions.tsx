@@ -272,7 +272,7 @@ export function CloseDeal({ dealId, disabledReason }: { dealId: string; disabled
               onClick={async () => {
                 const r = await run("lose", { reason }, "Deal marked lost");
                 if (r) setLose(false);
-                else toast.error("Not updated");
+                else toast.error("Deal not updated", { description: "The change was not saved. Retry; if it persists, reload the deal to see its current stage." });
               }}
             >
               Mark lost

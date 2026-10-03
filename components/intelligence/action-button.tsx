@@ -50,7 +50,6 @@ function useAct(id: string) {
     const json = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return void toast.error(verb === "execute" ? "Action not executed" : verb === "reverse" ? "Action not reversed" : "Not dismissed", { description: json.error });
-    toast.success(verb === "execute" ? "Action executed" : verb === "reverse" ? "Action reversed" : "Action dismissed", { description: verb === "reverse" ? "Every change it made has been undone." : undefined });
     router.refresh();
   };
   return { busy, act };
@@ -188,7 +187,6 @@ export function ProposeActionDialog({ mandateId, clientId }: { mandateId?: strin
     const json = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return void toast.error("Action not proposed", { description: json.error });
-    toast.success("Action proposed", { description: "Approve it to run." });
     setOpen(false);
     setTitle("");
     setRationale("");

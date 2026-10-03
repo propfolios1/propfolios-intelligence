@@ -80,11 +80,9 @@ export function LiveMandate({
       setRunning(s.running);
       setCost(s.totalCostUsd);
       if (s.status !== statusRef.current) {
-        const done = statusRef.current;
         statusRef.current = s.status;
         setStatus(s.status);
         setProgress({});
-        if (AUTOMATED_STAGES.includes(done)) toast.success(`${STAGE_LABEL[done]} complete`);
         if (s.status === "REVIEW") toast.success("Memo drafted", { description: "The mandate is ready for committee review." });
         router.refresh();
       }

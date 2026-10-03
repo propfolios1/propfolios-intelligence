@@ -41,7 +41,7 @@ export function InsightCard({ insight, onChanged, compact }: { insight: InsightV
     const res = await fetch("/api/insights", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: insight.id, status }) });
     if (!res.ok) {
       setHidden(false);
-      return void toast.error("Not updated");
+      return void toast.error("Insight not updated", { description: "The change was not saved. Retry in a moment." });
     }
     onChanged?.();
   }
