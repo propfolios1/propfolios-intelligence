@@ -28,7 +28,7 @@ export default async function KycList() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration · Compliance" title="Know your customer" subtitle="Customer due diligence under the UAE AML regime and India's KYC norms: required documents by residency, source of funds, risk rating, screening and expiry. Transactions are blocked while KYC is not verified." />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Verified" value={`${rows.filter((r) => r.kyc.status === "verified").length} of ${rows.length}`} />
         <StatCard label="Outstanding" value={String(rows.filter((r) => r.kyc.status !== "verified").length)} />
         <StatCard label="Expiring within 60 days" value={String(soon.length)} />

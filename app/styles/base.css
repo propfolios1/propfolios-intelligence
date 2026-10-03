@@ -131,3 +131,33 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Stat row: figures in a line, divided by 1px vertical hairlines, closed by a
+ * hairline beneath. No cards, no fills, no shadows. On phones the blocks
+ * stack two to a row without dividers.
+ */
+@utility stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  row-gap: 24px;
+  padding-block: 24px;
+  border-bottom: 1px solid var(--hairline);
+  & > * {
+    min-width: 0;
+    padding-inline: 24px;
+    border-inline-start: 1px solid var(--hairline);
+  }
+  & > *:first-child {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+  @media (width < 40rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    & > * {
+      padding-inline: 0;
+      border-inline-start: 0;
+    }
+  }
+}

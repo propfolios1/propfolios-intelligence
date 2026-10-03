@@ -17,7 +17,7 @@ export default async function MetricsPage() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Nakhla platform, last 90 days" title="AI usage and quality" subtitle="Agent cost, volume and output quality across all tenants. Quality is measured on structured outputs that pass schema validation first time, stage failures, and memo figures that match the engine." />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Agent runs" value={m.totals.runs.toLocaleString("en-US")} note={`${(m.totals.tokens / 1e6).toFixed(2)}M tokens`} spark={m.weekly.map((w) => w.runs)} />
         <StatCard label="AI cost" value={`$${m.totals.cost.toFixed(2)}`} spark={m.weekly.map((w) => w.cost)} />
         <StatCard label="First-pass validation" value={`${m.totals.firstPassRate.toFixed(1)}%`} note={`${m.totals.failureRate.toFixed(1)}% of runs failed`} />

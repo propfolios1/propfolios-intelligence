@@ -22,7 +22,7 @@ export default async function AnalystCommissions() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Execution" title="My commissions" subtitle="Your share of every closed deal, from the firm's commission structures, and where each stands: earned, approved, paid." />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section className="mt-8 stat-row">
         <StatCard label="Earned" value={formatLocal(total(() => true), "AED")} note={`${mine.length} shares`} />
         <StatCard label="Approved, unpaid" value={formatLocal(total((x) => x.status === "approved"), "AED")} />
         <StatCard label="Paid" value={formatLocal(total((x) => x.status === "paid"), "AED")} />

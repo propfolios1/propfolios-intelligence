@@ -41,7 +41,7 @@ export default async function BillingPage() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration" title="Billing" subtitle={`Invoiced monthly in AED by bank transfer. VAT at ${VAT_RATE * 100}% applies. Questions: billing@nakhla.ai.`} />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section className="mt-8 stat-row">
         <StatCard label="Plan" value={seats.plan.name} note={`AED ${seats.plan.priceAed.toLocaleString("en-US")} a month`} />
         <StatCard label="Status" value={trialDays !== null ? `Trial, ${trialDays} days left` : sub?.status === "active" ? "Active" : (sub?.status ?? "None")} note={sub ? `Current period ends ${formatDate(sub.currentPeriodEnd)}` : undefined} />
         <StatCard label="Staff seats" value={`${seats.used} / ${seats.limit ?? "∞"}`} note="Clients do not use seats" />

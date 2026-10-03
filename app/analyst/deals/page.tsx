@@ -41,7 +41,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
   return (
     <PageContainer>
       <PageHeader eyebrow="Execution" title="Deals" subtitle="From first offer to completion: offers and counters, negotiation rounds, contracts and signatures, the jurisdiction's closing checklist and the payment schedule. Closing a deal starts the commission chain." actions={<CreateDeal clients={clients} properties={props.filter((p) => !!p)} />} />
-      <section className="my-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="my-8 stat-row">
         <StatCard label="Active deals" value={String(active.length)} note={`${rows.length} in total`} />
         <StatCard label="Pipeline" value={formatLocal(pipeline, "AED")} note="Active, at deal value" />
         <StatCard label="Probability-weighted" value={formatLocal(weighted, "AED")} note="Deal predictor forecasts" />

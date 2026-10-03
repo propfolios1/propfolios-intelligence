@@ -35,7 +35,7 @@ export default async function PlatformBi() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Nakhla platform" title="Business intelligence" subtitle={`The benchmark programme across advisory firms and the data products built on it. Benchmarks publish at ${MIN_FIRMS} firms and ${MIN_OBSERVATIONS} observations; below that they are held as indicative and never leave the platform.`} />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Contributing firms" value={String(firms[0]?.n ?? 0)} note={`${MIN_FIRMS} needed to publish`} />
         <StatCard label="Benchmarks computed" value={String(bench.length)} note={last ? `Last run ${formatDate(last)}` : "Not yet run"} />
         <StatCard label="Published" value={String(bench.filter((b) => b.published).length)} note={`${bench.filter((b) => !b.published).length} indicative`} />

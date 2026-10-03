@@ -31,7 +31,7 @@ export default async function FederationDashboard() {
   return (
     <PageContainer>
       <PageHeader eyebrow={<Link href="/platform/federation">Nakhla platform · Federation</Link>} title="Federation dashboard" subtitle="The data moat in one view: who contributes, how the pool grows, and how close each benchmark category is to its publication threshold." />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Consent rate" value={`${firms.length ? Math.round((consenting / firms.length) * 100) : 0}%`} note={`${consenting} of ${firms.length} active firms`} />
         <StatCard label="Learnings in the pool" value={String(stats.deals)} note={`from ${stats.advisories} advisories`} />
         <StatCard label="Published baselines" value={String(stats.baselines)} note={`k = ${MIN_DEALS} deals, ${MIN_ADVISORIES} firms`} />

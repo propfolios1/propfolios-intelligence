@@ -62,7 +62,7 @@ export default async function Compliance({ searchParams }: { searchParams: Promi
         title="Compliance"
         subtitle="Data subject requests under the UAE PDPL, India's DPDP Act and the GDPR, consent by purpose, retention by jurisdiction, and the integrity of the records the firm relies on."
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Open requests" value={String(open.length)} note={`${RESPONSE_DAYS["UAE PDPL"]}-day statutory response`} />
         <StatCard label="Past due" value={String(overdue.length)} note={overdue.length ? "Respond today" : "All within deadline"} />
         <StatCard label="Consents recorded" value={String(consents.length)} note={`${consents.filter((c) => c.granted).length} granted`} />

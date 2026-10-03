@@ -20,7 +20,7 @@ export default async function ClientsPage() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Relationships" title="Clients" subtitle="Families and individuals under advice, their real estate holdings and open mandates." />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section className="mt-8 stat-row">
         <StatCard label="Assets under advice" value={formatAed(aum)} />
         <StatCard label="Real estate held" value={formatAed(value)} note={`${clients.reduce((a, c) => a + c.holdings, 0)} holdings`} />
         <StatCard label="Active mandates" value={String(clients.reduce((a, c) => a + c.activeMandates, 0))} />

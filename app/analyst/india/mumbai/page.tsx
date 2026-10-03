@@ -43,7 +43,7 @@ export default async function MumbaiPage({ searchParams }: { searchParams: Promi
   return (
     <PageContainer>
       <PageHeader eyebrow="India · Maharashtra" title="Mumbai desk" subtitle="Fifteen Mumbai projects across five developers, read against MahaRERA, IGR, the Ready Reckoner, City Survey and 7/12 records, MCGM approvals and DCPR 2034." />
-      <section className="my-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="my-8 stat-row">
         <StatCard label="Projects" value={String(rows.length)} note={`${rows.filter((r) => r.property.status !== "ready").length} under construction`} />
         <StatCard label="Extended registrations" value={String(rows.filter((r) => r.record.reraStatus === "extended").length)} note="s.6 extensions" />
         <StatCard label="Open complaints" value={String(open.length)} note={`${complaints.length} before MahaRERA`} />

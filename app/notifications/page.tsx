@@ -55,7 +55,7 @@ export default async function Notifications({ searchParams }: { searchParams: Pr
         subtitle="Everything addressed to you across deals, commissions, compliance and research, with control over what arrives by email and when."
         actions={<MarkRead ids="all" label="Mark all as read" variant="secondary" />}
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Unread" value={String(unread.length)} />
         <StatCard label="High priority" value={String(unread.filter((r) => r.priority === "high").length)} />
         <StatCard label="Mentions" value={String(rows.filter((r) => r.category === "mentions").length)} />

@@ -32,7 +32,7 @@ export default async function PlatformFederation() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Layer 6" title="Federated intelligence" subtitle={`Anonymised learnings pooled across consenting advisories. Baselines publish at ${MIN_DEALS} or more deals from ${MIN_ADVISORIES} or more firms.`} actions={<FederationRunButton />} />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Learnings" value={String(stats.deals)} note="Delivered mandates, anonymised" />
         <StatCard label="Contributing advisories" value={String(stats.advisories)} note={`${tenants.length} firms opted in`} />
         <StatCard label="Published baselines" value={String(stats.baselines)} note={`${segments.length} segments, ${developers.length} developers`} />

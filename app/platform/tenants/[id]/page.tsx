@@ -47,7 +47,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
           </>
         }
       />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="MRR" value={t.mrrAed ? formatAed(t.mrrAed) : "—"} note={t.subscription ? `Renews ${formatDate(t.subscription.currentPeriodEnd)}` : "No subscription"} />
         <StatCard label="Staff seats" value={`${t.staff} / ${t.seatLimit ?? "∞"}`} />
         <StatCard label="Clients and AUM" value={String(t.clients)} note={t.aumAed ? `${formatAed(t.aumAed)} under advice` : undefined} />

@@ -32,7 +32,7 @@ export default async function AdminInvoices({ searchParams }: { searchParams: Pr
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration · Revenue" title="Invoices" subtitle="Commission and advisory-fee invoices with UAE VAT or India GST and s.194H TDS, payments received, bank reconciliation and the returns they feed." />
-      <section className="my-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="my-8 stat-row">
         <StatCard label="Invoices" value={String(rows.length)} />
         <StatCard label="Outstanding" value={formatLocal(outstanding, "AED")} note={`${open.length} open`} />
         <StatCard label="Overdue" value={String(rows.filter((r) => r.invoice.status === "overdue").length)} />

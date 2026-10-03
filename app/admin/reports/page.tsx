@@ -32,7 +32,7 @@ export default async function AdminReports() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration · Client servicing" title="Reports and statements" subtitle="Monthly statements on the 1st, quarterly reports on the first day of each quarter and annual tax documents on 1 April, written by the report writer and statement agents. Generate any of them on demand." />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Reports" value={String(reports.length)} />
         <StatCard label="Statements" value={String(statements.length)} />
         <StatCard label="Viewed by clients" value={String(reports.filter((r) => r.r.viewedAt).length)} />

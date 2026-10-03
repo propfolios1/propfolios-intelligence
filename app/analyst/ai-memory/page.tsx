@@ -53,7 +53,7 @@ export default async function AiMemory() {
         title="AI memory"
         subtitle="What the agents have learned about this firm: its house style, its clients, the developers it works with and how its deals close. Memory is loaded before each run and updated after it, and never leaves this workspace."
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Learned memories" value={String(learned.length)} />
         <StatCard label="Agents learning" value={String(new Set(learned.map((m) => m.agentName)).size)} />
         <StatCard label="Stored outputs" value={String(outputs.reduce((a, o) => a + o.n, 0))} note="Shown inline on each page" />

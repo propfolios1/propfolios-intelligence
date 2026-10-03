@@ -40,7 +40,7 @@ export default async function GoaPage({ searchParams }: { searchParams: Promise<
   return (
     <PageContainer>
       <PageHeader eyebrow="India · Goa" title="Goa desk" subtitle="Villas and holiday homes from Sun Estates, Acron, Veera and Empire, read against Goa RERA, the Regional Plan 2021, CRZ, Comunidade grants, the mundkar register and Form I and XIV." />
-      <section className="my-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="my-8 stat-row">
         <StatCard label="Projects" value={String(rows.length)} note={`${rows.filter((r) => r.property.assetClass === "Villa").length} villa communities`} />
         <StatCard label="With land conditions" value={String(conditioned.length)} note="Conversion, mundkar or CRZ-III" />
         <StatCard label="Comunidade origin" value={String(rows.filter((r) => r.record.comunidade).length)} note="Aforamento title" />

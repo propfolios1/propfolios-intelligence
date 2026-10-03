@@ -38,7 +38,7 @@ export default async function PlatformDashboard() {
           </Button>
         }
       />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Monthly recurring revenue" value={formatAed(d.mrr)} delta={prev ? ((last - prev) / prev) * 100 : undefined} deltaLabel="month on month" spark={d.history.map((h) => h.mrr)} />
         <StatCard label="Annual run rate" value={formatAed(d.arr)} note="Excluding VAT" />
         <StatCard label="Churn, 90 days" value={`${d.churnRate90.toFixed(1)}%`} note="Cancelled over active plus cancelled" invert />

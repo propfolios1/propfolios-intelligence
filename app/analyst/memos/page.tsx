@@ -16,7 +16,7 @@ export default async function MemosPage() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Investment committee" title="Memos" subtitle="Allocation and Exit Memos drafted by the memo agent, edited by analysts and approved by the committee before delivery." />
-      <section className="mt-8 grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="In review" value={String(count("in_review"))} />
         <StatCard label="Draft" value={String(count("draft"))} />
         <StatCard label="Approved" value={String(count("approved"))} />

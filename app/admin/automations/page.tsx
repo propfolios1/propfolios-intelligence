@@ -26,7 +26,7 @@ export default async function Automations() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration · Operations" title="Automations" subtitle="When something happens, check conditions, then act: notify the team, email, create a task, generate a report or post to Slack. Every run is recorded, matched or not." />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Automations" value={String(rules.length)} note={`${rules.filter((r) => r.enabled).length} enabled`} />
         <StatCard label="Runs recorded" value={String(rules.reduce((a, r) => a + r.runCount, 0))} />
         <StatCard label="Last 30 runs: acted" value={String(runs.filter((r) => r.r.status === "succeeded").length)} />

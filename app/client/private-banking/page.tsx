@@ -24,7 +24,7 @@ export default async function PrivateBanking() {
         <p className="mt-8 max-w-[60ch] text-body text-ink-700">This service is available to clients with declared real estate wealth of AED 50 million or more. Your relationship manager can tell you more about it.</p>
       ) : (
         <>
-          <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <section className="mt-8 stat-row">
             <StatCard label="Declared wealth" value={formatLocal(p!.client.aumAed, "AED")} />
             <StatCard label="Review cadence" value="Quarterly" note="Monthly liquidity check-in" />
             <StatCard label="Relationship" value={p!.client.type} />

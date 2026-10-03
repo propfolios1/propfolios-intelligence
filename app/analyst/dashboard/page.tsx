@@ -47,7 +47,7 @@ export default async function Dashboard() {
         }
       />
 
-      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Key figures">
+      <section className="mt-8 stat-row" aria-label="Key figures">
         <StatCard label="Assets under advice" value={formatAed(d.aum)} note={`${d.clientCount} clients`} href="/analyst/clients" />
         <StatCard label="Active mandates" value={String(d.active)} note={`${d.delivered30} delivered in 30 days`} href="/analyst/mandates" />
         <StatCard label="Awaiting review" value={String(d.inReview)} note="Investment committee" href="/analyst/mandates?status=REVIEW" />

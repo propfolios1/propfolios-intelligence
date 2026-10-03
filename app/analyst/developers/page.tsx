@@ -22,7 +22,7 @@ export default async function DevelopersPage() {
         title="Developer risk"
         subtitle="Composite score of delivery record (35%), financial health (25%), litigation (15%), market sentiment (15%) and escrow compliance (10%). Lower is stronger. Re-scored weekly by the developer risk agent."
       />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section className="mt-8 stat-row">
         <StatCard label="Developers scored" value={String(rows.length)} note={`${rows.filter((d) => d.market === "UAE").length} UAE, ${rows.filter((d) => d.market === "India").length} India`} />
         <StatCard label="Average risk score" value={avg.toFixed(1)} note={`${elevated} above 25`} />
         <StatCard label="Strongest" value={best.name} note={`Score ${best.riskScore.toFixed(1)}`} />

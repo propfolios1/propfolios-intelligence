@@ -40,7 +40,7 @@ export default async function AiControl() {
         title="AI control"
         subtitle={`Forty-five agents work for this firm. Switch any vertical agent off, set a monthly budget and test-run an agent on representative input before relying on it. The pipeline agents that produce mandates cannot be switched off. Every run is held to an average below $${COST_CEILING_USD.toFixed(2)}.`}
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Spend this month" value={`$${spend.toFixed(2)}`} note={ai.monthlyBudgetUsd ? `of $${ai.monthlyBudgetUsd.toLocaleString("en-US")} budget` : "No budget set"} />
         <StatCard label="Agent runs this month" value={String(month?.runs ?? 0)} />
         <StatCard label="Agents switched off" value={String(ai.disabledAgents.length)} />

@@ -59,7 +59,7 @@ export default async function AdminDashboard() {
           </>
         }
       />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Staff seats" value={`${seats.used} / ${seats.limit ?? "∞"}`} note={users?.invited ? `${users.invited} invitations pending` : "All accepted"} href="/admin/users" />
         <StatCard label="Clients" value={String(clients?.n ?? 0)} note={`${formatAed(clients?.aum ?? 0)} under advice`} href="/analyst/clients" />
         <StatCard label="Mandates" value={String(mandates?.n ?? 0)} note={`${mandates?.open ?? 0} in progress`} href="/analyst/mandates" />

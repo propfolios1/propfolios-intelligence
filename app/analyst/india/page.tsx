@@ -33,7 +33,7 @@ export default async function IndiaPage() {
           </Link>
         }
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Mumbai projects" value={String(mh.length)} note={`${mh.filter((r) => r.record.reraStatus === "extended").length} with extended registration`} href="/analyst/india/mumbai" />
         <StatCard label="Goa projects" value={String(ga.length)} note={`${ga.filter((r) => r.record.mundkarStatus === "claimed" || r.record.conversionStatus === "applied").length} with land conditions`} href="/analyst/india/goa" />
         <StatCard label="Open RERA complaints" value={String(open)} note={`${complaints.length} on file`} />

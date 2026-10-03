@@ -38,7 +38,7 @@ export default async function MarketPage() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Market intelligence" title="Market" subtitle="Twelve months of residential transactions, pricing, supply and absorption for the four principal emirates. Sources: DLD, ADREC and municipal registers." />
-      <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-8 stat-row">
         {regions.map((r) => (
           <StatCard key={r.region} label={r.region} value={Math.round(r.latest.medianPriceSqft).toLocaleString("en-US")} unit="AED / sq ft" delta={r.priceChangePct} deltaLabel="12 months" spark={r.series.map((m) => m.medianPriceSqft)} />
         ))}

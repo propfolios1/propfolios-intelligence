@@ -47,7 +47,7 @@ export default async function PlatformAgents() {
         title="Agents"
         subtitle="The full catalogue: thirteen mandate pipeline agents and thirty-two vertical agents across India, deals, commission, the client layer, business intelligence and the OS fabric. Usage and cost are read from every tenant's audit trail."
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Agents" value={String(rows.length)} note={`${rows.filter((r) => r.runs > 0).length} have run`} />
         <StatCard label="Runs recorded" value={totalRuns.toLocaleString("en-US")} note={`$${totalUsd.toFixed(2)} live spend`} />
         <StatCard label="Mean cost per run" value={usd(meanCost)} note={`Ceiling $${COST_CEILING_USD.toFixed(2)}`} />

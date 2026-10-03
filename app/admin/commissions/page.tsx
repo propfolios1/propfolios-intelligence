@@ -41,7 +41,7 @@ export default async function AdminCommissions() {
           </div>
         }
       />
-      <section className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="mt-8 stat-row">
         <StatCard label="Commission earned" value={formatLocal(sum(() => true), "AED")} note={`${rows.length} deals, AED equivalent`} />
         <StatCard label="Invoiced, outstanding" value={formatLocal(sum((r) => r.commission.status === "invoiced"), "AED")} />
         <StatCard label="Received" value={formatLocal(sum((r) => r.commission.status === "received" || r.commission.status === "paid_out"), "AED")} />
