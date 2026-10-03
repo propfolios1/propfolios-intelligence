@@ -20,7 +20,7 @@ export function Tornado({ data }: { data: { driver: string; low: number; high: n
       </div>
       <div className="flex flex-col">
         {rows.map((d, i) => (
-          <div key={d.driver} className={cn("grid grid-cols-[minmax(140px,180px)_1fr] items-center gap-x-6 border-t border-ink-200 py-2.5", i === rows.length - 1 && "border-b")}>
+          <div key={d.driver} className={cn("grid grid-cols-[minmax(140px,180px)_1fr] items-center gap-x-6 border-t border-hairline py-2.5", i === rows.length - 1 && "border-b")}>
             <span className="truncate text-small text-ink-700">{d.driver}</span>
             <div className="relative h-5">
               <span className="absolute inset-y-[-10px] left-1/2 w-px bg-ink-500" aria-hidden />

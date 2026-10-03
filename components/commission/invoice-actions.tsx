@@ -16,7 +16,7 @@ export function RecordPayment({ id, currency, outstanding }: { id: string; curre
   const [date, setDate] = React.useState(new Date().toISOString().slice(0, 10));
   return (
     <form
-      className="grid gap-3 rounded-md border border-ink-200 bg-surface p-5 shadow-card sm:grid-cols-2"
+      className="grid gap-3 rounded-md border border-hairline bg-surface p-5 shadow-card sm:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
         if (await post(`/api/invoices/${id}/payment`, { amount, method, reference, receivedAt: date }, { ok: "Payment recorded" })) router.refresh();
@@ -87,9 +87,9 @@ export function ReconcilePanel() {
   };
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+      <div className="rounded-md border border-hairline bg-surface p-5 shadow-card">
         <FormField label="Bank statement (CSV)" hint="Columns: date, amount, reference. Matched by invoice number in the reference, then by a unique exact amount.">
-          <Textarea rows={6} className="font-mono text-[12px]" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder={"Date,Amount,Reference\n2026-09-24,66780,TRF INV-2026-0001"} />
+          <Textarea rows={6} className="font-mono text-axis" value={csv} onChange={(e) => setCsv(e.target.value)} placeholder={"Date,Amount,Reference\n2026-09-24,66780,TRF INV-2026-0001"} />
         </FormField>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <input
@@ -110,7 +110,7 @@ export function ReconcilePanel() {
         </div>
       </div>
       {preview && (
-        <div className="overflow-x-auto rounded-md border border-ink-200 bg-surface shadow-card">
+        <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
           <table className="w-full min-w-[640px] text-small">
             <thead className="bg-navy-50 text-left text-axis tracking-[0.06em] text-ink-500 uppercase">
               <tr>
@@ -124,7 +124,7 @@ export function ReconcilePanel() {
             </thead>
             <tbody>
               {preview.rows.map((r) => (
-                <tr key={r.line} className="border-t border-ink-200">
+                <tr key={r.line} className="border-t border-hairline">
                   <td className="num px-4 py-2">{r.line}</td>
                   <td className="px-4 py-2">{r.date}</td>
                   <td className="num px-4 py-2 text-right">{r.amount.toLocaleString("en-US")}</td>
@@ -148,7 +148,7 @@ export function TaxReportPanel() {
   const [report, setReport] = React.useState<{ data: { rows: { label: string; amount: number }[]; totals: Record<string, number>; currency: string; invoices: number } } | null>(null);
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+      <div className="flex flex-wrap items-end gap-3 rounded-md border border-hairline bg-surface p-5 shadow-card">
         <FormField label="Return">
           <Select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="uae_vat">UAE VAT (VAT201)</option>
@@ -162,12 +162,12 @@ export function TaxReportPanel() {
         <Button onClick={async () => setReport(await post("/api/commissions/tax-reports", { period, type }, { fail: "Report not generated" }))}>Generate</Button>
       </div>
       {report && (
-        <div className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+        <div className="rounded-md border border-hairline bg-surface p-5 shadow-card">
           <div className="eyebrow">{report.data.invoices} invoices</div>
           <table className="mt-3 w-full text-small">
             <tbody>
               {report.data.rows.map((r) => (
-                <tr key={r.label} className="border-t border-ink-200 first:border-t-0">
+                <tr key={r.label} className="border-t border-hairline first:border-t-0">
                   <td className="py-2 pr-4 text-ink-700">{r.label}</td>
                   <td className="num py-2 text-right text-ink-900">
                     {report.data.currency} {Math.round(r.amount).toLocaleString(report.data.currency === "INR" ? "en-IN" : "en-US")}

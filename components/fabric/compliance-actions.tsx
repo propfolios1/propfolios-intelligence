@@ -22,7 +22,7 @@ export function RetentionForm({ initial }: { initial: Retention }) {
   ];
   return (
     <form
-      className="rounded-lg border border-ink-200 bg-surface p-6 shadow-card"
+      className="rounded-md border border-hairline bg-surface p-6 shadow-card"
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
@@ -57,7 +57,7 @@ export function DataRequestForm({ clients }: { clients: { id: string; name: stri
   const [busy, setBusy] = React.useState(false);
   return (
     <form
-      className="grid gap-4 rounded-lg border border-ink-200 bg-surface p-6 shadow-card sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
+      className="grid gap-4 rounded-md border border-hairline bg-surface p-6 shadow-card sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
@@ -169,11 +169,9 @@ export function ConsentToggle({ clientId, purpose, granted, jurisdiction }: { cl
         setBusy(false);
         if (r) router.refresh();
       }}
-      className={
-        "rounded-full border px-2.5 py-0.5 text-[12px] transition-colors duration-150 disabled:opacity-60 " +
-        (granted ? "border-success/30 bg-success/10 text-success" : granted === false ? "border-danger/30 bg-danger/5 text-danger" : "border-ink-200 bg-ink-100 text-ink-500")
-      }
+      className="inline-flex h-6 items-center gap-1.5 rounded-full border border-hairline bg-surface px-2 text-axis text-ink-700 transition-colors duration-150 hover:bg-ink-50 disabled:opacity-60"
     >
+      <span className={"size-1.5 rounded-full " + (granted ? "bg-success" : granted === false ? "bg-danger" : "bg-ink-400")} aria-hidden />
       {granted ? "Granted" : granted === false ? "Withdrawn" : "Not asked"}
     </button>
   );

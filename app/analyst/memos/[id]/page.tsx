@@ -30,7 +30,7 @@ export default async function MemoPage({ params }: { params: Promise<{ id: strin
   return (
     <PageContainer className="pt-8 md:pt-10">
       <Crumb segment={id} label={mandate.reference} />
-      <header className="flex flex-col gap-4 border-b border-ink-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 border-b border-hairline pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <Link href={`/analyst/mandates/${mandate.id}`} className="num text-small text-ink-500 hover:text-ink-900">

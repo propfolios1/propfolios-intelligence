@@ -43,7 +43,7 @@ export function RecommendationsList({ items, assistantHref = "/client/assistant"
   return (
     <ol className="mt-6 flex max-w-[900px] flex-col gap-4">
       {shown.map((r, i) => (
-        <li key={r.id} className="grid grid-cols-[40px_1fr] gap-x-5 rounded-md border border-ink-200 bg-surface p-6 shadow-card md:grid-cols-[48px_1fr_100px]">
+        <li key={r.id} className="grid grid-cols-[40px_1fr] gap-x-5 rounded-md border border-hairline bg-surface p-6 shadow-card md:grid-cols-[48px_1fr_100px]">
           <span className="num pt-1 text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
           <div>
             <div className="eyebrow">

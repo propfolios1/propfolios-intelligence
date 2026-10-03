@@ -21,7 +21,7 @@ export const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-y-0 z-50 flex w-[300px] max-w-[86vw] flex-col border-ink-200 bg-surface shadow-float outline-none data-[state=open]:animate-sheet-in",
+        "fixed inset-y-0 z-50 flex w-[300px] max-w-[86vw] flex-col border-hairline bg-surface shadow-float outline-none data-[state=open]:animate-sheet-in",
         side === "left" ? "left-0 border-r" : "right-0 border-l",
         className,
       )}

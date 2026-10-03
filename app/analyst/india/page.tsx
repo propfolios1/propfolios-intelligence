@@ -41,15 +41,15 @@ export default async function IndiaPage() {
       </section>
 
       <div className="mt-10 grid gap-4 md:grid-cols-2">
-        <Link href="/analyst/india/mumbai" className="rounded-md border border-ink-200 bg-surface p-6 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
+        <Link href="/analyst/india/mumbai" className="rounded-md border border-hairline bg-surface p-6 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
           <div className="eyebrow">Maharashtra</div>
-          <div className="mt-3 font-display text-[24px] text-navy-900">Mumbai desk</div>
+          <div className="mt-3 font-display text-section text-navy-900">Mumbai desk</div>
           <p className="mt-2 text-small text-ink-700">MahaRERA, IGR Index II, Ready Reckoner, 7/12 and property cards, MCGM approvals, MHADA and SRA, DCPR 2034.</p>
           <div className="num mt-4 text-small text-ink-500">Stamp duty {MH_RATES.mumbaiStampPct + MH_RATES.mumbaiMetroCessPct}% · registration {MH_RATES.registrationPct}% capped at ₹{MH_RATES.registrationCapInr.toLocaleString("en-IN")}</div>
         </Link>
-        <Link href="/analyst/india/goa" className="rounded-md border border-ink-200 bg-surface p-6 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
+        <Link href="/analyst/india/goa" className="rounded-md border border-hairline bg-surface p-6 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
           <div className="eyebrow">Goa</div>
-          <div className="mt-3 font-display text-[24px] text-navy-900">Goa desk</div>
+          <div className="mt-3 font-display text-section text-navy-900">Goa desk</div>
           <p className="mt-2 text-small text-ink-700">Goa RERA, Regional Plan 2021, conversion sanads, CRZ, Comunidade aforamentos, mundkars, Form I and XIV, Escrituras.</p>
           <div className="num mt-4 text-small text-ink-500">Stamp duty {GOA_RATES.stampStandardPct}% ({GOA_RATES.stampWomenPct}% women) · registration {GOA_RATES.registrationPct}%</div>
         </Link>

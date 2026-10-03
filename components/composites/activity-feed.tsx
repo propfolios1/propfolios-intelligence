@@ -18,7 +18,7 @@ export interface ActivityItem {
 export function ActivityFeed({ items, linkMandates = true, className }: { items: ActivityItem[]; linkMandates?: boolean; className?: string }) {
   if (!items.length) return <p className={cn("py-6 text-small text-ink-500", className)}>No activity yet.</p>;
   return (
-    <ul className={cn("divide-y divide-ink-200", className)}>
+    <ul className={cn("divide-y divide-hairline", className)}>
       {items.map((a) => (
         <li key={a.id} className="grid grid-cols-[8px_1fr_auto] items-baseline gap-3 py-3">
           <span className={cn("size-1.5 translate-y-[-1px] rounded-full", a.actorType === "agent" ? "bg-gold-500" : a.actorType === "user" ? "bg-navy-900" : "bg-ink-400")} aria-hidden />

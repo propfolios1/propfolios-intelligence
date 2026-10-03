@@ -39,7 +39,7 @@ export default async function IntegrationsPage() {
         <thead>
           <tr>
             {["Service", "Used for", "Variable", "Status"].map((x) => (
-              <th key={x} className="eyebrow h-10 border-b border-ink-200 px-4 text-left font-medium first:pl-0">
+              <th key={x} className="eyebrow h-10 border-b border-hairline px-4 text-left font-medium first:pl-0">
                 {x}
               </th>
             ))}
@@ -48,10 +48,10 @@ export default async function IntegrationsPage() {
         <tbody>
           {rows.map(([name, purpose, env, ok]) => (
             <tr key={name} className="h-14 transition-[background-color] duration-120 hover:bg-ink-100">
-              <td className="border-b border-ink-200 text-ui text-ink-900">{name}</td>
-              <td className="border-b border-ink-200 px-4 text-ui text-ink-700">{purpose}</td>
-              <td className="num border-b border-ink-200 px-4 text-small text-ink-700">{env}</td>
-              <td className="border-b border-ink-200 px-4">{ok ? <StatusPill tone="complete">Connected</StatusPill> : <StatusPill>Not set</StatusPill>}</td>
+              <td className="border-b border-hairline text-ui text-ink-900">{name}</td>
+              <td className="border-b border-hairline px-4 text-ui text-ink-700">{purpose}</td>
+              <td className="num border-b border-hairline px-4 text-small text-ink-700">{env}</td>
+              <td className="border-b border-hairline px-4">{ok ? <StatusPill tone="complete">Connected</StatusPill> : <StatusPill>Not set</StatusPill>}</td>
             </tr>
           ))}
         </tbody>
@@ -79,7 +79,7 @@ export default async function IntegrationsPage() {
             </div>
             <div>
               <div className="eyebrow mb-1">Tools</div>
-              <ul className="divide-y divide-ink-200 border-y border-ink-200">
+              <ul className="divide-y divide-hairline border-y border-hairline">
                 {TOOL_NAMES.map((t) => (
                   <li key={t} className="py-2">
                     <code className="num text-ink-900">{t}</code>

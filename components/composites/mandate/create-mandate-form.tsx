@@ -159,7 +159,7 @@ export function CreateMandateForm({ clients, properties, defaultClientId, defaul
             <Input id="deadline" type="date" className="num" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
           </FormField>
         </div>
-        <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-ink-200 pt-6">
+        <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-hairline pt-6">
           <Button type="submit" size="lg" disabled={submitting}>
             {submitting ? "Creating mandate" : "Create Mandate and run agents"}
           </Button>
@@ -176,7 +176,7 @@ export function CreateMandateForm({ clients, properties, defaultClientId, defaul
             <p className="text-small text-ink-500">
               {property.community}, {property.city}
             </p>
-            <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-ink-200 pt-4 text-small">
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-hairline pt-4 text-small">
               <dt className="text-ink-500">Price range</dt>
               <dd className="num text-right text-ink-900">
                 {formatLocal(property.priceMin, property.currency)} to {formatLocal(property.priceMax, property.currency)}

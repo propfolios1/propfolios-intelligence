@@ -79,13 +79,13 @@ export default async function PlatformAgents() {
               cell: (r) => (
                 <div>
                   <div className="text-ink-900">{r.label}</div>
-                  <div className="max-w-[42ch] text-[12px] text-ink-500">{r.description}</div>
+                  <div className="max-w-[42ch] text-axis text-ink-500">{r.description}</div>
                 </div>
               ),
             },
             { key: "m", header: "Module", cell: (r) => r.module },
-            { key: "p", header: "Prompt", cell: (r) => <span className="num text-[12px]">{r.promptVersion}</span> },
-            { key: "t", header: "Triggered by", cell: (r) => (r.events.length ? <span className="num text-[12px]">{r.events.join(", ")}</span> : <span className="text-ink-400">On demand</span>) },
+            { key: "p", header: "Prompt", cell: (r) => <span className="num text-axis">{r.promptVersion}</span> },
+            { key: "t", header: "Triggered by", cell: (r) => (r.events.length ? <span className="num text-axis">{r.events.join(", ")}</span> : <span className="text-ink-400">On demand</span>) },
             { key: "r", header: "Runs", numeric: true, cell: (r) => r.runs },
             { key: "f", header: "Firms, 30d", numeric: true, cell: (r) => r.firms },
             { key: "c", header: "Avg / run", numeric: true, cell: (r) => (r.avg !== null ? usd(r.avg) : r.estimateUsd !== null ? `${usd(r.estimateUsd)} est.` : "Replay only") },

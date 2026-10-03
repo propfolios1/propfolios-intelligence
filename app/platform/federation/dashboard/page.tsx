@@ -38,7 +38,7 @@ export default async function FederationDashboard() {
         <StatCard label="Last aggregation" value={runs[0] ? formatDate(runs[0].createdAt) : "Never"} />
       </section>
       <Section title="Pool growth by quarter" description="Delivered mandates contributed as anonymised learnings.">
-        <div className="flex h-40 items-end gap-2 rounded-md border border-ink-200 bg-surface p-4 shadow-card">
+        <div className="flex h-40 items-end gap-2 rounded-md border border-hairline bg-surface p-4 shadow-card">
           {learnings.map((l) => (
             <div key={l.q} className="flex flex-1 flex-col items-center gap-1">
               <span className="num text-axis text-ink-700">{l.n}</span>

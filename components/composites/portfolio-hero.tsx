@@ -41,18 +41,18 @@ export function PortfolioHero({ valueAed: valueUsd, costAed: costUsd, gainPct: q
   React.useEffect(() => () => cancelAnimationFrame(raf.current!), []);
 
   return (
-    <section className="grid grid-cols-1 gap-x-6 gap-y-12 border-b border-ink-200 pb-12 lg:grid-cols-12">
+    <section className="grid grid-cols-1 gap-x-6 gap-y-12 border-b border-hairline pb-12 lg:grid-cols-12">
       <div className="lg:col-span-8">
         <div className="flex items-baseline justify-between gap-6">
           <span className="eyebrow">Portfolio value</span>
           <Segmented label="Currency" value={ccy} onChange={change} options={(Object.keys(RATES) as Ccy[]).map((c) => ({ value: c, label: c }))} />
         </div>
-        <div className="mt-6 font-display text-[3.5rem] leading-[1.02] tracking-[-0.04em] text-navy-900 md:text-hero" aria-live="polite">
+        <div className="mt-6 font-display text-hero leading-[1.02] tracking-[-0.04em] text-navy-900 md:text-hero" aria-live="polite">
           {SYMBOL[ccy]}
           {compact(shown)}
         </div>
         <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <span className={cn("num text-[1rem]", qoq >= 0 ? "text-success" : "text-danger")}>
+          <span className={cn("num text-body", qoq >= 0 ? "text-success" : "text-danger")}>
             {qoq >= 0 ? "↑" : "↓"} {Math.abs(qoq).toFixed(1)}%
           </span>
           <span className="text-small text-ink-500">above cost</span>
@@ -62,11 +62,11 @@ export function PortfolioHero({ valueAed: valueUsd, costAed: costUsd, gainPct: q
         </div>
       </div>
       <dl className="grid grid-cols-2 gap-x-6 self-end lg:col-span-4">
-        <div className="border-t border-ink-200 pt-4">
+        <div className="border-t border-hairline pt-4">
           <dt className="eyebrow">Net IRR</dt>
           <dd className="num mt-4 text-figure text-ink-900">{irr.toFixed(1)}%</dd>
         </div>
-        <div className="border-t border-ink-200 pt-4">
+        <div className="border-t border-hairline pt-4">
           <dt className="eyebrow">Cash yield</dt>
           <dd className="num mt-4 text-figure text-ink-900">{cashYield.toFixed(1)}%</dd>
         </div>

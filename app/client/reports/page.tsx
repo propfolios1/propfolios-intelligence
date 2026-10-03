@@ -20,17 +20,17 @@ export default async function ClientReports() {
       <div className="mt-8 space-y-6">
         {!p?.reports.length && <EmptyState glyph="documents" headline="No reports yet. Your first quarterly report arrives at the start of next quarter." />}
         {p?.reports.map((r) => (
-          <article key={r.id} className="rounded-md border border-ink-200 bg-surface p-6 shadow-card md:p-10">
+          <article key={r.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card md:p-10">
             <div className="eyebrow">
               {r.type === "annual" ? "Annual review" : r.type === "quarterly" ? "Quarterly report" : "Report"} · {formatDate(r.generatedAt, "long")}
             </div>
-            <h2 className="mt-3 font-display text-[26px] text-navy-900">{r.title}</h2>
+            <h2 className="mt-3 font-display text-section text-navy-900">{r.title}</h2>
             <p className="mt-3 text-body text-ink-700">{r.content.headline}</p>
-            <dl className="mt-6 grid grid-cols-2 gap-4 border-y border-ink-200 py-4 sm:grid-cols-5">
+            <dl className="mt-6 grid grid-cols-2 gap-4 border-y border-hairline py-4 sm:grid-cols-5">
               {r.content.metrics.map((m) => (
                 <div key={m.label}>
                   <dt className="eyebrow">{m.label}</dt>
-                  <dd className="num mt-1 text-[17px] text-navy-900">{m.value}</dd>
+                  <dd className="num mt-1 text-read text-navy-900">{m.value}</dd>
                 </div>
               ))}
             </dl>

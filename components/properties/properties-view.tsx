@@ -67,7 +67,7 @@ const columns: ColumnDef<PropertyRow, unknown>[] = [
 
 function FilterGroup({ title, options, value, onChange, labels = {} }: { title: string; options: [string, number][]; value: string[]; onChange: (v: string[]) => void; labels?: Record<string, string> }) {
   return (
-    <fieldset className="border-t border-ink-200 pt-4">
+    <fieldset className="border-t border-hairline pt-4">
       <legend className="eyebrow float-left mb-4 w-full">{title}</legend>
       <div className="clear-both flex flex-col gap-3">
         {options.map(([o, n]) => (
@@ -122,7 +122,7 @@ export function PropertiesView({ rows, basePath = "/analyst/properties" }: { row
           </span>
         </div>
         {mode === "map" ? (
-          <div className="relative h-[620px] overflow-hidden rounded-md border border-ink-200">
+          <div className="relative h-[620px] overflow-hidden rounded-md border border-hairline">
             <PropertyMap points={filtered.map((r) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, market: r.market, sub: r.community, href: `${basePath}/${r.slug}` }))} />
           </div>
         ) : (

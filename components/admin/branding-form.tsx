@@ -83,7 +83,7 @@ export function BrandingForm({ config, canStyle, canDomain, planName }: { config
             {(["primary_color", "accent_color"] as const).map((k) => (
               <FormField key={k} label={k === "primary_color" ? "Primary" : "Accent"} htmlFor={k}>
                 <div className="flex items-center gap-2">
-                  <input type="color" value={c[k]} disabled={!canStyle} onChange={(e) => set(k, e.target.value)} aria-label={`${k === "primary_color" ? "Primary" : "Accent"} colour picker`} className="h-9 w-10 rounded-sm border border-ink-200 bg-surface disabled:opacity-40" />
+                  <input type="color" value={c[k]} disabled={!canStyle} onChange={(e) => set(k, e.target.value)} aria-label={`${k === "primary_color" ? "Primary" : "Accent"} colour picker`} className="h-9 w-10 rounded-sm border border-hairline bg-surface disabled:opacity-40" />
                   <Input id={k} className="num" value={c[k]} disabled={!canStyle} onChange={(e) => set(k, e.target.value)} />
                 </div>
               </FormField>
@@ -128,8 +128,8 @@ export function BrandingForm({ config, canStyle, canDomain, planName }: { config
       <aside className="xl:col-span-5">
         <div className="sticky top-20">
           <div className="eyebrow mb-3">Live preview</div>
-          <div className="overflow-hidden rounded-lg border border-ink-200 bg-canvas shadow-float" style={{ ["--navy-900" as string]: c.primary_color, ["--gold-500" as string]: c.accent_color }}>
-            <div className="flex h-14 items-center border-b border-ink-200 bg-surface px-5">
+          <div className="overflow-hidden rounded-md border border-hairline bg-canvas shadow-float" style={{ ["--navy-900" as string]: c.primary_color, ["--gold-500" as string]: c.accent_color }}>
+            <div className="flex h-14 items-center border-b border-hairline bg-surface px-5">
               {c.logo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={c.logo_url} alt="" className="h-8 max-w-[140px] object-contain" />
@@ -143,7 +143,7 @@ export function BrandingForm({ config, canStyle, canDomain, planName }: { config
               <span className="mt-3 block h-0.5 w-8 bg-gold-500" />
               <p className="mt-4 text-small text-ink-700">{c.memo_style.tone}</p>
               <div className="mt-5 inline-flex h-9 items-center rounded-sm bg-navy-900 px-4 text-ui font-medium text-surface">Approve and deliver</div>
-              <p className="mt-5 border-t border-ink-200 pt-3 text-[0.75rem] text-ink-500">{c.memo_style.signoff}</p>
+              <p className="mt-5 border-t border-hairline pt-3 text-axis text-ink-500">{c.memo_style.signoff}</p>
             </div>
           </div>
         </div>

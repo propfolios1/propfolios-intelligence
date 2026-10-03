@@ -58,7 +58,7 @@ export default async function AnalystFederation() {
                       <th className="py-2 pl-4 font-normal">Most frequent serious finding</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-200 border-t border-ink-200">
+                  <tbody className="divide-y divide-hairline border-t border-hairline">
                     {relevant.map((b) => (
                       <tr key={b.key}>
                         <td className="py-2.5 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>

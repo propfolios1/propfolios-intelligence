@@ -54,7 +54,7 @@ export default async function PlatformDashboard() {
         <Card className="xl:col-span-4">
           <CardHeader eyebrow="Live tenants" title="Plan mix" />
           <CardContent>
-            <dl className="divide-y divide-ink-200 border-y border-ink-200">
+            <dl className="divide-y divide-hairline border-y border-hairline">
               {byPlan.map((p) => (
                 <div key={p.plan} className="flex items-baseline justify-between py-3 text-ui">
                   <dt className="text-ink-700">{p.plan}</dt>
@@ -79,7 +79,7 @@ export default async function PlatformDashboard() {
       </section>
       <section className="mt-8">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="font-display text-card text-navy-900">Tenants</h2>
+          <h2 className="font-display text-section text-navy-900">Tenants</h2>
           <Link href="/platform/tenants" className="text-small text-ink-700 hover:text-ink-900">
             All tenants
           </Link>

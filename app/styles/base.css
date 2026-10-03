@@ -2,7 +2,7 @@
   *,
   ::before,
   ::after {
-    border-color: var(--ink-200);
+    border-color: var(--hairline);
   }
 
   html {
@@ -26,26 +26,24 @@
     color: var(--navy-900);
   }
 
+  /* Native scrollbars, thin and neutral. */
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--ink-200) transparent;
-  }
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--ink-200);
-    border-radius: 999px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
+    scrollbar-color: var(--ink-300) transparent;
   }
 
-  /* 2px gold focus ring on every interactive element. */
+  /* 2px gold focus ring with a 2px offset on every interactive element. Never removed. */
   :focus-visible {
-    outline: 2px solid var(--gold-500);
+    outline: 2px solid var(--gold-500) !important;
     outline-offset: 2px;
+  }
+
+  /* Checkboxes and radios: 16px, navy when checked. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--navy-900);
   }
 
   button {
@@ -56,11 +54,12 @@
   }
 }
 
-/* Numbers: Geist Mono, tabular, never mixed with another face. */
+/* Numbers: JetBrains Mono 400, tabular, never bold, never mixed with another face. */
 @utility num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum", "zero";
+  font-weight: 400;
   /* Figures, currencies and references read left to right in Arabic too. */
   unicode-bidi: isolate;
   direction: ltr;
@@ -69,25 +68,47 @@
 /* The signature small caps label. */
 @utility eyebrow {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   line-height: 1.4;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 500;
   color: var(--ink-500);
 }
 
-@utility scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: var(--ink-200) transparent;
+/* Form, table and stat labels: the same 11px uppercase voice. */
+@utility label-caps {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-500);
 }
 
-/* Skeleton: a warm block with a slow travelling sheen. Shapes always match the final layout. */
+/* Press feedback: buttons settle to 98% for 80ms. */
+@utility press {
+  transition-property: background-color, border-color, color, opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  &:active {
+    transform: scale(0.98);
+    transition-duration: 80ms;
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-300) transparent;
+}
+
+/* Skeleton: a shimmer that travels across a block shaped exactly like the content it replaces. Never a pulse. */
 @utility skeleton {
   position: relative;
   overflow: hidden;
   background: var(--ink-100);
-  border-radius: 2px;
+  border-radius: 4px;
   &::after {
     content: "";
     position: absolute;

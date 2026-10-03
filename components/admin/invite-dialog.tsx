@@ -37,7 +37,7 @@ export function InviteDialog({ clients, seats }: { clients: { id: string; name: 
         <Button>Invite people</Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle className="font-display text-card text-navy-900">Invite to the workspace</DialogTitle>
+        <DialogTitle className="font-display text-section text-navy-900">Invite to the workspace</DialogTitle>
         <DialogDescription className="mt-1 text-ui text-ink-700">
           {seats.limit === null ? "Unlimited staff seats on your plan." : `${seats.used} of ${seats.limit} staff seats in use. Clients do not use seats.`}
         </DialogDescription>

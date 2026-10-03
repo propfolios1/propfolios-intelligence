@@ -102,7 +102,7 @@ export async function AppShell({ area, children }: { area: Area; children: React
             </div>
           )}
           {previewing && (
-            <div className="border-b border-gold-100 bg-gold-100/60 px-6 py-2 text-small text-ink-700 md:px-12 xl:px-20" data-no-print>
+            <div className="border-b border-hairline bg-ink-50 px-6 py-2 text-small text-ink-700 md:px-12 xl:px-20" data-no-print>
               Previewing the client portal as <span className="font-medium text-ink-900">{previewing}</span>. Choose another client from Clients.
             </div>
           )}

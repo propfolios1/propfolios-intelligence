@@ -47,13 +47,13 @@ export default async function BillingPage() {
         <StatCard label="Staff seats" value={`${seats.used} / ${seats.limit ?? "∞"}`} note="Clients do not use seats" />
       </section>
       <section className="mt-10">
-        <h2 className="mb-4 font-display text-card text-navy-900">Change plan</h2>
+        <h2 className="mb-4 font-display text-section text-navy-900">Change plan</h2>
         <PlanPicker current={tenant.plan} seatsUsed={seats.used} />
       </section>
       <section className="mt-10">
-        <h2 className="mb-4 font-display text-card text-navy-900">Invoices</h2>
+        <h2 className="mb-4 font-display text-section text-navy-900">Invoices</h2>
         {invoices.length === 0 ? (
-          <p className="rounded-md border border-ink-200 bg-surface p-6 text-ui text-ink-700 shadow-card">No invoices yet. Your first invoice is issued when the trial converts to {planById(tenant.plan).name}.</p>
+          <p className="rounded-md border border-hairline bg-surface p-6 text-ui text-ink-700 shadow-card">No invoices yet. Your first invoice is issued when the trial converts to {planById(tenant.plan).name}.</p>
         ) : (
           <Table>
             <THead>

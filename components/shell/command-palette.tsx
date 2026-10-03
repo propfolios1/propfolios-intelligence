@@ -109,11 +109,11 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
                   value={query}
                   onValueChange={setQuery}
                   placeholder="Mandate, property, client or action"
-                  className="h-16 flex-1 bg-transparent font-display text-card text-ink-900 outline-none placeholder:text-ink-500"
+                  className="h-16 flex-1 bg-transparent font-display text-section text-ink-900 outline-none placeholder:text-ink-500"
                 />
                 <Kbd>esc</Kbd>
               </div>
-              <Command.List className="scrollbar-thin max-h-[400px] overflow-y-auto border-t border-ink-200 px-2 py-2">
+              <Command.List className="scrollbar-thin max-h-[400px] overflow-y-auto border-t border-hairline px-2 py-2">
                 <Command.Empty className="px-3 py-10 text-small text-ink-700">Nothing matches “{query}”.</Command.Empty>
                 {!query && recentItems.length > 0 && (
                   <Group heading="Recent">
@@ -132,7 +132,7 @@ export function CommandPaletteProvider({ items, children }: { items: SearchItem[
                   ) : null,
                 )}
               </Command.List>
-              <div className="flex items-center gap-5 border-t border-ink-200 px-5 py-2.5 text-small text-ink-500">
+              <div className="flex items-center gap-5 border-t border-hairline px-5 py-2.5 text-small text-ink-500">
                 <span className="flex items-center gap-1.5">
                   <Kbd>↑</Kbd>
                   <Kbd>↓</Kbd> move

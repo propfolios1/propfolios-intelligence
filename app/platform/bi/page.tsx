@@ -64,9 +64,9 @@ export default async function PlatformBi() {
           {products.map((p, i) => {
             const pk = packagers[DATA_PRODUCTS.findIndex((d) => d.slug === p.slug)] ?? packagers[i];
             return (
-              <article key={p.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+              <article key={p.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="font-display text-[19px] text-navy-900">{p.name}</h3>
+                  <h3 className="font-display text-card text-navy-900">{p.name}</h3>
                   <span className="num text-small text-ink-700">
                     {formatLocal(p.priceAed, "AED", { compact: false })} / {p.billing === "monthly" ? "month" : "quarter"}
                   </span>

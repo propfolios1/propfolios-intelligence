@@ -11,9 +11,9 @@ export interface Column<T> {
 /** Dense bordered table with horizontal scroll on narrow screens; numeric columns right-aligned in mono. */
 export function SimpleTable<T>({ rows, columns, empty = "No records.", minWidth = 720, className }: { rows: T[]; columns: Column<T>[]; empty?: string; minWidth?: number; className?: string }) {
   return (
-    <div className={cn("overflow-x-auto rounded-md border border-ink-200 bg-surface shadow-card", className)}>
+    <div className={cn("overflow-x-auto rounded-md border border-hairline bg-surface shadow-card", className)}>
       <table className="w-full text-small" style={{ minWidth }}>
-        <thead className="border-b border-ink-200 bg-navy-50 text-left">
+        <thead className="border-b border-hairline bg-navy-50 text-left">
           <tr>
             {columns.map((c) => (
               <th key={c.key} className={cn("px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase", c.numeric && "text-right")}>
@@ -31,7 +31,7 @@ export function SimpleTable<T>({ rows, columns, empty = "No records.", minWidth 
             </tr>
           ) : (
             rows.map((r, i) => (
-              <tr key={i} className="border-t border-ink-200 align-top first:border-t-0 hover:bg-navy-50/50">
+              <tr key={i} className="border-t border-hairline align-top first:border-t-0 hover:bg-navy-50/50">
                 {columns.map((c) => (
                   <td key={c.key} className={cn("px-4 py-3 text-ink-700", c.numeric && "num text-right whitespace-nowrap text-ink-900", c.className)}>
                     {c.cell(r)}
@@ -52,7 +52,7 @@ export function Section({ title, eyebrow, description, actions, children, classN
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           {eyebrow && <div className="eyebrow mb-2">{eyebrow}</div>}
-          <h2 className="font-display text-[22px] text-navy-900">{title}</h2>
+          <h2 className="font-display text-section text-navy-900">{title}</h2>
           {description && <p className="mt-1 max-w-[70ch] text-small text-ink-700">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}

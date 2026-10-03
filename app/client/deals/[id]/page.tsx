@@ -27,7 +27,7 @@ export default async function ClientDeal({ params }: { params: Promise<{ id: str
       <ol className="mt-8 space-y-3">
         {d.stages.map((st) => (
           <li key={st.id} className="flex items-baseline gap-4">
-            <span className={cn("size-2.5 shrink-0 rounded-full border", st.completedAt ? "border-navy-900 bg-navy-900" : st.enteredAt ? "border-gold-500 bg-gold-500" : "border-ink-200 bg-surface")} />
+            <span className={cn("size-2.5 shrink-0 rounded-full border", st.completedAt ? "border-navy-900 bg-navy-900" : st.enteredAt ? "border-gold-500 bg-gold-500" : "border-hairline bg-surface")} />
             <span className={cn("text-small", st.enteredAt ? "text-ink-900" : "text-ink-400")}>{STAGE_LABEL[st.name]}</span>
             {st.enteredAt && <span className="text-axis text-ink-500">{formatDate(st.enteredAt)}</span>}
           </li>
@@ -39,7 +39,7 @@ export default async function ClientDeal({ params }: { params: Promise<{ id: str
         ) : (
           <div className="space-y-3">
             {d.contracts.map((c) => (
-              <details key={c.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+              <details key={c.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
                 <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3">
                   <span className="font-medium text-ink-900">{c.title}</span>
                   <Flag tone={c.status === "signed" ? "complete" : "progress"}>{c.status === "out_for_signature" ? "Awaiting signatures" : c.status}</Flag>

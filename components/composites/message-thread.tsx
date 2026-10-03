@@ -46,7 +46,7 @@ export function MessageThread({ clientId, initial, viewerIsClient, viewerName }:
   }
 
   return (
-    <div className="flex flex-col rounded-md border border-ink-200 bg-surface shadow-card">
+    <div className="flex flex-col rounded-md border border-hairline bg-surface shadow-card">
       <ol className="scrollbar-thin flex max-h-[560px] min-h-[320px] flex-col gap-4 overflow-y-auto p-5" aria-live="polite">
         {data.length === 0 && <li className="text-small text-ink-500">No messages yet.</li>}
         {data.map((m) => {
@@ -54,7 +54,7 @@ export function MessageThread({ clientId, initial, viewerIsClient, viewerName }:
           return (
             <li key={m.id} className={cn("max-w-[80%]", mine ? "self-end text-right" : "self-start")}>
               <div className={cn("rounded-md px-4 py-2.5 text-ui", mine ? "bg-navy-900 text-surface" : "bg-ink-100 text-ink-900")}>{m.body}</div>
-              <div className="mt-1 text-[0.75rem] text-ink-500">
+              <div className="mt-1 text-axis text-ink-500">
                 {m.authorName} · <span className="num">{formatDate(m.createdAt, "datetime")}</span>
               </div>
             </li>
@@ -62,7 +62,7 @@ export function MessageThread({ clientId, initial, viewerIsClient, viewerName }:
         })}
         <div ref={end} />
       </ol>
-      <form onSubmit={send} className="flex items-end gap-3 border-t border-ink-200 p-4">
+      <form onSubmit={send} className="flex items-end gap-3 border-t border-hairline p-4">
         <Textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}

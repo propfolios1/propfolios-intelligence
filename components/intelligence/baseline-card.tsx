@@ -41,7 +41,7 @@ export function FederatedBaselineCard({ baseline, assumptions }: { baseline: Bas
                   <th className="py-2 text-right font-normal">Gap</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-200 border-t border-ink-200">
+              <tbody className="divide-y divide-hairline border-t border-hairline">
                 {ROWS.map((r) => {
                   const mine = assumptions[r.key] ?? 0;
                   const fed = baseline.data.medians[r.key];

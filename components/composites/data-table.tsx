@@ -150,11 +150,11 @@ export function DataTable<T>({
           {rows.map((row) => (
             <li key={row.id}>
               {onRowClick ? (
-                <button type="button" onClick={() => onRowClick(row.original)} className="block w-full rounded-md border border-ink-200 bg-surface p-4 text-left shadow-card">
+                <button type="button" onClick={() => onRowClick(row.original)} className="block w-full rounded-md border border-hairline bg-surface p-4 text-left shadow-card">
                   {mobileCard(row.original)}
                 </button>
               ) : (
-                <div className="rounded-md border border-ink-200 bg-surface p-4 shadow-card">{mobileCard(row.original)}</div>
+                <div className="rounded-md border border-hairline bg-surface p-4 shadow-card">{mobileCard(row.original)}</div>
               )}
             </li>
           ))}
@@ -175,7 +175,7 @@ export function DataTable<T>({
                         key={h.id}
                         style={{ width: h.getSize() }}
                         className={cn(
-                          "eyebrow group/th relative h-10 border-b border-ink-200 bg-canvas px-4 text-left align-middle font-medium whitespace-nowrap select-none",
+                          "eyebrow group/th relative h-10 border-b border-hairline bg-canvas px-4 text-left align-middle font-medium whitespace-nowrap select-none",
                           meta?.numeric && "text-right",
                           meta?.className,
                         )}
@@ -209,7 +209,7 @@ export function DataTable<T>({
                 {showFilters && (
                   <tr>
                     {hg.headers.map((h) => (
-                      <th key={h.id} className="border-b border-ink-200 px-2 py-2 font-normal">
+                      <th key={h.id} className="border-b border-hairline px-2 py-2 font-normal">
                         {h.column.columnDef.meta?.filterable && (
                           <input
                             value={(h.column.getFilterValue() as string) ?? ""}
@@ -217,7 +217,7 @@ export function DataTable<T>({
                             placeholder="Filter"
                             aria-label={`Filter ${String(h.column.columnDef.header)}`}
                             className={cn(
-                              "h-8 w-full rounded-sm border border-ink-200 bg-canvas px-2 text-small text-ink-900 placeholder:text-ink-500 focus:border-ink-200 focus:outline-none",
+                              "h-8 w-full rounded-sm border border-hairline bg-canvas px-2 text-small text-ink-900 placeholder:text-ink-500 focus:border-hairline focus:outline-none",
                               h.column.columnDef.meta?.numeric && "text-right",
                             )}
                           />
@@ -234,7 +234,7 @@ export function DataTable<T>({
               ? Array.from({ length: 8 }, (_, r) => (
                   <tr key={r} className="h-14">
                     {table.getVisibleLeafColumns().map((c) => (
-                      <td key={c.id} className="border-b border-ink-200 px-4">
+                      <td key={c.id} className="border-b border-hairline px-4">
                         {c.id !== "__tail" && <Skeleton className={cn("h-3", c.columnDef.meta?.numeric ? "ml-auto w-16" : c.columnDef.meta?.id ? "w-20" : "w-3/5")} />}
                       </td>
                     ))}
@@ -258,7 +258,7 @@ export function DataTable<T>({
                           key={cell.id}
                           style={{ width: cell.column.getSize(), maxWidth: cell.column.getSize() }}
                           className={cn(
-                            "truncate border-b border-ink-200 px-4 text-ui text-ink-900",
+                            "truncate border-b border-hairline px-4 text-ui text-ink-900",
                             ci === 0 && "relative",
                             meta?.numeric && "num text-right",
                             meta?.id && "num text-small",

@@ -62,25 +62,25 @@ export default async function AiMemory() {
 
       <Section title="Learned" description="Each memory names the agent that holds it, what it is about, and how many observations it rests on.">
         {learned.length === 0 ? (
-          <p className="rounded-lg border border-ink-200 bg-surface px-6 py-10 text-center text-small text-ink-500">The agents have not learned anything yet. Memory forms as deals close, memos are approved and reports are written.</p>
+          <p className="rounded-md border border-hairline bg-surface px-6 py-10 text-center text-small text-ink-500">The agents have not learned anything yet. Memory forms as deals close, memos are approved and reports are written.</p>
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {learned.map((m) => (
-              <article key={m.id} className="rounded-lg border border-ink-200 bg-surface p-5 shadow-card">
+              <article key={m.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="eyebrow">{TYPE[m.memoryType]?.label ?? m.memoryType}</div>
                     <h3 className="mt-1 text-body font-medium text-ink-900">
                       {label(m.agentName)} · {about(m)}
                     </h3>
-                    <p className="mt-0.5 text-[12px] text-ink-500">{TYPE[m.memoryType]?.note}</p>
+                    <p className="mt-0.5 text-axis text-ink-500">{TYPE[m.memoryType]?.note}</p>
                   </div>
                   {forget && <ForgetMemory id={m.id} />}
                 </div>
-                <div className="mt-4 border-t border-ink-200 pt-4">
+                <div className="mt-4 border-t border-hairline pt-4">
                   <StructuredDetail output={m.memory} />
                 </div>
-                <div className="mt-3 flex flex-wrap gap-x-4 text-[12px] text-ink-500">
+                <div className="mt-3 flex flex-wrap gap-x-4 text-axis text-ink-500">
                   {m.sampleSize !== null && (
                     <span>
                       <span className="num text-ink-700">{m.sampleSize}</span> observations

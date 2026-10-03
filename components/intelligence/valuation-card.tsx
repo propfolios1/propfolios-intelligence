@@ -62,7 +62,7 @@ export function ValuationCard({ v }: { v: ValuationView }) {
             </div>
           ))}
         </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-ink-200 pt-4">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
           <ConfidenceMeter value={v.confidence} />
           <span className="text-small text-ink-500">
             Methods disagree by <span className="num">{v.reconciled.dispersionPct}%</span>. Gold rule: asking price.

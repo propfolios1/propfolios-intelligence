@@ -33,7 +33,7 @@ export function SiteHeader({ brandName }: { brandName?: string }) {
 
 export function SiteFooter({ brandName }: { brandName?: string }) {
   return (
-    <footer className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 border-t border-ink-200 px-6 py-8 text-small text-ink-500 md:flex-row md:items-center md:justify-between md:px-12 xl:px-20">
+    <footer className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 border-t border-hairline px-6 py-8 text-small text-ink-500 md:flex-row md:items-center md:justify-between md:px-12 xl:px-20">
       <BrandMark size="sm" name={brandName} />
       <span>© {new Date().getFullYear()} Nakhla. Abu Dhabi, United Arab Emirates. Data hosted in the region of your choice.</span>
     </footer>

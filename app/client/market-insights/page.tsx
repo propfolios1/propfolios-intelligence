@@ -20,13 +20,13 @@ export default async function MarketInsights() {
       {!reports.length && <EmptyState className="mt-8" glyph="opportunities" headline="No market reports yet; the first arrives at the start of next month." />}
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {[...latest.values()].map((r) => (
-          <article key={r.id} className="rounded-md border border-ink-200 bg-surface p-6 shadow-card">
+          <article key={r.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card">
             <div className="eyebrow">
               {r.region} · {formatDate(r.generatedAt, "long")}
             </div>
-            <h2 className="mt-2 font-display text-[22px] text-navy-900">{r.title}</h2>
+            <h2 className="mt-2 font-display text-section text-navy-900">{r.title}</h2>
             <p className="mt-2 text-small text-ink-900">{r.content.headline}</p>
-            <dl className="mt-4 grid grid-cols-3 gap-3 border-y border-ink-200 py-3">
+            <dl className="mt-4 grid grid-cols-3 gap-3 border-y border-hairline py-3">
               {r.content.metrics.map((m) => (
                 <div key={m.label}>
                   <dt className="eyebrow">{m.label}</dt>

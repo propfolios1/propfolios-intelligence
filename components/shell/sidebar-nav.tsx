@@ -85,17 +85,17 @@ export function SidebarNav({ area, viewer }: { area: Area; viewer: ShellViewer }
   const switchable = areasFor(viewer).filter((a) => a !== area);
 
   return (
-    <aside data-no-print className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-e border-ink-200 lg:flex">
+    <aside data-no-print className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-e border-hairline lg:flex">
       <div className="flex h-14 items-center px-5">
         <Link href={home} aria-label="Home">
           <BrandMark size="sm" name={area === "platform" ? "Nakhla Platform" : undefined} />
         </Link>
       </div>
-      <div className="eyebrow border-b border-ink-200 px-5 pb-4 text-ink-500">{tr(AREA_LABEL[area])}</div>
+      <div className="eyebrow border-b border-hairline px-5 pb-4 text-ink-500">{tr(AREA_LABEL[area])}</div>
       <nav className="scrollbar-thin flex-1 overflow-y-auto pe-3 pt-6" aria-label="Main">
         <NavList area={area} pathname={pathname} />
       </nav>
-      <div className="border-t border-ink-200">
+      <div className="border-t border-hairline">
         <LanguageSwitcher className="px-5 pt-3" />
         <DropdownMenu>
           <DropdownMenuTrigger className="flex w-full flex-col items-start px-5 py-4 text-start transition-[background-color] duration-150 hover:bg-ink-100 data-[state=open]:bg-ink-100">

@@ -34,14 +34,14 @@ export default async function PortfolioPage() {
       {insights.length > 0 && (
         <section className="mt-10" aria-labelledby="client-insights">
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 id="client-insights" className="font-display text-card text-navy-900">
+            <h2 id="client-insights" className="font-display text-section text-navy-900">
               Insights
             </h2>
             <Link href="/client/insights" className="text-small text-ink-700 hover:text-ink-900">
               All insights
             </Link>
           </div>
-          <div className="rounded-md border border-ink-200 bg-surface px-6 shadow-card">
+          <div className="rounded-md border border-hairline bg-surface px-6 shadow-card">
             {insightViews(insights).map((i) => (
               <InsightCard key={i.id} insight={i} />
             ))}

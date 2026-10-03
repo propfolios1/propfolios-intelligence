@@ -34,7 +34,7 @@ export function DocumentUpload({ defaultType = "kyc", types = ["kyc", "spa", "ti
   }
 
   return (
-    <div className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+    <div className="rounded-md border border-hairline bg-surface p-5 shadow-card">
       <label className="flex flex-col gap-1.5">
         <span className="text-ui font-medium text-ink-900">Document type</span>
         <Select value={type} onChange={(e) => setType(e.target.value)}>
@@ -57,7 +57,7 @@ export function DocumentUpload({ defaultType = "kyc", types = ["kyc", "spa", "ti
           const f = e.dataTransfer.files[0];
           if (f) void upload(f);
         }}
-        className={cn("mt-4 flex flex-col items-center justify-center gap-3 rounded-md border border-dashed px-6 py-8 text-center transition-colors duration-150", over ? "border-navy-900 bg-navy-50" : "border-ink-200")}
+        className={cn("mt-4 flex flex-col items-center justify-center gap-3 rounded-md border border-dashed px-6 py-8 text-center transition-colors duration-150", over ? "border-navy-900 bg-navy-50" : "border-hairline")}
       >
         <p className="text-small text-ink-700">Drop a PDF or image here, up to 10 MB</p>
         <Button type="button" variant="secondary" size="sm" disabled={busy} onClick={() => input.current?.click()}>

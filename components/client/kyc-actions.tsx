@@ -39,7 +39,7 @@ export function KycDecision({ clientId, pep, sourceOfFunds }: { clientId: string
   const [notes, setNotes] = React.useState("");
   const go = async (decision: "verified" | "rejected") => void ((await post(`/api/kyc/${clientId}/decide`, { decision, pep: p, sourceOfFunds: sof || null, notes: notes || undefined }, { ok: decision === "verified" ? "KYC verified" : "KYC rejected", fail: "Decision not recorded" })) && router.refresh());
   return (
-    <div className="space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+    <div className="space-y-4 rounded-md border border-hairline bg-surface p-5 shadow-card">
       <FormField label="Source of funds" hint="What generated the wealth used for property, and the evidence held.">
         <Textarea rows={3} value={sof} onChange={(e) => setSof(e.target.value)} />
       </FormField>

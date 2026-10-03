@@ -19,7 +19,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         value={locale}
         disabled={pending}
         aria-label={t("language")}
-        className="h-8 min-w-0 flex-1 rounded-sm border border-ink-200 bg-surface px-2 text-small text-ink-900 transition-[border-color] duration-150 hover:border-ink-400 focus-visible:outline-2 focus-visible:outline-navy-700 disabled:opacity-60"
+        className="h-8 min-w-0 flex-1 rounded-sm border border-hairline bg-surface px-2 text-small text-ink-900 transition-[border-color] duration-150 hover:border-ink-400 focus-visible:outline-2 focus-visible:outline-navy-700 disabled:opacity-60"
         onChange={async (e) => {
           await fetch("/api/locale", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ locale: e.target.value }) });
           start(() => router.refresh());

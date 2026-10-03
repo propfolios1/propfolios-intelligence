@@ -37,7 +37,7 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-lg border border-ink-200 bg-surface p-5 shadow-card sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-md border border-hairline bg-surface p-5 shadow-card sm:flex-row sm:items-end sm:justify-between">
         <Field label="Monthly AI budget (USD)" hint="Runs continue past the budget; administrators are notified at 80% and 100%." className="sm:w-80">
           <Input type="number" min={0} step={10} placeholder="No limit" value={budget} onChange={(e) => setBudget(e.target.value)} className="num" />
         </Field>
@@ -68,9 +68,9 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
       {modules.map((m) => (
         <section key={m}>
           <h3 className="eyebrow mb-3">{m}</h3>
-          <div className="overflow-x-auto rounded-md border border-ink-200 bg-surface shadow-card">
+          <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
             <table className="w-full min-w-[860px] text-small">
-              <thead className="border-b border-ink-200 bg-navy-50 text-left">
+              <thead className="border-b border-hairline bg-navy-50 text-left">
                 <tr>
                   {["No.", "Agent", "Model", "Runs", "Avg cost / run", "Status", ""].map((h, i) => (
                     <th key={i} className={cn("px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase", (i === 0 || i === 3 || i === 4) && "text-right")}>
@@ -86,10 +86,10 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                     const on = !disabled.has(r.name);
                     const cost = r.avgUsd ?? r.estimateUsd;
                     return (
-                      <tr key={r.name} className="border-t border-ink-200 first:border-t-0">
+                      <tr key={r.name} className="border-t border-hairline first:border-t-0">
                         <td className="num px-4 py-3 text-right text-ink-500">{String(r.number).padStart(2, "0")}</td>
                         <td className="px-4 py-3 text-ink-900">{r.label}</td>
-                        <td className="num px-4 py-3 text-[12px] text-ink-500">{r.model}</td>
+                        <td className="num px-4 py-3 text-axis text-ink-500">{r.model}</td>
                         <td className="num px-4 py-3 text-right text-ink-900">{r.runs}</td>
                         <td className="num px-4 py-3 text-right whitespace-nowrap">
                           {cost === null ? (
@@ -97,13 +97,13 @@ export function AiControlPanel({ rows, disabled: initialDisabled, budget: initia
                           ) : (
                             <span className={cost > ceiling ? "text-danger" : "text-ink-900"}>
                               {usd(cost)}
-                              {r.avgUsd === null && <span className="ml-1 text-[11px] text-ink-500">est.</span>}
+                              {r.avgUsd === null && <span className="ml-1 text-label text-ink-500">est.</span>}
                             </span>
                           )}
                         </td>
                         <td className="px-4 py-3">
                           {r.essential ? (
-                            <span className="text-[12px] text-ink-500">Always on</span>
+                            <span className="text-axis text-ink-500">Always on</span>
                           ) : (
                             <label className="inline-flex cursor-pointer items-center gap-2">
                               <input

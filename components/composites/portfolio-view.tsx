@@ -39,7 +39,7 @@ export function PortfolioView({ p, recommendationsHref }: { p: Portfolio; recomm
             <CardHeader eyebrow="Portfolio monitor" title="Alerts" actions={<span className="num text-small text-ink-500">{p.alerts.filter((a) => !a.acknowledged).length} open</span>} />
             <CardContent>
               {p.alerts.length === 0 && <p className="text-small text-ink-500">No alerts.</p>}
-              <ul className="divide-y divide-ink-200">
+              <ul className="divide-y divide-hairline">
                 {p.alerts.slice(0, 6).map((a) => (
                   <li key={a.id} className="py-3.5">
                     <div className="flex items-center justify-between gap-3">
@@ -58,7 +58,7 @@ export function PortfolioView({ p, recommendationsHref }: { p: Portfolio; recomm
             <Card>
               <CardHeader eyebrow="Advisory" title="Recommendations" actions={<Link href={recommendationsHref} className="text-small text-ink-700 hover:text-ink-900">All</Link>} />
               <CardContent>
-                <ul className="divide-y divide-ink-200">
+                <ul className="divide-y divide-hairline">
                   {p.recommendations.slice(0, 3).map((r) => (
                     <li key={r.id} className="py-3">
                       <div className="eyebrow">{REC_TYPE_LABEL[r.type] ?? r.type}</div>
@@ -90,7 +90,7 @@ export function PortfolioView({ p, recommendationsHref }: { p: Portfolio; recomm
       </div>
       <section className="mt-10">
         <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="font-display text-card text-navy-900">Holdings</h2>
+          <h2 className="font-display text-section text-navy-900">Holdings</h2>
           <span className="num text-small text-ink-500">{p.holdings.length}</span>
         </div>
         <HoldingsTable

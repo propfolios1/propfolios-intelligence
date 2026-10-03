@@ -46,7 +46,7 @@ export default function PricingPage() {
           {PLANS.map((p) => {
             const featured = p.id === "professional";
             return (
-              <li key={p.id} className={cn("flex flex-col rounded-md border bg-surface p-6 shadow-card", featured ? "border-navy-900" : "border-ink-200")}>
+              <li key={p.id} className={cn("flex flex-col rounded-md border bg-surface p-6 shadow-card", featured ? "border-navy-900" : "border-hairline")}>
                 <div className="flex items-baseline justify-between">
                   <h2 className="text-read font-medium text-ink-900">{p.name}</h2>
                   {featured && <span className="eyebrow text-gold-600">Most chosen</span>}
@@ -54,7 +54,7 @@ export default function PricingPage() {
                 <div className="num mt-4 text-figure text-navy-900">AED {p.priceAed.toLocaleString("en-US")}</div>
                 <div className="text-small text-ink-500">per month</div>
                 <p className="mt-4 text-ui text-ink-700">{p.summary}</p>
-                <ul className="mt-6 flex flex-1 flex-col gap-2.5 border-t border-ink-200 pt-5">
+                <ul className="mt-6 flex flex-1 flex-col gap-2.5 border-t border-hairline pt-5">
                   {p.features.map((f) => (
                     <li key={f} className="flex gap-2.5 text-ui text-ink-900">
                       <Check className="mt-0.5 size-4 shrink-0 stroke-[1.75] text-navy-900" aria-hidden />
@@ -72,13 +72,13 @@ export default function PricingPage() {
 
         <section className="mt-20" aria-labelledby="compare">
           <h2 id="compare" className="font-display text-section text-navy-900">Compare plans</h2>
-          <div className="mt-6 overflow-x-auto rounded-md border border-ink-200 bg-surface shadow-card">
+          <div className="mt-6 overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
             <table className="w-full min-w-[760px] border-separate border-spacing-0 text-ui">
               <thead>
                 <tr>
-                  <th className="eyebrow h-12 border-b border-ink-200 px-5 text-left font-medium">Capability</th>
+                  <th className="eyebrow h-12 border-b border-hairline px-5 text-left font-medium">Capability</th>
                   {PLANS.map((p) => (
-                    <th key={p.id} className="eyebrow h-12 w-[15%] border-b border-ink-200 px-5 text-center font-medium">
+                    <th key={p.id} className="eyebrow h-12 w-[15%] border-b border-hairline px-5 text-center font-medium">
                       {p.name}
                     </th>
                   ))}
@@ -87,9 +87,9 @@ export default function PricingPage() {
               <tbody>
                 {ROWS.map(([label, cells]) => (
                   <tr key={label}>
-                    <td className="h-12 border-b border-ink-200 px-5 text-ink-900">{label}</td>
+                    <td className="h-12 border-b border-hairline px-5 text-ink-900">{label}</td>
                     {cells.map((c, i) => (
-                      <td key={i} className="h-12 border-b border-ink-200 px-5 text-center">
+                      <td key={i} className="h-12 border-b border-hairline px-5 text-center">
                         {typeof c === "string" ? (
                           <span className="num text-small text-ink-900">{c}</span>
                         ) : c ? (
@@ -108,7 +108,7 @@ export default function PricingPage() {
 
         <section className="mt-20 grid grid-cols-1 gap-10 lg:grid-cols-12" aria-labelledby="faq">
           <h2 id="faq" className="font-display text-section text-navy-900 lg:col-span-4">Questions firms ask</h2>
-          <dl className="divide-y divide-ink-200 border-y border-ink-200 lg:col-span-8">
+          <dl className="divide-y divide-hairline border-y border-hairline lg:col-span-8">
             {FAQ.map(([q, a]) => (
               <div key={q} className="py-5">
                 <dt className="text-ui font-medium text-ink-900">{q}</dt>

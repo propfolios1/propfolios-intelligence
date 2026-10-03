@@ -80,7 +80,7 @@ function VectorFallback({ points, focusId }: { points: MapPoint[]; focusId?: str
             </svg>
             <div className="eyebrow absolute top-6 left-6 text-surface/60">{b.label}</div>
             {active && (
-              <div className="pointer-events-none absolute right-6 bottom-6 left-6 rounded-lg border border-ink-200 bg-canvas px-4 py-3">
+              <div className="pointer-events-none absolute right-6 bottom-6 left-6 rounded-md border border-hairline bg-canvas px-4 py-3">
                 {active.items.slice(0, 4).map((p) => (
                   <div key={p.id} className="flex items-baseline justify-between gap-4 text-small">
                     <span className="text-ink-900">{p.name}</span>

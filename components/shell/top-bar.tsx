@@ -45,7 +45,7 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
   }));
 
   return (
-    <header data-no-print className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-ink-200 bg-canvas px-6 md:px-12 xl:px-20">
+    <header data-no-print className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-hairline bg-canvas px-6 md:px-12 xl:px-20">
       <div className="flex min-w-0 items-center gap-3">
         <MobileNav area={area} />
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-baseline gap-2 text-small">
@@ -66,7 +66,7 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
 
       <button
         onClick={palette.open}
-        className="hidden h-8 w-[320px] items-center justify-between rounded-sm border border-ink-200 px-3 text-small text-ink-500 transition-[border-color] duration-120 hover:border-ink-200 md:flex"
+        className="hidden h-8 w-[320px] items-center justify-between rounded-sm border border-hairline px-3 text-small text-ink-500 transition-[border-color] duration-120 hover:border-hairline md:flex"
       >
         {t("search")}
         <Kbd>{mac ? "⌘K" : "Ctrl K"}</Kbd>
@@ -87,14 +87,14 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-[360px] p-0">
-            <div className="flex items-baseline justify-between border-b border-ink-200 px-5 py-3.5">
+            <div className="flex items-baseline justify-between border-b border-hairline px-5 py-3.5">
               <span className="eyebrow">{t("notificationsTitle")}</span>
               <span className="num text-small text-ink-500">{notifications.length}</span>
             </div>
             <ul className="max-h-[380px] overflow-y-auto">
               {notifications.length === 0 && <li className="px-5 py-6 text-small text-ink-500">{t("nothingUnread")}</li>}
               {notifications.map((n) => (
-                <li key={n.id} className="border-b border-ink-200 px-5 py-4 last:border-b-0">
+                <li key={n.id} className="border-b border-hairline px-5 py-4 last:border-b-0">
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="flex items-baseline gap-2 text-small font-medium text-ink-900">
                       {n.severity && <span className={cn("size-1.5 shrink-0 translate-y-[-1px] rounded-full", n.severity === "HIGH" || n.severity === "CRITICAL" ? "bg-danger" : n.severity === "MEDIUM" ? "bg-warning" : "bg-ink-400")} aria-hidden />}
@@ -111,7 +111,7 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
                 </li>
               ))}
             </ul>
-            <div className="border-t border-ink-200 px-5 py-3">
+            <div className="border-t border-hairline px-5 py-3">
               <Link href="/notifications" className="text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
                 {t("allNotifications")}
               </Link>
@@ -137,7 +137,7 @@ function MobileNav({ area }: { area: Area }) {
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogOverlay />
-        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 start-0 z-50 w-72 border-e border-ink-200 bg-canvas py-5 pr-4 shadow-float outline-none data-[state=open]:animate-sheet-in">
+        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 start-0 z-50 w-72 border-e border-hairline bg-canvas py-5 pr-4 shadow-float outline-none data-[state=open]:animate-sheet-in">
           <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
           <div className="mb-8 px-5">
             <BrandMark size="sm" />

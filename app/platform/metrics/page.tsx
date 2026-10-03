@@ -33,7 +33,7 @@ export default async function MetricsPage() {
         <Card className="xl:col-span-5">
           <CardHeader eyebrow="By model" title="Model mix" />
           <CardContent>
-            <dl className="divide-y divide-ink-200 border-y border-ink-200">
+            <dl className="divide-y divide-hairline border-y border-hairline">
               {m.byModel.map((x) => (
                 <div key={x.model} className="flex items-baseline justify-between py-3 text-small">
                   <dt className="num text-ink-700">{x.model === "replay" ? "replay mode" : x.model}</dt>
@@ -48,7 +48,7 @@ export default async function MetricsPage() {
       </section>
       <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div>
-          <h2 className="mb-3 font-display text-card text-navy-900">By agent</h2>
+          <h2 className="mb-3 font-display text-section text-navy-900">By agent</h2>
           <Table>
             <THead>
               <TR>
@@ -73,7 +73,7 @@ export default async function MetricsPage() {
           </Table>
         </div>
         <div>
-          <h2 className="mb-3 font-display text-card text-navy-900">By tenant</h2>
+          <h2 className="mb-3 font-display text-section text-navy-900">By tenant</h2>
           <Table>
             <THead>
               <TR>

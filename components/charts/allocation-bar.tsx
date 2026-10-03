@@ -17,7 +17,7 @@ export function AllocationBar({ items }: { items: { label: string; value: number
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
         {sorted.map((s, i) => (
-          <div key={s.label} className="border-t border-ink-200 pt-2.5">
+          <div key={s.label} className="border-t border-hairline pt-2.5">
             <dt className="flex items-center gap-2 text-small text-ink-700">
               <span className="size-2" style={{ background: `color-mix(in oklab, var(--navy-900) ${shades[i] ?? 10}%, var(--canvas))` }} />
               {s.label}

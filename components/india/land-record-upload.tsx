@@ -34,7 +34,7 @@ export function LandRecordUpload({ propertyId, state }: { propertyId: string; st
     router.refresh();
   };
   return (
-    <form onSubmit={submit} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+    <form onSubmit={submit} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
         <FormField label="Record type" hint="Detected from the content when left blank.">
           <Select value={kind} onChange={(e) => setKind(e.target.value)}>
@@ -53,7 +53,7 @@ export function LandRecordUpload({ propertyId, state }: { propertyId: string; st
           </Select>
         </FormField>
         <FormField label="Scan, PDF or text file" hint="PDF text layers are read directly; scans and photographs are transcribed by OCR, including Marathi and Portuguese.">
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-small text-ink-700 file:mr-3 file:h-8 file:rounded-sm file:border file:border-ink-200 file:bg-surface file:px-3 file:text-ui file:text-ink-900" />
+          <input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-small text-ink-700 file:mr-3 file:h-8 file:rounded-sm file:border file:border-hairline file:bg-surface file:px-3 file:text-ui file:text-ink-900" />
         </FormField>
       </div>
       {!file && (
@@ -67,7 +67,7 @@ export function LandRecordUpload({ propertyId, state }: { propertyId: string; st
         </Button>
       </div>
       {result && (
-        <div className="mt-6 border-t border-ink-200 pt-5">
+        <div className="mt-6 border-t border-hairline pt-5">
           <div className="text-small text-ink-700">
             Parsed as <span className="font-medium text-ink-900">{result.recordType.replace(/_/g, " ")}</span> by {result.method === "ocr" ? "OCR" : "text"}; confidence <span className="num">{Math.round(result.confidence * 100)}%</span>.
           </div>

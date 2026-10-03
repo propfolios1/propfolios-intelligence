@@ -13,7 +13,7 @@ export function DDTab({ findings }: { findings: DDFinding[] }) {
     <div>
       <dl className="grid grid-cols-2 gap-x-6 md:grid-cols-4">
         {counts.map(([s, n]) => (
-          <div key={s} className="border-t border-ink-200 pt-4">
+          <div key={s} className="border-t border-hairline pt-4">
             <dt className="eyebrow">{LABEL[s]}</dt>
             <dd className={cn("num mt-4 text-figure", (s === "CRITICAL" || s === "HIGH") && n > 0 ? "text-danger" : "text-navy-900")}>{n}</dd>
           </div>
@@ -25,13 +25,13 @@ export function DDTab({ findings }: { findings: DDFinding[] }) {
         if (!group.length) return null;
         return (
           <section key={sev} className="mt-16">
-            <h2 className="font-display text-card text-navy-900">
+            <h2 className="font-display text-section text-navy-900">
               {LABEL[sev]}
               <sup className="num ml-1.5 text-small text-ink-500">{group.length}</sup>
             </h2>
-            <div className="mt-6 border-t border-ink-200">
+            <div className="mt-6 border-t border-hairline">
               {group.map((f) => (
-                <article key={f.id} className="grid grid-cols-1 gap-x-6 gap-y-4 border-b border-ink-200 py-8 lg:grid-cols-12">
+                <article key={f.id} className="grid grid-cols-1 gap-x-6 gap-y-4 border-b border-hairline py-8 lg:grid-cols-12">
                   <div className="lg:col-span-5">
                     <div className="flex items-center gap-3">
                       <SeverityBadge severity={f.severity} />

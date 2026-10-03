@@ -57,7 +57,7 @@ export function TenantControls({ tenantId, plan, status, features }: { tenantId:
       </div>
       <fieldset>
         <legend className="text-ui font-medium text-ink-900">Feature flags</legend>
-        <ul className="mt-2 divide-y divide-ink-200 border-y border-ink-200">
+        <ul className="mt-2 divide-y divide-hairline border-y border-hairline">
           {(Object.keys(FEATURE_LABEL) as (keyof Features)[]).map((k) => (
             <li key={k} className="flex items-center justify-between gap-4 py-3">
               <span>
@@ -75,7 +75,7 @@ export function TenantControls({ tenantId, plan, status, features }: { tenantId:
                   setFlags(next);
                   void patch({ features: next }, `${FEATURE_LABEL[k][0]} ${next[k] ? "enabled" : "disabled"}`);
                 }}
-                className="relative h-5 w-9 shrink-0 rounded-full border border-ink-200 transition-colors duration-150 aria-checked:border-navy-900 aria-checked:bg-navy-900"
+                className="relative h-5 w-9 shrink-0 rounded-full border border-hairline transition-colors duration-150 aria-checked:border-navy-900 aria-checked:bg-navy-900"
               >
                 <span className={`absolute top-0.5 left-0.5 size-3.5 rounded-full bg-surface shadow-card transition-transform duration-150 ${flags[k] ? "translate-x-4" : "bg-ink-400"}`} />
               </button>

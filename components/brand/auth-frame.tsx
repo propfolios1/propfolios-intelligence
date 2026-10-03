@@ -24,7 +24,7 @@ export function AuthFrame({ eyebrow, title, subtitle, children }: { eyebrow: str
           <span className="eyebrow text-surface/60">UAE · India</span>
         </div>
         <blockquote className="max-w-[560px]">
-          <p className="font-display text-[3rem] leading-[1.08] tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches a client.</p>
+          <p className="font-display text-figure-lg leading-[1.08] tracking-[-0.02em] text-surface">Every figure sourced. Every recommendation argued before it reaches a client.</p>
           <footer className="mt-10 flex items-center gap-4 text-small text-surface/60">
             <span className="h-px w-8 bg-gold-500" />
             Research, underwriting and portfolios for advisory firms
@@ -43,9 +43,9 @@ export const clerkAppearance = {
     card: "shadow-none border-0 p-0 bg-transparent",
     header: "hidden",
     formButtonPrimary: "bg-navy-900 hover:bg-navy-800 shadow-none normal-case text-ui h-11 rounded-sm",
-    formFieldInput: "h-10 border-ink-200 shadow-none rounded-sm bg-surface",
+    formFieldInput: "h-10 border-hairline shadow-none rounded-sm bg-surface",
     footer: "bg-transparent",
-    socialButtonsBlockButton: "border-ink-200 shadow-none rounded-sm",
+    socialButtonsBlockButton: "border-hairline shadow-none rounded-sm",
   },
 };
 
@@ -61,7 +61,7 @@ export function DemoPersonas() {
       <ul className="flex flex-col gap-3">
         {personas.map(([as, name, role]) => (
           <li key={as}>
-            <a href={`/api/demo/persona?as=${as}`} className="flex items-center justify-between rounded-md border border-ink-200 bg-surface px-4 py-3.5 shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400">
+            <a href={`/api/demo/persona?as=${as}`} className="flex items-center justify-between rounded-md border border-hairline bg-surface px-4 py-3.5 shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400">
               <span>
                 <span className="block text-ui font-medium text-ink-900">{name}</span>
                 <span className="block text-small text-ink-500">{role}</span>

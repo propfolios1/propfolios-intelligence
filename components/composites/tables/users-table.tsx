@@ -116,7 +116,7 @@ export function UsersTable({
     <>
       <Dialog open={!!linking} onOpenChange={(o) => !o && setLinking(null)}>
         <DialogContent>
-          <DialogTitle className="font-display text-card text-navy-900">
+          <DialogTitle className="font-display text-section text-navy-900">
             Link {linking?.name} to a client
           </DialogTitle>
           <DialogDescription className="mt-2 text-ui text-ink-700">

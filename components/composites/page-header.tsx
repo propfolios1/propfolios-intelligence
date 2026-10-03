@@ -29,7 +29,7 @@ export function PageHeader({
   title = tr(title);
   eyebrow = tr(eyebrow);
   return (
-    <header className={cn(rule && "border-b border-ink-200 pb-8", className)}>
+    <header className={cn(rule && "border-b border-hairline pb-8", className)}>
       {eyebrow && <div className="eyebrow mb-5">{eyebrow}</div>}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">

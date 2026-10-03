@@ -22,10 +22,10 @@ export interface PropertyCardData {
 
 export function PropertyCard({ p, href, className, action }: { p: PropertyCardData; href: string; className?: string; action?: React.ReactNode }) {
   return (
-    <article className={cn("group relative flex flex-col rounded-md border border-ink-200 bg-surface shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400", className)}>
-      <div className="flex h-28 items-end justify-between overflow-hidden rounded-t-md border-b border-ink-200 bg-navy-50 px-5">
+    <article className={cn("group relative flex flex-col rounded-md border border-hairline bg-surface shadow-card transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400", className)}>
+      <div className="flex h-28 items-end justify-between overflow-hidden rounded-t-md border-b border-hairline bg-navy-50 px-5">
         <BuildingGlyph seed={p.slug} assetClass={p.assetClass ?? "Residential"} size={64} framed={false} className="text-navy-700" />
-        <span className="mb-3 rounded-full bg-surface px-2.5 py-0.5 text-[0.75rem] font-medium text-ink-700">{PROPERTY_STATUS_LABEL[p.status] ?? p.status}</span>
+        <span className="mb-3 rounded-full bg-surface px-2.5 py-0.5 text-axis font-medium text-ink-700">{PROPERTY_STATUS_LABEL[p.status] ?? p.status}</span>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <div className="eyebrow">
@@ -39,17 +39,17 @@ export function PropertyCard({ p, href, className, action }: { p: PropertyCardDa
         <p className="mt-0.5 text-small text-ink-500">
           {p.developerName} · {p.handover}
         </p>
-        <dl className="mt-auto grid grid-cols-3 gap-3 border-t border-ink-200 pt-4">
+        <dl className="mt-auto grid grid-cols-3 gap-3 border-t border-hairline pt-4">
           <div>
-            <dt className="text-[0.75rem] text-ink-500">From</dt>
+            <dt className="text-axis text-ink-500">From</dt>
             <dd className="num text-small text-ink-900">{formatLocal(p.priceMin, p.currency)}</dd>
           </div>
           <div>
-            <dt className="text-[0.75rem] text-ink-500">Per sq ft</dt>
+            <dt className="text-axis text-ink-500">Per sq ft</dt>
             <dd className="num text-small text-ink-900">{Math.round(p.pricePerSqft).toLocaleString("en-US")}</dd>
           </div>
           <div>
-            <dt className="text-[0.75rem] text-ink-500">Gross yield</dt>
+            <dt className="text-axis text-ink-500">Gross yield</dt>
             <dd className="num text-small text-ink-900">{p.grossYield.toFixed(1)}%</dd>
           </div>
         </dl>

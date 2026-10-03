@@ -22,7 +22,7 @@ export function CitationPill({ n, source }: { n: number; source?: CitationSource
           type="button"
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
-          className="num relative -top-[0.45em] mx-px inline-flex h-4 min-w-4 items-center justify-center rounded-xs border border-ink-200 px-1 align-baseline text-[0.625rem] leading-none text-ink-700 transition-[border-color,color] duration-120 hover:border-ink-200 hover:text-ink-900"
+          className="num relative -top-[0.45em] mx-px inline-flex h-4 min-w-4 items-center justify-center rounded-xs border border-hairline px-1 align-baseline text-hint leading-none text-ink-700 transition-[border-color,color] duration-120 hover:border-hairline hover:text-ink-900"
           aria-label={`Source ${n}${source ? `: ${source.title}` : ""}`}
         >
           {n}

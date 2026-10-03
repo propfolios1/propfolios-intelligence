@@ -29,7 +29,7 @@ export function ChartTooltip({ active, payload, label, format }: TooltipContentP
   if (!active || !payload?.length) return null;
   const fmt = FORMAT[format];
   return (
-    <div className="min-w-[148px] rounded-lg border border-ink-200 bg-canvas px-3.5 py-3">
+    <div className="min-w-[148px] rounded-md border border-hairline bg-canvas px-3.5 py-3">
       <div className="num text-axis text-ink-500">{label}</div>
       <div className="mt-2 flex flex-col gap-1.5">
         {payload.map((p) => (

@@ -10,7 +10,7 @@ export function MultiSelect({ label, options, value, onChange }: { label: string
     <DropdownMenu>
       <DropdownMenuTrigger className="group flex h-10 items-baseline gap-2 text-small outline-none">
         <span className="eyebrow">{label}</span>
-        <span className={cn("max-w-[160px] truncate border-b pb-px transition-[border-color] duration-120", value.length ? "border-ink-200 text-ink-900" : "border-transparent text-ink-700 group-hover:border-ink-200")}>{summary}</span>
+        <span className={cn("max-w-[160px] truncate border-b pb-px transition-[border-color] duration-120", value.length ? "border-hairline text-ink-900" : "border-transparent text-ink-700 group-hover:border-hairline")}>{summary}</span>
         <span className="num text-axis text-ink-500" aria-hidden>
           ▾
         </span>

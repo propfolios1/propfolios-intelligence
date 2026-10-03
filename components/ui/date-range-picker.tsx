@@ -36,7 +36,7 @@ export function DateRangePicker({ value, onChange }: { value: DateRange; onChang
       </PopoverTrigger>
       <PopoverContent align="end" className="w-auto p-4">
         <div className="flex gap-6 max-md:flex-col">
-          <ul className="flex flex-col gap-1 border-r border-ink-200 pr-4 max-md:border-r-0 max-md:pr-0">
+          <ul className="flex flex-col gap-1 border-r border-hairline pr-4 max-md:border-r-0 max-md:pr-0">
             {PRESETS.map((p) => (
               <li key={p.label}>
                 <button

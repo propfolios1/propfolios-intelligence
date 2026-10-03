@@ -57,7 +57,7 @@ export default async function IndiaRecordPage({ params }: { params: Promise<{ id
       <Section title="Register extracts" eyebrow="Sources" description="Every register for the state, read for this property. Mocked adapters over the workspace's records, in the register's own shape.">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {results.map((s) => (
-            <article key={s.source} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+            <article key={s.source} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
               <div className="flex items-center justify-between gap-2">
                 <div className="eyebrow">{s.label}</div>
                 {!s.found ? <Flag tone="neutral">Not on file</Flag> : s.flags.length ? <Flag tone="progress">{s.flags.length} findings</Flag> : <Flag tone="complete">Clear</Flag>}
@@ -119,7 +119,7 @@ export default async function IndiaRecordPage({ params }: { params: Promise<{ id
       <Section title="Land records" eyebrow="Parsers" description="Parsed records on file and the upload for new ones.">
         <div className="space-y-4">
           {ctx.land.map((l) => (
-            <details key={l.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+            <details key={l.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
               <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3">
                 <span className="font-medium text-ink-900">{RECORD_LABEL[l.recordType as keyof typeof RECORD_LABEL]}</span>
                 <span className="flex items-center gap-3 text-small text-ink-500">
@@ -135,7 +135,7 @@ export default async function IndiaRecordPage({ params }: { params: Promise<{ id
                 </ul>
               )}
               <StructuredDetail output={l.parsed} className="mt-4" />
-              <pre className="mt-4 overflow-x-auto rounded-sm bg-navy-50 p-4 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-ink-700">{l.sourceText}</pre>
+              <pre className="mt-4 overflow-x-auto rounded-sm bg-navy-50 p-4 font-mono text-axis leading-relaxed whitespace-pre-wrap text-ink-700">{l.sourceText}</pre>
             </details>
           ))}
           <LandRecordUpload propertyId={id} state={r.state} />

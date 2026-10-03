@@ -18,20 +18,15 @@ export function StagePill({ status }: { status: string }) {
   return <StatusPill tone={STAGE_TONE[s] ?? "neutral"}>{STAGE_LABEL[s] ?? status}</StatusPill>;
 }
 
-const SEVERITY_CLASS: Record<Severity, string> = {
-  CRITICAL: "bg-danger text-surface",
-  HIGH: "bg-danger-soft text-danger",
-  MEDIUM: "bg-warning-soft text-warning",
-  LOW: "bg-ink-100 text-ink-700",
-};
+const SEVERITY_TONE: Record<Severity, PillTone> = { CRITICAL: "error", HIGH: "error", MEDIUM: "progress", LOW: "neutral" };
 
-/** Severity: critical is the only filled badge in the product. */
+/** Severity: neutral pill, the dot carries the level; critical adds a red outline. */
 export function SeverityBadge({ severity, className }: { severity: string; className?: string }) {
   const s = severity.toUpperCase() as Severity;
   return (
-    <span className={cn("inline-flex h-5 shrink-0 items-center rounded-xs px-1.5 text-eyebrow font-medium tracking-[0.06em] uppercase", SEVERITY_CLASS[s] ?? SEVERITY_CLASS.LOW, className)}>
+    <StatusPill tone={SEVERITY_TONE[s] ?? "neutral"} className={cn(s === "CRITICAL" && "border-danger/40 text-danger", className)}>
       {s.toLowerCase()}
-    </span>
+    </StatusPill>
   );
 }
 

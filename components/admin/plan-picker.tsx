@@ -33,7 +33,7 @@ export function PlanPicker({ current, seatsUsed }: { current: PlanId; seatsUsed:
           const isCurrent = p.id === current;
           const blocked = p.seats !== null && seatsUsed > p.seats;
           return (
-            <li key={p.id} className={cn("flex flex-col rounded-md border bg-surface p-5 shadow-card", isCurrent ? "border-navy-900" : "border-ink-200")}>
+            <li key={p.id} className={cn("flex flex-col rounded-md border bg-surface p-5 shadow-card", isCurrent ? "border-navy-900" : "border-hairline")}>
               <div className="flex items-baseline justify-between">
                 <span className="text-ui font-medium text-ink-900">{p.name}</span>
                 {isCurrent && <span className="eyebrow text-gold-600">Current</span>}
@@ -50,7 +50,7 @@ export function PlanPicker({ current, seatsUsed }: { current: PlanId; seatsUsed:
       </ul>
       <Dialog open={!!target} onOpenChange={(o) => !o && setTarget(null)}>
         <DialogContent>
-          <DialogTitle className="font-display text-card text-navy-900">Switch to {plan?.name}?</DialogTitle>
+          <DialogTitle className="font-display text-section text-navy-900">Switch to {plan?.name}?</DialogTitle>
           <DialogDescription className="mt-2 text-ui text-ink-700">
             AED {plan?.priceAed.toLocaleString("en-US")} a month plus VAT from today, invoiced in AED. {plan?.seats === null ? "Seats become unlimited." : `The plan includes ${plan?.seats} staff seats.`}
           </DialogDescription>

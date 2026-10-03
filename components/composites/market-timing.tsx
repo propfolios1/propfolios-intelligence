@@ -46,11 +46,11 @@ export function MarketTiming({ regions }: { regions: string[] }) {
         {result && (
           <div>
             <div className="flex items-center gap-3">
-              <span className="font-display text-card text-navy-900">{result.signal}</span>
+              <span className="font-display text-section text-navy-900">{result.signal}</span>
               <StatusPill tone={result.signal === "BUY" ? "complete" : result.signal === "SELL" ? "error" : "neutral"}>{Math.round(result.confidence * 100)}% confidence</StatusPill>
             </div>
             <p className="mt-2 text-small text-ink-700">{result.commentary}</p>
-            <ul className="mt-4 divide-y divide-ink-200 border-y border-ink-200">
+            <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
               {result.indicators.map((i) => (
                 <li key={i.name} className="flex items-baseline justify-between gap-3 py-2 text-small">
                   <span className="text-ink-700">{i.name}</span>
@@ -74,7 +74,7 @@ export function MarketTiming({ regions }: { regions: string[] }) {
                       <th className="py-1 text-right font-normal">Avg {result.backtest.horizonMonths}-month move</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-200 border-t border-ink-200">
+                  <tbody className="divide-y divide-hairline border-t border-hairline">
                     {result.backtest.bySignal.map((b) => (
                       <tr key={b.signal}>
                         <td className="py-1.5 text-ink-700">{b.signal}</td>

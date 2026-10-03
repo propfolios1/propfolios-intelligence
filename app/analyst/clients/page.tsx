@@ -43,17 +43,17 @@ export default async function ClientsPage() {
                 </div>
                 <StatusPill tone={c.kycStatus === "verified" ? "complete" : "progress"}>KYC {c.kycStatus}</StatusPill>
               </div>
-              <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-ink-200 pt-4">
+              <dl className="mt-5 grid grid-cols-3 gap-3 border-t border-hairline pt-4">
                 <div>
-                  <dt className="text-[0.75rem] text-ink-500">AUM</dt>
+                  <dt className="text-axis text-ink-500">AUM</dt>
                   <dd className="num text-small text-ink-900">{formatAed(c.aumAed)}</dd>
                 </div>
                 <div>
-                  <dt className="text-[0.75rem] text-ink-500">Real estate</dt>
+                  <dt className="text-axis text-ink-500">Real estate</dt>
                   <dd className="num text-small text-ink-900">{formatAed(c.valueAed)}</dd>
                 </div>
                 <div>
-                  <dt className="text-[0.75rem] text-ink-500">Mandates</dt>
+                  <dt className="text-axis text-ink-500">Mandates</dt>
                   <dd className="num text-small text-ink-900">{c.activeMandates} open</dd>
                 </div>
               </dl>

@@ -64,7 +64,7 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
   }
 
   return (
-    <section className="rounded-md border border-ink-200 bg-surface p-6 shadow-card" aria-labelledby="cv-title">
+    <section className="rounded-md border border-hairline bg-surface p-6 shadow-card" aria-labelledby="cv-title">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="eyebrow">Layer 3 · multi-model cross-validation</div>
@@ -84,7 +84,7 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
         <>
           <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
             {cv.results.map((r) => (
-              <div key={r.role} className={cn("rounded-sm border p-4", r.recommendation === cv.consensus ? "border-ink-200" : "border-danger/40 bg-danger-soft/40")}>
+              <div key={r.role} className={cn("rounded-sm border p-4", r.recommendation === cv.consensus ? "border-hairline" : "border-danger/40 bg-danger-soft/40")}>
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="text-axis uppercase tracking-[0.12em] text-ink-500">{ROLE[r.role]}</span>
                   <span className="num truncate text-axis text-ink-500" title={r.model}>
@@ -114,7 +114,7 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
             </span>
           </div>
           {cv.flagged && !cv.resolvedBy && (
-            <div className="mt-6 border-t border-ink-200 pt-5">
+            <div className="mt-6 border-t border-hairline pt-5">
               <label htmlFor="cv-note" className="text-ui font-medium text-ink-900">
                 Resolve the disagreement
               </label>
@@ -128,7 +128,7 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
             </div>
           )}
           {cv.resolvedBy && (
-            <p className="mt-6 border-t border-ink-200 pt-4 text-small text-ink-700">
+            <p className="mt-6 border-t border-hairline pt-4 text-small text-ink-700">
               <span className="font-medium text-ink-900">Resolved by {cv.resolvedBy}.</span> {cv.resolution}
             </p>
           )}

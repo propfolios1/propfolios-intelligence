@@ -65,7 +65,7 @@ export function UnderwritingTab({ sim, currency }: { sim: SimulationView; curren
         <Card className="xl:col-span-12">
           <CardHeader eyebrow="Set by the underwriting agent" title="Assumptions" />
           <CardContent>
-            <dl className="divide-y divide-ink-200 border-y border-ink-200">
+            <dl className="divide-y divide-hairline border-y border-hairline">
               {rows.map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 py-2 text-small">
                   <dt className="text-ink-700">{k}</dt>

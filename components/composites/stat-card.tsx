@@ -64,7 +64,7 @@ export function StatCard({
       </div>
     </>
   );
-  const cls = cn("block rounded-md border border-ink-200 bg-surface p-5 shadow-card", href && "transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400", className);
+  const cls = cn("block rounded-md border border-hairline bg-surface p-5 shadow-card", href && "transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ink-400", className);
   return href ? (
     <Link href={href} className={cls}>
       {body}
@@ -76,7 +76,7 @@ export function StatCard({
 
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-md border border-ink-200 bg-surface p-5">
+    <div className="rounded-md border border-hairline bg-surface p-5">
       <Skeleton className="h-3 w-24" />
       <Skeleton className="mt-4 h-8 w-32" />
       <Skeleton className="mt-3 h-4 w-20" />

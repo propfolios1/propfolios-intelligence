@@ -26,11 +26,11 @@ export default async function ClientIndiaPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {rows.map((r) => (
-              <article key={r.portfolio.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+              <article key={r.portfolio.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="eyebrow">{r.property.city}</div>
-                    <div className="mt-2 font-display text-[20px] text-navy-900">{r.property.name}</div>
+                    <div className="mt-2 font-display text-section text-navy-900">{r.property.name}</div>
                     <div className="mt-1 text-small text-ink-700">{r.portfolio.unitLabel}</div>
                   </div>
                   {r.record ? <ReraStatus status={r.record.reraStatus} /> : <Flag tone="neutral">{r.property.region}</Flag>}

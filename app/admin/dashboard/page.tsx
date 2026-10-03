@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
         <Card className="xl:col-span-5">
           <CardHeader eyebrow="Workspace" title="Configuration" />
           <CardContent>
-            <dl className="divide-y divide-ink-200 border-y border-ink-200 text-ui">
+            <dl className="divide-y divide-hairline border-y border-hairline text-ui">
               {[
                 ["Product name", tenant.configJson.brand_name],
                 ["Plan", `${seats.plan.name}, AED ${seats.plan.priceAed.toLocaleString("en-US")} a month`],

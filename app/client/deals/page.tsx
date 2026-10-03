@@ -24,16 +24,16 @@ export default async function ClientDeals() {
         {rows.map((r) => {
           const idx = DEAL_STAGES.indexOf(r.deal.stage);
           return (
-            <Link key={r.deal.id} href={`/client/deals/${r.deal.id}`} className="block rounded-md border border-ink-200 bg-surface p-5 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
+            <Link key={r.deal.id} href={`/client/deals/${r.deal.id}`} className="block rounded-md border border-hairline bg-surface p-5 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="eyebrow">
                     {r.deal.side === "buy" ? "Purchase" : "Sale"} · {JURISDICTION_LABEL[r.deal.jurisdiction]}
                   </div>
-                  <div className="mt-2 font-display text-[20px] text-navy-900">{r.property}</div>
+                  <div className="mt-2 font-display text-section text-navy-900">{r.property}</div>
                 </div>
                 <div className="text-right">
-                  <div className="num text-[18px] text-navy-900">{formatLocal(r.deal.value, r.deal.currency)}</div>
+                  <div className="num text-card text-navy-900">{formatLocal(r.deal.value, r.deal.currency)}</div>
                   <Flag tone={r.deal.status === "won" ? "complete" : r.deal.status === "lost" ? "error" : "progress"}>{r.deal.status === "active" ? STAGE_LABEL[r.deal.stage] : r.deal.status === "won" ? "Completed" : r.deal.status}</Flag>
                 </div>
               </div>

@@ -32,7 +32,7 @@ export default async function AdminCommissions() {
         subtitle="Computed when a deal closes from the applicable structure, split between the team and the firm, invoiced with VAT or GST and tracked to receipt. Every step is audited."
         actions={
           <div className="flex gap-3">
-            <Link href="/admin/commissions/structures" className="inline-flex h-9 items-center rounded-sm border border-ink-200 bg-surface px-4 text-ui shadow-card hover:border-ink-400">
+            <Link href="/admin/commissions/structures" className="inline-flex h-9 items-center rounded-sm border border-hairline bg-surface px-4 text-ui shadow-card hover:border-ink-400">
               Structures
             </Link>
             <Link href="/admin/invoices" className="inline-flex h-9 items-center rounded-sm bg-navy-900 px-4 text-ui text-surface hover:bg-navy-800">

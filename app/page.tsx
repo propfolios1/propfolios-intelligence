@@ -42,7 +42,7 @@ async function TenantLanding({ name }: { name: string }) {
       <main className="mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-1 items-center gap-12 px-6 py-16 md:px-12 lg:grid-cols-12 xl:px-20">
         <section className="animate-hero lg:col-span-7">
           <div className="eyebrow">Private client portal</div>
-          <h1 className="mt-8 max-w-[14ch] font-display text-[3rem] leading-[1.05] tracking-[-0.03em] text-navy-900 md:text-hero">Your portfolio, researched and monitored.</h1>
+          <h1 className="mt-8 max-w-[14ch] font-display text-figure-lg leading-[1.05] tracking-[-0.03em] text-navy-900 md:text-hero">Your portfolio, researched and monitored.</h1>
           <p className="mt-8 max-w-[46ch] text-body text-ink-700">Holdings, valuations, alerts, Allocation Memos and your advisory team, in one private workspace from {name}.</p>
           <div className="mt-10">
             <Button asChild size="lg">
@@ -77,7 +77,7 @@ export default async function Landing() {
         <section className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-x-6 px-6 pt-12 pb-20 md:px-12 lg:grid-cols-12 lg:pt-20 xl:px-20">
           <div className="animate-hero lg:col-span-7">
             <div className="eyebrow">The operating system for real estate advisory</div>
-            <h1 className="mt-8 max-w-[13ch] font-display text-[3.25rem] leading-[1.02] tracking-[-0.035em] text-navy-900 md:text-hero">
+            <h1 className="mt-8 max-w-[13ch] font-display text-figure-lg leading-[1.02] tracking-[-0.035em] text-navy-900 md:text-hero">
               Institutional research, at the speed of a <em className="italic">conversation</em>.
             </h1>
             <p className="mt-8 max-w-[52ch] text-read text-ink-700">
@@ -107,7 +107,7 @@ export default async function Landing() {
           </aside>
         </section>
 
-        <section className="border-y border-ink-200 bg-surface">
+        <section className="border-y border-hairline bg-surface">
           <dl className="mx-auto grid w-full max-w-[1440px] grid-cols-2 gap-px px-6 md:grid-cols-4 md:px-12 xl:px-20">
             {PROOF.map(([n, l]) => (
               <div key={l} className="py-8 pr-6">
@@ -127,7 +127,7 @@ export default async function Landing() {
             </div>
             <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-8">
               {PIPELINE.map(([title, body], i) => (
-                <li key={title} className="rounded-md border border-ink-200 bg-surface p-6 shadow-card">
+                <li key={title} className="rounded-md border border-hairline bg-surface p-6 shadow-card">
                   <span className="num text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
                   <h3 className="mt-3 text-read font-medium text-ink-900">{title}</h3>
                   <p className="mt-2 text-ui text-ink-700">{body}</p>
@@ -137,7 +137,7 @@ export default async function Landing() {
           </div>
         </section>
 
-        <section className="border-t border-ink-200 bg-surface">
+        <section className="border-t border-hairline bg-surface">
           <div className="mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-12 px-6 py-24 md:px-12 lg:grid-cols-12 xl:px-20">
             <div className="lg:col-span-5">
               <div className="eyebrow">Federated intelligence</div>
@@ -147,7 +147,7 @@ export default async function Landing() {
             </div>
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-6 lg:col-start-7">
               {FEDERATION.map(([title, body]) => (
-                <li key={title} className="rounded-md border border-ink-200 p-6">
+                <li key={title} className="rounded-md border border-hairline p-6">
                   <h3 className="text-read font-medium text-ink-900">{title}</h3>
                   <p className="mt-2 text-ui text-ink-700">{body}</p>
                 </li>
@@ -183,7 +183,7 @@ export default async function Landing() {
           </div>
           <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((p) => (
-              <li key={p.id} className="rounded-md border border-ink-200 bg-surface p-6 shadow-card">
+              <li key={p.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card">
                 <div className="text-ui font-medium text-ink-900">{p.name}</div>
                 <div className="num mt-3 text-figure text-navy-900">AED {p.priceAed.toLocaleString("en-US")}</div>
                 <div className="text-small text-ink-500">per month, excluding VAT</div>

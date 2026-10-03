@@ -92,7 +92,7 @@ export function InsightSettingsForm({ config, payments }: { config: InsightConfi
             Show client-relevant insights in the client portal as they are identified. When off, insights reach your team only.
           </label>
         </CardContent>
-        <CardHeader eyebrow="Rent reminders" title="Payment instructions" className="border-t border-ink-200" />
+        <CardHeader eyebrow="Rent reminders" title="Payment instructions" className="border-t border-hairline" />
         <CardContent className="grid gap-6 md:grid-cols-2">
           <FormField label="Payment link" htmlFor="link" hint="Included in rent reminders when set.">
             <Input id="link" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://" />

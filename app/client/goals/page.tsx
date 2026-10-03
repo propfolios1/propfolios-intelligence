@@ -21,9 +21,9 @@ export default async function ClientGoals() {
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {!p?.goals.length && <EmptyState glyph="opportunities" headline="No goals set yet. Your adviser will agree them with you at your next review." />}
         {p?.goals.map((g) => (
-          <article key={g.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+          <article key={g.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
             <div className="eyebrow">{g.goalType}</div>
-            <h2 className="mt-2 font-display text-[19px] text-navy-900">{g.title}</h2>
+            <h2 className="mt-2 font-display text-card text-navy-900">{g.title}</h2>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink-200">
               <div className={g.progressPct >= 100 ? "h-full bg-success" : "h-full bg-navy-900"} style={{ width: `${Math.min(100, g.progressPct)}%` }} />
             </div>

@@ -109,7 +109,7 @@ export default async function DealPage({ params, searchParams }: { params: Promi
           <Section title="Timeline" eyebrow="Events" className="xl:col-span-2">
             <ol className="space-y-3">
               {d.events.map((e) => (
-                <li key={e.id} className="rounded-md border border-ink-200 bg-surface p-4 shadow-card">
+                <li key={e.id} className="rounded-md border border-hairline bg-surface p-4 shadow-card">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <span className="num text-small text-ink-900">{e.type}</span>
                     <RelativeTime iso={e.createdAt.toISOString()} className="text-axis text-ink-500" />
@@ -197,14 +197,14 @@ export default async function DealPage({ params, searchParams }: { params: Promi
             return (
               <Section key={c.id} title={`${c.title}, version ${c.version}`} eyebrow={`${c.provider === "dropbox_sign" ? "Dropbox Sign" : "Native signature"} · ${c.status.replace(/_/g, " ")}`} actions={c.status === "draft" ? <SendForSignature dealId={id} contractId={c.id} defaults={[{ party: deal.side === "buy" ? "buyer" : "seller", name: d.client.name, email: `${d.client.name.toLowerCase().replace(/[^a-z]+/g, ".").replace(/^\.|\.$/g, "")}@clients.example` }, { party: deal.side === "buy" ? "seller" : "buyer", name: deal.counterparty, email: `${deal.counterparty.toLowerCase().replace(/[^a-z]+/g, ".").replace(/^\.|\.$/g, "")}@counterparty.example` }]} /> : undefined}>
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-                  <article className="prose-pf max-h-[520px] overflow-y-auto rounded-md border border-ink-200 bg-surface p-6 text-small shadow-card" dangerouslySetInnerHTML={{ __html: c.contentHtml }} />
+                  <article className="prose-pf max-h-[520px] overflow-y-auto rounded-md border border-hairline bg-surface p-6 text-small shadow-card" dangerouslySetInnerHTML={{ __html: c.contentHtml }} />
                   <div className="space-y-3">
-                    <div className="rounded-md border border-ink-200 bg-surface p-4 text-small shadow-card">
+                    <div className="rounded-md border border-hairline bg-surface p-4 text-small shadow-card">
                       <div className="eyebrow mb-2">Integrity</div>
                       <div className="num break-all text-axis text-ink-700">SHA-256 {c.contentHash}</div>
                     </div>
                     {sigs.map((x) => (
-                      <div key={x.id} className="rounded-md border border-ink-200 bg-surface p-4 text-small shadow-card">
+                      <div key={x.id} className="rounded-md border border-hairline bg-surface p-4 text-small shadow-card">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-ink-900">{x.signerName}</span>
                           <Flag tone={x.status === "signed" ? "complete" : x.status === "declined" ? "error" : "progress"}>{x.status}</Flag>

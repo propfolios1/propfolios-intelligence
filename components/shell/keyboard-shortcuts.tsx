@@ -74,9 +74,9 @@ export function KeyboardShortcuts({ area }: { area: Area }) {
   return (
     <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
       <DialogContent className="max-w-[480px]">
-        <DialogTitle className="font-display text-card text-navy-900">Keyboard shortcuts</DialogTitle>
+        <DialogTitle className="font-display text-section text-navy-900">Keyboard shortcuts</DialogTitle>
         <DialogDescription className="mt-1 text-small text-ink-500">Shortcuts are disabled while typing in a field.</DialogDescription>
-        <dl className="mt-6 divide-y divide-ink-200 border-y border-ink-200">
+        <dl className="mt-6 divide-y divide-hairline border-y border-hairline">
           {rows.map(([keys, label], i) => (
             <div key={i} className="flex items-center justify-between gap-6 py-2.5">
               <dt className="text-small text-ink-700">{label}</dt>

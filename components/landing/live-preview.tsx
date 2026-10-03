@@ -19,14 +19,14 @@ export function LivePreview() {
     ["Mumbai", 18, 30],
   ] as const;
   return (
-    <div className="border border-ink-200 bg-canvas p-8">
+    <div className="border border-hairline bg-canvas p-8">
       <div className="flex items-center justify-between">
         <span className="eyebrow">Private client portfolio</span>
         <span className="flex items-center gap-2 text-small text-ink-700">
           <LiveDot /> Live
         </span>
       </div>
-      <div className="mt-8 font-display text-[3.5rem] leading-none tracking-[-0.04em] text-navy-900">AED 61.2M</div>
+      <div className="mt-8 font-display text-hero leading-none tracking-[-0.04em] text-navy-900">AED 61.2M</div>
       <div className="mt-3 flex items-baseline gap-3 text-small">
         <span className="num text-success">↑ 8.4%</span>
         <span className="text-ink-500">since last quarter</span>

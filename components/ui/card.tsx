@@ -5,7 +5,7 @@ export function Card({ className, interactive, ...props }: React.HTMLAttributes<
   return (
     <div
       className={cn(
-        "rounded-md border border-ink-200 bg-surface shadow-card",
+        "rounded-md border border-hairline bg-surface shadow-card",
         interactive && "transition-[transform,border-color] duration-250 ease-out hover:-translate-y-px hover:border-ink-400",
         className,
       )}
@@ -31,5 +31,5 @@ export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDi
 }
 
 export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex items-center gap-3 border-t border-ink-200 px-6 py-4", className)} {...props} />;
+  return <div className={cn("flex items-center gap-3 border-t border-hairline px-6 py-4", className)} {...props} />;
 }

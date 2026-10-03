@@ -23,10 +23,10 @@ export default async function Structures() {
       <PageHeader eyebrow="Administration · Commissions" title="Commission structures" subtitle="Rates, tiers, payer and splits. The most specific active structure that matches a closing deal applies; the default covers the rest." actions={<StructureEditor trigger="New structure" />} />
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         {rows.map((r) => (
-          <article key={r.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+          <article key={r.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <div className="font-display text-[20px] text-navy-900">{r.name}</div>
+                <div className="font-display text-section text-navy-900">{r.name}</div>
                 <div className="mt-1 text-small text-ink-700">
                   {r.type === "percentage" ? `${r.ratePct}% of value` : r.type === "fixed" ? `Fixed ${r.currency} ${r.fixedAmount?.toLocaleString("en-US")}` : r.tiers.map((t) => `${t.ratePct}% ${t.upTo === null ? "above" : `to ${t.upTo.toLocaleString("en-US")}`}`).join(", ")} · paid by the {r.payer}
                 </div>

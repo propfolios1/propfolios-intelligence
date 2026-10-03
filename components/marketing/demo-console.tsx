@@ -96,7 +96,7 @@ export function DemoConsole({ assets }: { assets: Asset[] }) {
             <FormField label="Hold period" htmlFor="hold">
               <div id="hold" className="flex gap-1" role="radiogroup">
                 {[3, 5, 7, 10].map((y) => (
-                  <button key={y} type="button" role="radio" aria-checked={hold === y} onClick={() => setHold(y)} className={cn("num h-9 flex-1 rounded-sm border text-ui transition-colors duration-150", hold === y ? "border-navy-900 bg-navy-900 text-surface" : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400")}>
+                  <button key={y} type="button" role="radio" aria-checked={hold === y} onClick={() => setHold(y)} className={cn("num h-9 flex-1 rounded-sm border text-ui transition-colors duration-150", hold === y ? "border-navy-900 bg-navy-900 text-surface" : "border-hairline bg-surface text-ink-700 hover:border-ink-400")}>
                     {y} years
                   </button>
                 ))}
@@ -127,7 +127,7 @@ export function DemoConsole({ assets }: { assets: Asset[] }) {
           </div>
         )}
         {!result && stage < 0 && (
-          <div className="flex h-full min-h-80 items-center justify-center rounded-md border border-dashed border-ink-200 p-10 text-center">
+          <div className="flex h-full min-h-80 items-center justify-center rounded-md border border-dashed border-hairline p-10 text-center">
             <p className="max-w-[44ch] text-body text-ink-500">Choose an asset and a ticket. Twelve agents assemble the committee pack: research, three return scenarios from 10,000 simulated paths, four valuation methods, due diligence, a bull and bear debate and an independent three-model review.</p>
           </div>
         )}
@@ -156,7 +156,7 @@ export function DemoConsole({ assets }: { assets: Asset[] }) {
                 </div>
                 <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
                   {result.crossValidation.map((v) => (
-                    <div key={v.role} className="rounded-sm border border-ink-200 p-3">
+                    <div key={v.role} className="rounded-sm border border-hairline p-3">
                       <div className="text-axis uppercase tracking-[0.12em] text-ink-500">{ROLE[v.role]}</div>
                       <div className="mt-1 text-ui font-medium text-ink-900">{REC[v.recommendation]}</div>
                       <ConfidenceMeter value={v.confidence} className="mt-1" />
@@ -188,7 +188,7 @@ export function DemoConsole({ assets }: { assets: Asset[] }) {
               <Card>
                 <CardHeader eyebrow={`Asking ${formatLocal(result.valuation.askingPrice, result.valuation.currency)}`} title={`Valued at ${formatLocal(result.valuation.reconciled.value, result.valuation.currency)}`} />
                 <CardContent>
-                  <ul className="divide-y divide-ink-200 border-y border-ink-200">
+                  <ul className="divide-y divide-hairline border-y border-hairline">
                     {result.valuation.methods.map((m) => (
                       <li key={m.method} className="flex justify-between py-2 text-small">
                         <span className="text-ink-700">{m.method}</span>

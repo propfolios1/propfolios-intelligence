@@ -21,9 +21,9 @@ export default async function ClientStatements() {
       <div className="mt-8 space-y-8">
         {!p?.statements.length && <EmptyState glyph="documents" headline="No statements yet." />}
         {p?.statements.map((st) => (
-          <article key={st.id} className="rounded-md border border-ink-200 bg-surface p-6 shadow-card">
+          <article key={st.id} className="rounded-md border border-hairline bg-surface p-6 shadow-card">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-[22px] text-navy-900">{monthLabel(st.period)}</h2>
+              <h2 className="font-display text-section text-navy-900">{monthLabel(st.period)}</h2>
               <span className="num text-small text-ink-500">Closing value {aed(st.data.closingValueAed)}</span>
             </div>
             {st.commentary && <p className="mt-3 max-w-[75ch] text-small text-ink-700">{st.commentary}</p>}

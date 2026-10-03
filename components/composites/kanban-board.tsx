@@ -100,7 +100,7 @@ function Column({ stage, cards, activeId, activeFrom }: { stage: MandateStatus; 
   const showDrop = isOver && activeFrom !== stage;
   return (
     <section ref={setNodeRef} aria-label={STAGE_LABEL[stage]} className="flex w-full shrink-0 flex-col md:w-72">
-      <header className="flex h-10 items-baseline justify-between border-b border-ink-200">
+      <header className="flex h-10 items-baseline justify-between border-b border-hairline">
         <h3 className="text-small font-medium text-ink-900">
           {STAGE_LABEL[stage]}
           <sup className="num ml-1 text-axis font-normal text-ink-500">{cards.length}</sup>
@@ -139,7 +139,7 @@ function CardBody({ card, lifted }: { card: KanbanCard; lifted?: boolean }) {
       onClick={(e) => lifted && e.preventDefault()}
       className={cn(
         "block h-[88px] rounded-md border bg-surface px-4 py-3 shadow-card transition-[border-color,transform] duration-120 ease-[ease] hover:-translate-y-px hover:border-ink-500",
-        lifted ? "-translate-y-0.5 cursor-grabbing border-ink-400 shadow-float" : "border-ink-200",
+        lifted ? "-translate-y-0.5 cursor-grabbing border-ink-400 shadow-float" : "border-hairline",
       )}
     >
       <div className="flex items-baseline justify-between gap-3">

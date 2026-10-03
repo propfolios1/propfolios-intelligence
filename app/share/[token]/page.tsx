@@ -34,9 +34,9 @@ export default async function SharedReport({ params }: { params: Promise<{ token
   const brand = row.t.configJson.brand_name;
   return (
     <main className="min-h-screen bg-canvas">
-      <header className="border-b border-ink-200 bg-surface">
+      <header className="border-b border-hairline bg-surface">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-          <span className="font-display text-card text-navy-900">{brand}</span>
+          <span className="font-display text-section text-navy-900">{brand}</span>
           <span className="text-small text-ink-500">Confidential · prepared for {link.recipient}</span>
         </div>
       </header>
@@ -47,7 +47,7 @@ export default async function SharedReport({ params }: { params: Promise<{ token
           {row.p.community}, {row.p.city}. Developer registration {row.p.reraNumber}. Findings as at {formatDate(row.m.updatedAt)}.
         </p>
         <div className="mt-10">{findings.length ? <DDTab findings={findings} /> : <p className="text-small text-ink-500">No findings are recorded for this mandate.</p>}</div>
-        <p className="mt-12 border-t border-ink-200 pt-6 text-small text-ink-500">
+        <p className="mt-12 border-t border-hairline pt-6 text-small text-ink-500">
           Shared by {brand} for {link.recipient}. This link expires on {formatDate(link.expiresAt)} and may be withdrawn at any time. Findings are prepared for the recipient&apos;s credit assessment and do not constitute investment advice.
         </p>
       </div>

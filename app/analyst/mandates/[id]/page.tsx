@@ -69,7 +69,7 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
     <LiveMandate mandateId={m.id} initial={{ status: m.status, timeline: m.timeline, running: Boolean(m.runningSince), totalCostUsd: m.totalCostUsd }}>
       <Crumb segment={m.id} label={m.reference} />
       <PageContainer className="pt-8 md:pt-10">
-        <header className="flex flex-col gap-6 border-b border-ink-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <header className="flex flex-col gap-6 border-b border-hairline pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <span className="num text-small text-ink-500">{m.reference}</span>
@@ -124,7 +124,7 @@ export default async function MandatePage({ params, searchParams }: { params: Pr
             (d.memo ? (
               <div>
                 <div className="mb-6 flex flex-wrap items-center gap-3">
-                  <h2 className="font-display text-card text-navy-900">{d.memo.title}</h2>
+                  <h2 className="font-display text-section text-navy-900">{d.memo.title}</h2>
                   <MemoStatusPill status={d.memo.status} />
                   <span className="num text-small text-ink-500">
                     v{d.memo.version} · {d.memo.lastEditedBy ?? "Memo agent"}

@@ -53,7 +53,7 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyRow[] }) {
         </Button>
       </form>
       {secret && (
-        <div className="mt-4 rounded-md border border-gold-500/40 bg-gold-100/40 p-4">
+        <div className="mt-4 rounded-md border border-hairline border-l-2 border-l-gold-500 bg-surface p-4">
           <p className="text-small font-medium text-ink-900">Copy this key now. It is not shown again.</p>
           <div className="mt-2 flex items-center gap-2 rounded-sm bg-surface px-3 py-2 shadow-card">
             <code className="num min-w-0 flex-1 truncate text-small text-ink-900">{secret}</code>
@@ -72,7 +72,7 @@ export function ApiKeysManager({ keys }: { keys: ApiKeyRow[] }) {
           </div>
         </div>
       )}
-      <ul className="mt-6 divide-y divide-ink-200 border-y border-ink-200">
+      <ul className="mt-6 divide-y divide-hairline border-y border-hairline">
         {keys.length === 0 && <li className="py-4 text-small text-ink-500">No keys yet.</li>}
         {keys.map((k) => (
           <li key={k.id} className="flex flex-wrap items-center justify-between gap-3 py-3">

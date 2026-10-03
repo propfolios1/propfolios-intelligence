@@ -32,7 +32,7 @@ export function FilterBuilder({ fields, value, onChange }: { fields: FilterField
   return (
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filters">
       {active.map((f) => (
-        <span key={f.key} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-ink-200 bg-surface pr-1 pl-3 text-small">
+        <span key={f.key} className="inline-flex h-7 items-center gap-1.5 rounded-full border border-hairline bg-surface pr-1 pl-3 text-small">
           <span className="text-ink-500">{f.label}</span>
           <span className="text-ink-900">{display(f, value[f.key]!)}</span>
           <button
@@ -104,7 +104,7 @@ export function FilterBuilder({ fields, value, onChange }: { fields: FilterField
                   </ul>
                 ) : (
                   <div className="flex gap-2">
-                    <input autoFocus inputMode={editing.type === "number" ? "decimal" : "text"} className="h-8 w-full rounded-sm border border-ink-200 px-2 text-small outline-none focus:border-navy-900" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={editing.op ? `${editing.op} value` : "Contains"} />
+                    <input autoFocus inputMode={editing.type === "number" ? "decimal" : "text"} className="h-8 w-full rounded-sm border border-hairline px-2 text-small outline-none focus:border-navy-900" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={editing.op ? `${editing.op} value` : "Contains"} />
                     <Button size="sm" type="submit">
                       Apply
                     </Button>

@@ -64,7 +64,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
           <Card>
             <CardHeader eyebrow="People" title="Users" />
             <CardContent>
-              <ul className="divide-y divide-ink-200">
+              <ul className="divide-y divide-hairline">
                 {d.users.map((u) => (
                   <li key={u.id} className="flex items-center justify-between gap-3 py-2.5 text-small">
                     <span className="min-w-0">
@@ -83,7 +83,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
           <Card>
             <CardHeader eyebrow="Billing" title="Subscriptions" />
             <CardContent>
-              <ul className="divide-y divide-ink-200">
+              <ul className="divide-y divide-hairline">
                 {d.subscriptions.map((s) => (
                   <li key={s.id} className="flex items-center justify-between py-2.5 text-small">
                     <span className="text-ink-900">

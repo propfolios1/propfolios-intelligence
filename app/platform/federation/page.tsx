@@ -57,7 +57,7 @@ export default async function PlatformFederation() {
                       <th className="py-2 text-right font-normal">Serious findings</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-200 border-t border-ink-200">
+                  <tbody className="divide-y divide-hairline border-t border-hairline">
                     {segments.map((b) => (
                       <tr key={b.key}>
                         <td className="py-2.5 text-ink-900">{b.region ? `${b.region} ${b.assetClass}` : `${b.market} (all)`}</td>
@@ -79,7 +79,7 @@ export default async function PlatformFederation() {
             {developers.length > 0 && (
               <>
                 <div className="eyebrow mt-8">Developer signals (hashed)</div>
-                <ul className="mt-3 divide-y divide-ink-200 border-y border-ink-200">
+                <ul className="mt-3 divide-y divide-hairline border-y border-hairline">
                   {developers.map((b) => (
                     <li key={b.key} className="flex items-center justify-between gap-4 py-2.5 text-small">
                       <code className="num text-ink-500">{b.developerHash?.slice(0, 12)}…</code>
@@ -97,7 +97,7 @@ export default async function PlatformFederation() {
           <Card>
             <CardHeader eyebrow="Consent" title="Contributing firms" />
             <CardContent>
-              <ul className="divide-y divide-ink-200">
+              <ul className="divide-y divide-hairline">
                 {tenants
                   .filter((t) => !t.cfg.platform)
                   .map((t) => (
@@ -112,7 +112,7 @@ export default async function PlatformFederation() {
           <Card>
             <CardHeader eyebrow="History" title="Aggregation runs" />
             <CardContent>
-              <ul className="divide-y divide-ink-200">
+              <ul className="divide-y divide-hairline">
                 {runs.map((r) => (
                   <li key={r.id} className="py-2 text-small">
                     <div className="flex justify-between">

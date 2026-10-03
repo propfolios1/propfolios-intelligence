@@ -30,7 +30,7 @@ export function Segmented<T extends string>({
           )}
         >
           {o.label}
-          {o.count !== undefined && <sup className="num text-[0.625rem] text-ink-500">{o.count}</sup>}
+          {o.count !== undefined && <sup className="num text-hint text-ink-500">{o.count}</sup>}
         </button>
       ))}
     </div>

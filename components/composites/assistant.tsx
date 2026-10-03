@@ -133,12 +133,12 @@ export function Assistant({ initialQuery, staff = false }: { initialQuery?: stri
             <div className="pt-[8vh]">
               <div className="eyebrow">Ask</div>
               <h1 className="mt-5 font-display text-title text-navy-900">{staff ? "Questions about clients, mandates and markets, answered with sources." : "Questions about your portfolio, answered with sources."}</h1>
-              <ol className="mt-12 border-b border-ink-200">
+              <ol className="mt-12 border-b border-hairline">
                 {PROMPTS.map((p, i) => (
                   <li key={p}>
                     <button
                       onClick={() => send(p)}
-                      className="group grid w-full grid-cols-[40px_1fr_auto] items-baseline border-t border-ink-200 py-4 text-left transition-[background-color] duration-120 hover:bg-ink-100"
+                      className="group grid w-full grid-cols-[40px_1fr_auto] items-baseline border-t border-hairline py-4 text-left transition-[background-color] duration-120 hover:bg-ink-100"
                     >
                       <span className="num pl-1 text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
                       <span className="text-body text-ink-900">{p}</span>
@@ -154,7 +154,7 @@ export function Assistant({ initialQuery, staff = false }: { initialQuery?: stri
             <div className="flex flex-col gap-12">
               {messages.map((m, i) =>
                 m.role === "user" ? (
-                  <p key={i} className="ml-auto max-w-[80%] border-r border-ink-200 pr-4 text-right text-body whitespace-pre-wrap text-ink-700">
+                  <p key={i} className="ml-auto max-w-[80%] border-r border-hairline pr-4 text-right text-body whitespace-pre-wrap text-ink-700">
                     {m.content}
                   </p>
                 ) : (
@@ -167,7 +167,7 @@ export function Assistant({ initialQuery, staff = false }: { initialQuery?: stri
         </div>
       </div>
 
-      <div className="border-t border-ink-200 px-6 pt-5 pb-6">
+      <div className="border-t border-hairline px-6 pt-5 pb-6">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -188,10 +188,10 @@ export function Assistant({ initialQuery, staff = false }: { initialQuery?: stri
             rows={1}
             placeholder="Ask about a holding, an alert or a market"
             aria-label="Question"
-            className="max-h-40 min-h-12 flex-1 resize-none rounded-sm border border-ink-200 bg-canvas px-4 py-3 text-body text-ink-900 placeholder:text-ink-500 transition-[border-color] duration-120 focus:border-ink-200 focus:outline-2 focus:outline-offset-2 focus:outline-gold-500"
+            className="max-h-40 min-h-12 flex-1 resize-none rounded-sm border border-hairline bg-canvas px-4 py-3 text-body text-ink-900 placeholder:text-ink-500 transition-[border-color] duration-120 focus:border-hairline focus:outline-2 focus:outline-offset-2 focus:outline-gold-500"
           />
           {streaming ? (
-            <button type="button" onClick={() => abortRef.current?.abort()} className="h-12 rounded-sm border border-ink-200 px-5 text-small text-ink-900 transition-[border-color] duration-120 hover:border-ink-200">
+            <button type="button" onClick={() => abortRef.current?.abort()} className="h-12 rounded-sm border border-hairline px-5 text-small text-ink-900 transition-[border-color] duration-120 hover:border-hairline">
               Stop
             </button>
           ) : (

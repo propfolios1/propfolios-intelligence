@@ -195,16 +195,16 @@ export function MemoEditor({
           </div>
         </div>
 
-        <details className="mb-6 border-y border-ink-200 2xl:hidden" data-no-print>
+        <details className="mb-6 border-y border-hairline 2xl:hidden" data-no-print>
           <summary className="eyebrow flex h-11 cursor-pointer items-center">Data sources</summary>
           <SourcesGrid sections={dataSources} />
         </details>
 
-        <div ref={sheetRef} className="paper-grain relative border border-ink-200 px-8 py-12 md:px-14 md:py-16">
+        <div ref={sheetRef} className="paper-grain relative border border-hairline px-8 py-12 md:px-14 md:py-16">
           {editor ? (
             <>
               <BubbleMenu editor={editor} options={{ placement: "top", offset: 10 }}>
-                <div className="flex items-center rounded-sm border border-ink-200 bg-canvas px-1 py-1">
+                <div className="flex items-center rounded-sm border border-hairline bg-canvas px-1 py-1">
                   <Tool label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
                     <span className="font-semibold">B</span>
                   </Tool>
@@ -233,7 +233,7 @@ export function MemoEditor({
             <div
               role="listbox"
               aria-label="Insert block"
-              className="absolute z-30 w-64 rounded-sm border border-ink-200 bg-canvas py-1 animate-fade"
+              className="absolute z-30 w-64 rounded-sm border border-hairline bg-canvas py-1 animate-fade"
               style={{ top: slash.top, left: Math.max(16, Math.min(slash.left, (sheetRef.current?.clientWidth ?? 600) - 272)) }}
             >
               {filtered.map((c, i) => (
@@ -303,7 +303,7 @@ function SourcesGrid({ sections }: { sections: MemoDataSection[] }) {
         <dl key={s.title}>
           <div className="eyebrow mb-2 text-ink-500">{s.title}</div>
           {s.items.map((it) => (
-            <div key={it.label} className="flex justify-between gap-3 border-t border-ink-200 py-1.5 text-small">
+            <div key={it.label} className="flex justify-between gap-3 border-t border-hairline py-1.5 text-small">
               <dt className="text-ink-700">{it.label}</dt>
               <dd className="num text-right text-ink-900">{it.value}</dd>
             </div>
@@ -320,7 +320,7 @@ function SourcesRail({ sections, className }: { sections: MemoDataSection[]; cla
     <aside className={cn("sticky top-20 self-start", className)}>
       <div className="eyebrow mb-4">Sources</div>
       {sections.map((s) => (
-        <div key={s.title} className="border-t border-ink-200">
+        <div key={s.title} className="border-t border-hairline">
           <button
             onClick={() => setOpen((o) => ({ ...o, [s.title]: !o[s.title] }))}
             className="flex h-10 w-full items-center justify-between text-left text-small text-ink-900 transition-[color] duration-120 hover:text-navy-900"
@@ -361,7 +361,7 @@ function RightRail({ citations, flags }: { citations: MemoCitation[]; flags: Mem
         <div className="eyebrow mb-3">Fact check</div>
         {flags.length === 0 && <p className="text-small text-ink-500">No figures to check.</p>}
         {flags.map((f, i) => (
-          <article key={i} className="mb-2 rounded-md border border-ink-200 bg-surface p-4">
+          <article key={i} className="mb-2 rounded-md border border-hairline bg-surface p-4">
             <div className="flex items-center gap-2">
               <span className={cn("size-1.5 rounded-full", f.severity === "high" ? "bg-danger" : f.severity === "medium" ? "bg-warning" : "bg-success")} aria-hidden />
               <span className="eyebrow">{ISSUE_LABEL[f.issue] ?? f.issue}</span>
@@ -377,7 +377,7 @@ function RightRail({ citations, flags }: { citations: MemoCitation[]; flags: Mem
         {citations.length === 0 && <p className="text-small text-ink-500">No citations in the research dossier.</p>}
         <ol>
           {citations.map((c) => (
-            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 border-t border-ink-200 py-2.5 text-small">
+            <li key={c.id} className="grid grid-cols-[20px_1fr] gap-2 border-t border-hairline py-2.5 text-small">
               <span className="num text-ink-500">{c.id}</span>
               <span>
                 <span className="block text-ink-900">{c.title}</span>

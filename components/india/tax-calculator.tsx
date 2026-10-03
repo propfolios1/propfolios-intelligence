@@ -86,7 +86,7 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
           e.preventDefault();
           void run(false);
         }}
-        className="h-fit space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card"
+        className="h-fit space-y-4 rounded-md border border-hairline bg-surface p-5 shadow-card"
       >
         <FormField label="Jurisdiction">
           <Select value={j} onChange={(e) => setJ(e.target.value)}>
@@ -210,14 +210,14 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
                 ["Buyer cost", `${quote.breakdown.buyerCostPct.toFixed(2)}%`],
                 ["Seller total", formatLocal(quote.breakdown.sellerTotal, quote.breakdown.currency, { compact: false })],
               ].map(([l, v]) => (
-                <div key={l} className="rounded-md border border-ink-200 bg-surface p-4 shadow-card">
+                <div key={l} className="rounded-md border border-hairline bg-surface p-4 shadow-card">
                   <div className="eyebrow">{l}</div>
-                  <div className="num mt-2 text-[20px] text-navy-900">{v}</div>
+                  <div className="num mt-2 text-section text-navy-900">{v}</div>
                 </div>
               ))}
             </div>
             {(quote.validation.errors.length > 0 || quote.validation.warnings.length > 0) && (
-              <div className="space-y-2 rounded-md border border-ink-200 bg-surface p-4 shadow-card">
+              <div className="space-y-2 rounded-md border border-hairline bg-surface p-4 shadow-card">
                 {quote.validation.errors.map((e) => (
                   <p key={e.code} className="text-small text-danger">
                     {e.message} <span className="text-ink-500">({e.reference})</span>
@@ -230,7 +230,7 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
                 ))}
               </div>
             )}
-            <div className="overflow-x-auto rounded-md border border-ink-200 bg-surface shadow-card">
+            <div className="overflow-x-auto rounded-md border border-hairline bg-surface shadow-card">
               <table className="w-full min-w-[620px] text-small">
                 <thead className="bg-navy-50 text-left text-axis tracking-[0.06em] text-ink-500 uppercase">
                   <tr>
@@ -242,7 +242,7 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
                 </thead>
                 <tbody>
                   {quote.breakdown.lines.map((l, i) => (
-                    <tr key={i} className="border-t border-ink-200 align-top">
+                    <tr key={i} className="border-t border-hairline align-top">
                       <td className="px-4 py-3 text-ink-900">
                         {l.label}
                         {l.note && <div className="mt-1 text-ink-500">{l.note}</div>}
@@ -273,7 +273,7 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
                   ["Registration requirements", quote.registration],
                   ["Compliance checklist", quote.checklist],
                 ].map(([title, items]) => (
-                  <div key={title as string} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+                  <div key={title as string} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
                     <div className="eyebrow mb-3">{title as string}</div>
                     <ul className="space-y-3">
                       {(items as Item[]).map((it, i) => (

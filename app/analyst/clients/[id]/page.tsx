@@ -40,7 +40,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
           <CardHeader eyebrow="Advisory" title="Mandates" />
           <CardContent>
             {mandates.length === 0 && <p className="text-small text-ink-500">No mandates for this client.</p>}
-            <ul className="divide-y divide-ink-200">
+            <ul className="divide-y divide-hairline">
               {mandates.map((m) => (
                 <li key={m.id} className="flex items-center justify-between gap-3 py-3">
                   <Link href={`/analyst/mandates/${m.id}`} className="min-w-0 hover:underline">

@@ -89,12 +89,12 @@ export default async function Journey({ params }: { params: Promise<{ id: string
                   </span>
                   <Flag tone={r.done ? "complete" : r.href ? "progress" : "neutral"}>{r.done ? "Done" : r.href ? "Open" : "Pending"}</Flag>
                 </div>
-                <div className="num mt-3 text-[20px] text-navy-900">{r.value}</div>
+                <div className="num mt-3 text-section text-navy-900">{r.value}</div>
                 <div className="mt-1 text-small text-ink-500 capitalize">{r.note}</div>
               </>
             );
             return (
-              <li key={r.label} className={cn("rounded-lg border bg-surface p-5 shadow-card", r.done ? "border-success/30" : "border-ink-200")}>
+              <li key={r.label} className={cn("rounded-md border bg-surface p-5 shadow-card", r.done ? "border-success/30" : "border-hairline")}>
                 {r.href ? (
                   <Link href={r.href} className="block">
                     {body}
@@ -125,12 +125,12 @@ export default async function Journey({ params }: { params: Promise<{ id: string
         </section>
 
         <Section title="Timeline">
-          <ol className="relative ml-2 border-l border-ink-200">
+          <ol className="relative ml-2 border-l border-hairline">
             {items.map((it, i) => (
               <li key={i} className="relative pb-7 pl-7 last:pb-0">
                 <span className={cn("absolute top-1.5 -left-[5px] size-2.5 rounded-full border-2 border-canvas", it.kind === "stage" ? "bg-navy-700" : "bg-gold-500")} aria-hidden />
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="num text-[12px] text-ink-500">{formatDate(it.at, "datetime")}</span>
+                  <span className="num text-axis text-ink-500">{formatDate(it.at, "datetime")}</span>
                   <span className="text-body font-medium text-ink-900">{it.title}</span>
                   {it.href && (
                     <Link href={it.href} className="text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
@@ -142,11 +142,11 @@ export default async function Journey({ params }: { params: Promise<{ id: string
                 {it.agents && it.agents.length > 0 && (
                   <ul className="mt-2 space-y-1.5">
                     {it.agents.map((a, k) => (
-                      <li key={k} className="rounded-md border border-ink-200 bg-surface px-3 py-2 text-small">
+                      <li key={k} className="rounded-md border border-hairline bg-surface px-3 py-2 text-small">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="num text-[12px] text-ink-900">{a.agent}</span>
+                          <span className="num text-axis text-ink-900">{a.agent}</span>
                           <Flag tone={a.status === "succeeded" ? "complete" : a.status === "failed" ? "error" : "neutral"}>{a.status}</Flag>
-                          {a.costUsd > 0 && <span className="num text-[12px] text-ink-500">${a.costUsd.toFixed(4)}</span>}
+                          {a.costUsd > 0 && <span className="num text-axis text-ink-500">${a.costUsd.toFixed(4)}</span>}
                         </div>
                         {a.summary && <p className="mt-1 text-ink-700">{a.summary}</p>}
                       </li>

@@ -47,7 +47,7 @@ export function InsightCard({ insight, onChanged, compact }: { insight: InsightV
   }
   if (hidden) return null;
   return (
-    <article className={cn("group relative border-b border-ink-200 py-4 last:border-b-0", insight.status === "new" && "pl-3")} onMouseEnter={() => insight.status === "new" && void update("read")}>
+    <article className={cn("group relative border-b border-hairline py-4 last:border-b-0", insight.status === "new" && "pl-3")} onMouseEnter={() => insight.status === "new" && void update("read")}>
       {insight.status === "new" && <span className="absolute top-5 left-0 size-1.5 rounded-full bg-gold-500" aria-label="New" />}
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-sm bg-navy-50 text-navy-900">

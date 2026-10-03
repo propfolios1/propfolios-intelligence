@@ -111,11 +111,11 @@ export function AuditList({ events, showMandate = false, dense = false, advanced
       {filtered.length === 0 ? (
         <EmptyState glyph="documents" headline="No events match this filter." />
       ) : (
-        <ol className="border-t border-ink-200">
+        <ol className="border-t border-hairline">
           {filtered.map((e) => {
             const s = stamp(e.at);
             return (
-              <li key={e.id} className={cn("grid grid-cols-[88px_1fr] gap-6 border-b border-ink-200 transition-[background-color] duration-120 hover:bg-ink-100 md:grid-cols-[120px_1fr_auto]", dense ? "py-3" : "py-4")}>
+              <li key={e.id} className={cn("grid grid-cols-[88px_1fr] gap-6 border-b border-hairline transition-[background-color] duration-120 hover:bg-ink-100 md:grid-cols-[120px_1fr_auto]", dense ? "py-3" : "py-4")}>
                 <span className="num pl-1 text-small text-ink-500">
                   {s.day} <span className="text-ink-700">{s.time}</span>
                 </span>

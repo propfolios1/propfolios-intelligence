@@ -28,7 +28,7 @@ export function NriPlanner({ properties, clientId, initial }: { properties: { id
   const o = run?.output;
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
-      <div className="h-fit space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+      <div className="h-fit space-y-4 rounded-md border border-hairline bg-surface p-5 shadow-card">
         <FormField label="Property">
           <Select value={propertyId} onChange={(e) => setPropertyId(e.target.value)}>
             {properties.map((p) => (
@@ -63,7 +63,7 @@ export function NriPlanner({ properties, clientId, initial }: { properties: { id
         {!o && !busy && <p className="text-small text-ink-500">Choose a property and the plan sets out each step with its owner, documents and day.</p>}
         {o && run && (
           <AgentOutput agent="NRI workflow" output={o} model={run.model} costUsd={run.costUsd} at={run.at}>
-            <ol className="relative space-y-5 border-l border-ink-200 pl-6">
+            <ol className="relative space-y-5 border-l border-hairline pl-6">
               {o.steps.map((s, i) => (
                 <li key={i}>
                   <span className="absolute -left-[5px] mt-1.5 size-2.5 rounded-full border border-navy-900 bg-surface" />

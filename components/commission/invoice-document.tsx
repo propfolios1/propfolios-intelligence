@@ -7,14 +7,14 @@ import { formatDate } from "@/lib/utils";
 export function InvoiceDocument({ invoice: inv, firm, dealReference }: { invoice: typeof s.invoices.$inferSelect; firm: string; dealReference: string | null }) {
   const m = (n: number) => formatLocal(n, inv.currency, { compact: false });
   return (
-    <article className="mt-6 rounded-md border border-ink-200 bg-surface p-8 shadow-card md:p-12">
+    <article className="mt-6 rounded-md border border-hairline bg-surface p-8 shadow-card md:p-12">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <div className="font-display text-[28px] text-navy-900">{firm}</div>
+          <div className="font-display text-page-sm text-navy-900">{firm}</div>
           <div className="mt-1 text-small text-ink-500">{inv.tax.type === "UAE VAT" ? "Tax invoice" : inv.tax.type === "India GST" ? "Tax invoice (GST)" : "Invoice"}</div>
         </div>
         <div className="text-right">
-          <div className="num text-[20px] text-navy-900">{inv.number}</div>
+          <div className="num text-section text-navy-900">{inv.number}</div>
           <Flag tone={inv.status === "paid" ? "complete" : inv.status === "overdue" ? "error" : "progress"}>{inv.status.replace("_", " ")}</Flag>
         </div>
       </div>
@@ -35,7 +35,7 @@ export function InvoiceDocument({ invoice: inv, firm, dealReference }: { invoice
         </div>
       </dl>
       <table className="mt-8 w-full text-small">
-        <thead className="border-b border-ink-200 text-left text-axis tracking-[0.06em] text-ink-500 uppercase">
+        <thead className="border-b border-hairline text-left text-axis tracking-[0.06em] text-ink-500 uppercase">
           <tr>
             <th className="py-2 font-medium">Description</th>
             <th className="py-2 text-right font-medium">Amount</th>
@@ -43,7 +43,7 @@ export function InvoiceDocument({ invoice: inv, firm, dealReference }: { invoice
         </thead>
         <tbody>
           {inv.lines.map((l, i) => (
-            <tr key={i} className="border-b border-ink-200">
+            <tr key={i} className="border-b border-hairline">
               <td className="py-3 pr-6 text-ink-900">{l.description}</td>
               <td className="num py-3 text-right">{m(l.amount)}</td>
             </tr>
@@ -60,7 +60,7 @@ export function InvoiceDocument({ invoice: inv, firm, dealReference }: { invoice
           </tr>
           <tr className="border-t border-ink-900">
             <td className="py-3 text-right font-medium text-ink-900">Total</td>
-            <td className="num py-3 text-right text-[18px] text-navy-900">{m(inv.total)}</td>
+            <td className="num py-3 text-right text-card text-navy-900">{m(inv.total)}</td>
           </tr>
           {inv.tax.tdsAmount ? (
             <tr>

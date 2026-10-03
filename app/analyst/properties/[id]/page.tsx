@@ -99,7 +99,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               {peers.length === 0 ? (
                 <p className="text-small text-ink-500">No profile embedding for this project yet.</p>
               ) : (
-                <ol className="divide-y divide-ink-200">
+                <ol className="divide-y divide-hairline">
                   {peers.map((x, i) => (
                     <li key={x.propertyId} className="grid grid-cols-[28px_1fr_auto] items-center gap-3 py-2.5">
                       <span className="num text-small text-ink-500">{String(i + 1).padStart(2, "0")}</span>
@@ -195,7 +195,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <Card>
               <CardHeader eyebrow="Launches" title="Release history" />
               <CardContent>
-                <ul className="divide-y divide-ink-200">
+                <ul className="divide-y divide-hairline">
                   {launches.map((l) => (
                     <li key={l.id} className="py-2.5 text-small">
                       <div className="flex justify-between">
@@ -215,7 +215,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <CardHeader eyebrow="Mandates" title="Advisory history" />
             <CardContent>
               {mandates.length === 0 && <p className="text-small text-ink-500">No mandates reference this property.</p>}
-              <ul className="divide-y divide-ink-200">
+              <ul className="divide-y divide-hairline">
                 {mandates.map((m) => (
                   <li key={m.id} className="flex items-center justify-between gap-3 py-2.5">
                     <Link href={`/analyst/mandates/${m.id}`} className="min-w-0 text-small hover:underline">

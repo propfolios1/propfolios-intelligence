@@ -79,12 +79,12 @@ export default async function Compliance({ searchParams }: { searchParams: Promi
           </Section>
           <Section title="Requests">
             <div className="space-y-4">
-              {requests.length === 0 && <p className="rounded-lg border border-ink-200 bg-surface px-6 py-10 text-center text-small text-ink-500">No data subject requests have been received.</p>}
+              {requests.length === 0 && <p className="rounded-md border border-hairline bg-surface px-6 py-10 text-center text-small text-ink-500">No data subject requests have been received.</p>}
               {requests.map((r) => {
                 const next = r.steps.findIndex((x) => !x.done);
                 const client = clients.find((c) => c.id === r.clientId);
                 return (
-                  <article key={r.id} className="rounded-lg border border-ink-200 bg-surface p-5 shadow-card">
+                  <article key={r.id} className="rounded-md border border-hairline bg-surface p-5 shadow-card">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <div className="text-body font-medium text-ink-900">
@@ -102,12 +102,12 @@ export default async function Compliance({ searchParams }: { searchParams: Promi
                     </div>
                     <ol className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                       {r.steps.map((x, i) => (
-                        <li key={i} className={"rounded-md border px-3 py-2.5 text-small " + (x.done ? "border-success/20 bg-success/5 text-ink-700" : i === next ? "border-navy-700/30 bg-navy-50 text-ink-900" : "border-ink-200 text-ink-500")}>
+                        <li key={i} className={"rounded-md border px-3 py-2.5 text-small " + (x.done ? "border-hairline text-ink-700" : i === next ? "border-hairline border-l-2 border-l-gold-500 text-ink-900" : "border-hairline text-ink-500")}>
                           <div className="flex items-baseline gap-2">
                             <span className="num text-axis text-ink-500">{String(i + 1).padStart(2, "0")}</span>
                             <span>{x.step}</span>
                           </div>
-                          {x.done && x.at && <div className="num mt-1 text-[12px] text-ink-500">Completed {formatDate(new Date(x.at))}</div>}
+                          {x.done && x.at && <div className="num mt-1 text-axis text-ink-500">Completed {formatDate(new Date(x.at))}</div>}
                           {i === next && (
                             <div className="mt-2">
                               <StepButton requestId={r.id} index={i} label={/Erase/.test(x.step) ? "Erase personal data" : "Mark complete"} destructive={/Erase/.test(x.step)} />
@@ -223,7 +223,7 @@ async function AuditTab({ tenantId }: { tenantId: string }) {
             { key: "x", header: "Action", cell: (r) => <span className="text-ink-900">{r.action}</span> },
             { key: "e", header: "Entity", cell: (r) => r.entityType ?? "" },
             { key: "i", header: "IP", cell: (r) => <span className="num">{r.ip ?? "System"}</span> },
-            { key: "q", header: "Request", cell: (r) => <span className="num text-[12px]">{r.requestId?.slice(0, 8) ?? ""}</span> },
+            { key: "q", header: "Request", cell: (r) => <span className="num text-axis">{r.requestId?.slice(0, 8) ?? ""}</span> },
             { key: "d", header: "Change", cell: (r) => (r.before || r.after ? "Before and after recorded" : "") },
           ]}
         />

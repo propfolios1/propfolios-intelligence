@@ -9,7 +9,7 @@ export function ResearchTab({ research }: { research: ResearchDossier }) {
   return (
     <div className="grid grid-cols-1 gap-16 xl:grid-cols-12 xl:gap-6">
       <article className="prose-pf xl:col-span-7">
-        <p className="font-display text-card leading-[1.4] text-navy-900 md:text-[1.625rem]">
+        <p className="font-display text-section leading-[1.4] text-navy-900 md:text-section">
           <CitedText text={research.summary} sources={sources} />
         </p>
 
@@ -38,9 +38,9 @@ export function ResearchTab({ research }: { research: ResearchDossier }) {
 
       <aside className="xl:sticky xl:top-32 xl:col-span-4 xl:col-start-9 xl:self-start">
         <div className="eyebrow">Risks identified</div>
-        <ul className="mt-4 mb-10 border-t border-ink-200">
+        <ul className="mt-4 mb-10 border-t border-hairline">
           {research.risks.map((r) => (
-            <li key={r.title} className="border-b border-ink-200 py-3.5">
+            <li key={r.title} className="border-b border-hairline py-3.5">
               <div className="flex items-center gap-2">
                 <SeverityBadge severity={r.severity} />
                 <span className="text-small font-medium text-ink-900">{r.title}</span>

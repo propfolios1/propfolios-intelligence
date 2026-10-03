@@ -74,7 +74,7 @@ export default async function Notifications({ searchParams }: { searchParams: Pr
           title={tab === "mentions" ? "Mentions" : "Inbox"}
           description={tab === "mentions" ? "Write @ followed by a colleague's name in a negotiation note or a client conversation to bring them in." : undefined}
         >
-          <ul className="divide-y divide-ink-200 rounded-lg border border-ink-200 bg-surface shadow-card">
+          <ul className="divide-y divide-hairline rounded-md border border-hairline bg-surface shadow-card">
             {list.length === 0 && <li className="px-6 py-10 text-center text-small text-ink-500">{tab === "mentions" ? "Nobody has mentioned you yet." : "No notifications."}</li>}
             {list.map((n) => (
               <li key={n.id} className={"flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-start sm:justify-between " + (n.readAt ? "" : "bg-navy-50/60")}>
@@ -85,7 +85,7 @@ export default async function Notifications({ searchParams }: { searchParams: Pr
                     <Flag tone={n.priority === "high" ? "error" : "neutral"}>{CATEGORY[n.category]?.label ?? n.category}</Flag>
                   </div>
                   <p className="mt-1 text-small text-ink-700">{n.body}</p>
-                  <div className="mt-1 text-[12px] text-ink-500">
+                  <div className="mt-1 text-axis text-ink-500">
                     <RelativeTime iso={n.createdAt.toISOString()} />
                   </div>
                 </div>

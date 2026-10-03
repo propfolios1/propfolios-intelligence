@@ -41,7 +41,7 @@ export function RunAgent({ endpoint, body, agentLabel, action = "Run analysis", 
         {!run && !busy && <span className="text-small text-ink-500">Runs the {agentLabel.toLowerCase()} agent on the records above.</span>}
       </div>
       {busy && (
-        <div className="rounded-md border border-ink-200 bg-surface p-5">
+        <div className="rounded-md border border-hairline bg-surface p-5">
           <Skeleton className="h-3 w-32" />
           <Skeleton className="mt-4 h-6 w-3/4" />
           <Skeleton className="mt-6 h-16 w-full" />

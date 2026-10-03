@@ -81,7 +81,7 @@ export function ActionButton({ action }: { action: ActionView }) {
         </Button>
         <Dialog open={confirm} onOpenChange={setConfirm}>
           <DialogContent>
-            <DialogTitle className="font-display text-card text-navy-900">Reverse “{action.title}”?</DialogTitle>
+            <DialogTitle className="font-display text-section text-navy-900">Reverse “{action.title}”?</DialogTitle>
             <DialogDescription className="mt-2 text-ui text-ink-700">Everything this action changed is undone: messages withdrawn, links revoked, records restored. The reversal is recorded in the audit log.</DialogDescription>
             <div className="mt-6 flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setConfirm(false)}>
@@ -138,7 +138,7 @@ export function ActionsPanel({ actions }: { actions: ActionView[] }) {
   const sorted = [...actions].sort((a, b) => order[a.status] - order[b.status] || b.createdAt.localeCompare(a.createdAt));
   if (!sorted.length) return <p className="text-small text-ink-500">No actions yet. The action agent proposes follow-ups when a mandate reaches review and again on approval.</p>;
   return (
-    <ul className="divide-y divide-ink-200 border-y border-ink-200">
+    <ul className="divide-y divide-hairline border-y border-hairline">
       {sorted.map((a) => (
         <li key={a.id} className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
@@ -200,7 +200,7 @@ export function ProposeActionDialog({ mandateId, clientId }: { mandateId?: strin
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogTitle className="font-display text-card text-navy-900">Propose an action</DialogTitle>
+          <DialogTitle className="font-display text-section text-navy-900">Propose an action</DialogTitle>
           <DialogDescription className="mt-2 text-ui text-ink-700">It is added to the queue and runs only when approved.</DialogDescription>
           <form onSubmit={submit} className="mt-6 grid gap-4">
             <FormField label="Action" htmlFor="kind">

@@ -16,11 +16,11 @@ export function OverviewTab({ d }: { d: MandateDetail }) {
       <div className="flex flex-col gap-6 xl:col-span-8">
         {d.debate ? (
           <Card>
-            <CardHeader eyebrow="Committee recommendation" title={<span className="font-display text-card text-navy-900">{d.debate.judge.recommendation}</span>} actions={<><RecommendationPill value={d.debate.judge.recommendation} /><RiskPill value={d.debate.judge.riskRating} /></>} />
+            <CardHeader eyebrow="Committee recommendation" title={<span className="font-display text-section text-navy-900">{d.debate.judge.recommendation}</span>} actions={<><RecommendationPill value={d.debate.judge.recommendation} /><RiskPill value={d.debate.judge.riskRating} /></>} />
             <CardContent>
               <p className="max-w-[70ch] text-body text-ink-700">{d.debate.judge.rationale}</p>
               {d.debate.judge.conditions.length > 0 && (
-                <ol className="mt-5 flex flex-col gap-2 border-t border-ink-200 pt-4">
+                <ol className="mt-5 flex flex-col gap-2 border-t border-hairline pt-4">
                   {d.debate.judge.conditions.map((c, i) => (
                     <li key={c} className="grid grid-cols-[28px_1fr] text-small text-ink-900">
                       <span className="num text-ink-500">{String(i + 1).padStart(2, "0")}</span>

@@ -11,7 +11,7 @@ export const DialogClose = DialogPrimitive.Close;
 export const DialogTitle = DialogPrimitive.Title;
 export const DialogDescription = DialogPrimitive.Description;
 
-/** Opens with opacity + 8px rise + backdrop blur 0→8px over 200ms; exits on the ease-in curve over 300ms. */
+/** Backdrop: navy at 40% with an 8px blur, fading over 150ms. */
 export const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -19,7 +19,7 @@ export const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-navy-900/20 data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in",
+      "fixed inset-0 z-50 bg-navy-900/40 data-[state=closed]:animate-overlay-out data-[state=open]:animate-overlay-in",
       className,
     )}
     {...props}
@@ -30,13 +30,18 @@ DialogOverlay.displayName = "DialogOverlay";
 export const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { hideClose?: boolean }
->(({ className, children, hideClose, ...props }, ref) => (
+>(({ className, children, hideClose, onInteractOutside, ...props }, ref) => (
   <DialogPrimitive.Portal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      // A modal closes deliberately: Escape or a button. A stray click outside does not discard work.
+      onInteractOutside={(e) => {
+        onInteractOutside?.(e);
+        e.preventDefault();
+      }}
       className={cn(
-        "fixed top-1/2 left-1/2 z-50 w-[calc(100vw-48px)] max-w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-ink-200 bg-surface p-8 shadow-float outline-none data-[state=closed]:animate-dialog-out data-[state=open]:animate-dialog-in",
+        "fixed top-1/2 left-1/2 z-50 w-[calc(100vw-32px)] max-w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-hairline bg-surface p-6 shadow-modal outline-none data-[state=closed]:animate-dialog-out data-[state=open]:animate-dialog-in",
         className,
       )}
       {...props}

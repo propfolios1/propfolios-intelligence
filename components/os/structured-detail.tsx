@@ -60,7 +60,7 @@ export function StructuredDetail({ output, className }: { output: Record<string,
         return (
           <div key={k}>
             <div className="eyebrow mb-2">{label(k)}</div>
-            <div className="overflow-x-auto rounded-md border border-ink-200">
+            <div className="overflow-x-auto rounded-md border border-hairline">
               <table className="w-full min-w-[560px] text-small">
                 <thead className="bg-navy-50 text-left text-ink-500">
                   <tr>
@@ -73,7 +73,7 @@ export function StructuredDetail({ output, className }: { output: Record<string,
                 </thead>
                 <tbody>
                   {rows.map((r, i) => (
-                    <tr key={i} className="border-t border-ink-200 align-top">
+                    <tr key={i} className="border-t border-hairline align-top">
                       {cols.map((c) => (
                         <td key={c} className="px-3 py-2 text-ink-700">
                           <Cell v={r[c]} />

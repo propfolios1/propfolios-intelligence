@@ -39,7 +39,7 @@ export function SignatureEnvelopeCard({ envelope, defaultName }: { envelope: Env
     router.refresh();
   }
   return (
-    <div className="flex items-start justify-between gap-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+    <div className="flex items-start justify-between gap-4 rounded-md border border-hairline bg-surface p-5 shadow-card">
       <div className="flex min-w-0 gap-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-navy-50 text-navy-900">
           <PenLine className="size-4 stroke-[1.5]" aria-hidden />
@@ -59,7 +59,7 @@ export function SignatureEnvelopeCard({ envelope, defaultName }: { envelope: Env
       )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogTitle className="font-display text-card text-navy-900">{envelope.title}</DialogTitle>
+          <DialogTitle className="font-display text-section text-navy-900">{envelope.title}</DialogTitle>
           <DialogDescription className="mt-3 border-l-2 border-gold-500 pl-4 font-display text-read text-ink-900">{envelope.statement}</DialogDescription>
           <div className="mt-6 grid gap-4">
             <FormField label="Full name" htmlFor="signer">

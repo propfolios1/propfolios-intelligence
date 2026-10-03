@@ -19,7 +19,7 @@ export default function DemoPage() {
         <div className="mt-12">
           <DemoConsole assets={DEMO_ASSETS} />
         </div>
-        <div className="mt-16 flex flex-wrap items-center justify-between gap-6 border-t border-ink-200 pt-10">
+        <div className="mt-16 flex flex-wrap items-center justify-between gap-6 border-t border-hairline pt-10">
           <p className="max-w-[60ch] text-body text-ink-700">In your workspace the same pipeline runs on your clients, your catalogue and live models, with the memo drafted in your house style.</p>
           <div className="flex gap-3">
             <Button asChild variant="secondary">

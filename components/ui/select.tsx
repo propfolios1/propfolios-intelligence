@@ -29,7 +29,7 @@ export const SelectContent = React.forwardRef<React.ElementRef<typeof SelectPrim
         ref={ref}
         position={position}
         sideOffset={6}
-        className={cn("z-50 max-h-[320px] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-ink-200 bg-surface shadow-float data-[state=open]:animate-menu-in", className)}
+        className={cn("z-50 max-h-[320px] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-hairline bg-surface shadow-float data-[state=open]:animate-menu-in", className)}
         {...props}
       >
         <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>

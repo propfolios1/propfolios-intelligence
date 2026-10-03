@@ -65,7 +65,7 @@ export default async function Dashboard() {
 
       <section className="mt-14">
         <div className="mb-5 flex items-baseline justify-between">
-          <h2 className="font-display text-card text-navy-900">Pipeline</h2>
+          <h2 className="font-display text-section text-navy-900">Pipeline</h2>
           <Link href="/analyst/mandates" className="text-small text-ink-700 hover:text-ink-900">
             All mandates
           </Link>
@@ -83,7 +83,7 @@ export default async function Dashboard() {
         <Card className="xl:col-span-3">
           <CardHeader eyebrow="Portfolio monitor" title="Client alerts" />
           <CardContent>
-            <ul className="divide-y divide-ink-200">
+            <ul className="divide-y divide-hairline">
               {d.alerts.map(({ a, clientName }) => (
                 <li key={a.id} className="py-3">
                   <div className="flex items-center justify-between gap-2">
@@ -107,7 +107,7 @@ export default async function Dashboard() {
               <span className="num text-ui text-ink-900">{dubai ? Math.round(dubai.latest.medianPriceSqft).toLocaleString("en-US") : ""}</span>
             </div>
             <LineSeries data={pulse} x="month" series={[{ key: "psf", label: "AED per sq ft" }]} height={150} format="number" />
-            <div className="mt-4 flex items-baseline justify-between border-t border-ink-200 pt-3 text-small">
+            <div className="mt-4 flex items-baseline justify-between border-t border-hairline pt-3 text-small">
               <span className="text-ink-500">Twelve-month change</span>
               <span className="num text-success">+{dubai?.priceChangePct.toFixed(1)}%</span>
             </div>

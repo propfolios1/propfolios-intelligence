@@ -122,7 +122,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                 aria-current={i === step ? "step" : undefined}
                 className={cn("flex items-center gap-2 text-small", i === step ? "font-medium text-ink-900" : i < step ? "text-ink-700 hover:text-ink-900" : "text-ink-400")}
               >
-                <span className={cn("flex size-5 items-center justify-center rounded-full border text-[0.6875rem]", i < step ? "border-navy-900 bg-navy-900 text-surface" : i === step ? "border-navy-900 text-navy-900" : "border-ink-200")}>
+                <span className={cn("flex size-5 items-center justify-center rounded-full border text-label", i < step ? "border-navy-900 bg-navy-900 text-surface" : i === step ? "border-navy-900 text-navy-900" : "border-hairline")}>
                   {i < step ? <Check className="size-3 stroke-[2.5]" /> : i + 1}
                 </span>
                 {s}
@@ -131,7 +131,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
           ))}
         </ol>
 
-        <div className="mt-8 rounded-md border border-ink-200 bg-surface p-6 shadow-card md:p-8">
+        <div className="mt-8 rounded-md border border-hairline bg-surface p-6 shadow-card md:p-8">
           {step === 0 && (
             <div className="grid gap-6">
               <FormField label="Firm name" htmlFor="firm" hint="As it appears on your trade licence.">
@@ -167,7 +167,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                       }}
                       aria-label={`Use ${p} with ${a}`}
                       aria-pressed={primary === p && accent === a}
-                      className={cn("flex h-9 w-16 overflow-hidden rounded-sm border", primary === p && accent === a ? "border-ink-900" : "border-ink-200")}
+                      className={cn("flex h-9 w-16 overflow-hidden rounded-sm border", primary === p && accent === a ? "border-ink-900" : "border-hairline")}
                     >
                       <span className="flex-[3]" style={{ background: p }} />
                       <span className="flex-1" style={{ background: a }} />
@@ -177,13 +177,13 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <FormField label="Primary" htmlFor="primary">
                     <div className="flex items-center gap-2">
-                      <input type="color" value={primary} onChange={(e) => setPrimary(e.target.value)} aria-label="Primary colour picker" className="h-9 w-10 rounded-sm border border-ink-200 bg-surface" />
+                      <input type="color" value={primary} onChange={(e) => setPrimary(e.target.value)} aria-label="Primary colour picker" className="h-9 w-10 rounded-sm border border-hairline bg-surface" />
                       <Input id="primary" className="num" value={primary} onChange={(e) => setPrimary(e.target.value)} />
                     </div>
                   </FormField>
                   <FormField label="Accent" htmlFor="accent" hint="Used sparingly: active states and rules.">
                     <div className="flex items-center gap-2">
-                      <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent colour picker" className="h-9 w-10 rounded-sm border border-ink-200 bg-surface" />
+                      <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent colour picker" className="h-9 w-10 rounded-sm border border-hairline bg-surface" />
                       <Input id="accent" className="num" value={accent} onChange={(e) => setAccent(e.target.value)} />
                     </div>
                   </FormField>
@@ -211,7 +211,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                     type="button"
                     onClick={() => setPlan(p.id)}
                     aria-pressed={plan === p.id}
-                    className={cn("rounded-md border p-4 text-left transition-colors duration-150", plan === p.id ? "border-navy-900 bg-navy-50" : "border-ink-200 hover:border-ink-400")}
+                    className={cn("rounded-md border p-4 text-left transition-colors duration-150", plan === p.id ? "border-navy-900 bg-navy-50" : "border-hairline hover:border-ink-400")}
                   >
                     <div className="flex items-baseline justify-between">
                       <span className="text-ui font-medium text-ink-900">{p.name}</span>
@@ -247,7 +247,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                   Add
                 </Button>
               </div>
-              <ul className="mt-4 divide-y divide-ink-200 border-y border-ink-200">
+              <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
                 <li className="flex items-center justify-between py-2.5 text-small">
                   <span className="text-ink-900">{askAdmin ? adminEmail || "Administrator" : defaultEmail}</span>
                   <span className="text-ink-500">Administrator, you</span>
@@ -289,7 +289,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                   <dd className="mt-1 text-ink-900">{seatsUsed === 1 ? "You" : `You and ${invites.length} invited`}</dd>
                 </div>
               </dl>
-              <label className="mt-6 flex items-start gap-3 rounded-md border border-ink-200 p-4">
+              <label className="mt-6 flex items-start gap-3 rounded-md border border-hairline p-4">
                 <input type="checkbox" checked={seed} onChange={(e) => setSeed(e.target.checked)} className="mt-0.5 size-4 accent-[var(--navy-900)]" />
                 <span>
                   <span className="block text-ui font-medium text-ink-900">Load the demonstration dataset</span>
@@ -304,7 +304,7 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
               {error}
             </p>
           )}
-          <div className="mt-8 flex items-center justify-between border-t border-ink-200 pt-6">
+          <div className="mt-8 flex items-center justify-between border-t border-hairline pt-6">
             <Button type="button" variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0 || busy}>
               Back
             </Button>
@@ -324,10 +324,10 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
       <aside className="lg:col-span-5" aria-label="Brand preview">
         <div className="eyebrow mb-3">Preview</div>
         <div
-          className="overflow-hidden rounded-lg border border-ink-200 bg-canvas shadow-float"
+          className="overflow-hidden rounded-md border border-hairline bg-canvas shadow-float"
           style={{ ["--navy-900" as string]: primary, ["--gold-500" as string]: accent, ["--navy-50" as string]: `color-mix(in oklab, ${primary} 5%, white)` }}
         >
-          <div className="flex h-14 items-center border-b border-ink-200 bg-surface px-5">
+          <div className="flex h-14 items-center border-b border-hairline bg-surface px-5">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logo} alt="" className="h-8 max-w-[140px] object-contain" />
@@ -345,8 +345,8 @@ export function OnboardingWizard({ askAdmin, defaultName, defaultEmail, defaultP
                 ["Multiple", "1.45x"],
                 ["Risk", "Low"],
               ].map(([l, v]) => (
-                <div key={l} className="rounded-md border border-ink-200 bg-surface p-3">
-                  <div className="text-[0.6875rem] text-ink-500 uppercase">{l}</div>
+                <div key={l} className="rounded-md border border-hairline bg-surface p-3">
+                  <div className="text-label text-ink-500 uppercase">{l}</div>
                   <div className="num mt-1 text-ui text-navy-900">{v}</div>
                 </div>
               ))}

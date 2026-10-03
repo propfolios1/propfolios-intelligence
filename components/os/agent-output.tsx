@@ -14,8 +14,8 @@ export interface AgentCoreView {
  */
 export function AgentOutput({ agent, output, model, costUsd, at, className, children }: { agent: string; output: AgentCoreView; model?: string; costUsd?: number; at?: string; className?: string; children?: React.ReactNode }) {
   return (
-    <section className={cn("rounded-md border border-ink-200 bg-surface shadow-card", className)} aria-label={`${agent} output`}>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-200 px-5 py-3">
+    <section className={cn("rounded-md border border-hairline bg-surface shadow-card", className)} aria-label={`${agent} output`}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-5 py-3">
         <div className="eyebrow">{agent}</div>
         <div className="flex flex-wrap items-center gap-4 text-small text-ink-500">
           {model && <span className="num">{model}</span>}
@@ -24,7 +24,7 @@ export function AgentOutput({ agent, output, model, costUsd, at, className, chil
         </div>
       </div>
       <div className="px-5 py-5">
-        <p className="font-display text-[20px] leading-snug text-navy-900">{output.headline}</p>
+        <p className="font-display text-section leading-snug text-navy-900">{output.headline}</p>
         <dl className="mt-5 grid gap-x-8 gap-y-4 md:grid-cols-2">
           {output.points.map((p, i) => (
             <div key={i} className="min-w-0">

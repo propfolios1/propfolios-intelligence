@@ -23,10 +23,10 @@ export default async function DataProducts() {
       <PageHeader eyebrow="Administration · Intelligence" title="Data products" subtitle="Federated data packaged from the Nakhla network: market data, developer risk, registered comparables and operating benchmarks. Anonymised, thresholded and refreshed on schedule." />
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         {products.map((p) => (
-          <article key={p.id} className="flex flex-col rounded-md border border-ink-200 bg-surface p-6 shadow-card">
+          <article key={p.id} className="flex flex-col rounded-md border border-hairline bg-surface p-6 shadow-card">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="font-display text-[22px] text-navy-900">{p.name}</h2>
+                <h2 className="font-display text-section text-navy-900">{p.name}</h2>
                 <div className="mt-1 text-small text-ink-500">{p.format}</div>
               </div>
               {active(p.id) && <Flag tone="complete">Subscribed</Flag>}
@@ -39,7 +39,7 @@ export default async function DataProducts() {
             </ul>
             <div className="mt-auto flex items-end justify-between gap-3 pt-6">
               <div>
-                <span className="num text-[22px] text-navy-900">{formatLocal(p.priceAed, "AED", { compact: false })}</span>
+                <span className="num text-section text-navy-900">{formatLocal(p.priceAed, "AED", { compact: false })}</span>
                 <span className="text-small text-ink-500"> per {p.billing === "monthly" ? "month" : "quarter"}</span>
               </div>
               <SubscribeButton id={p.id} active={active(p.id)} />

@@ -27,7 +27,7 @@ export function Timeline({ runs, progress, compact }: { runs: StageRun[]; progre
                 r.status === "complete" && "border-navy-900 bg-navy-900",
                 r.status === "running" && "border-gold-500 bg-surface",
                 r.status === "failed" && "border-danger bg-danger",
-                r.status === "pending" && "border-ink-200 bg-surface",
+                r.status === "pending" && "border-hairline bg-surface",
               )}
               aria-hidden
             >

@@ -37,7 +37,7 @@ export function ArbitrageCard() {
       ) : (
         <div>
           <div className="flex items-center gap-3">
-            <span className="font-display text-card text-navy-900">{a.verdict}</span>
+            <span className="font-display text-section text-navy-900">{a.verdict}</span>
             <StatusPill tone="neutral">{`${a.spreadPct > 0 ? "+" : ""}${a.spreadPct.toFixed(1)} pts`}</StatusPill>
           </div>
           <dl className="mt-4 grid grid-cols-2 gap-4">
@@ -53,7 +53,7 @@ export function ArbitrageCard() {
           <p className="mt-4 text-small text-ink-700">{a.rationale}</p>
           <p className="mt-3 text-small text-ink-500">{r?.summary}</p>
           {r?.checklist && r.checklist.length > 0 && (
-            <details className="mt-4 border-t border-ink-200 pt-3">
+            <details className="mt-4 border-t border-hairline pt-3">
               <summary className="cursor-pointer text-small font-medium text-ink-900">Regulatory checklist ({r.checklist.filter((c) => c.status === "Required").length} required)</summary>
               <ul className="mt-3 space-y-2.5">
                 {r.checklist.map((c) => (

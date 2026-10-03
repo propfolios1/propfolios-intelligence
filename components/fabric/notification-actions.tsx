@@ -35,10 +35,10 @@ export function PreferencesForm({ initial }: { initial: Pref[] }) {
   const [busy, setBusy] = React.useState(false);
   const set = (i: number, patch: Partial<Pref>) => setPrefs(prefs.map((p, j) => (j === i ? { ...p, ...patch } : p)));
   return (
-    <div className="rounded-lg border border-ink-200 bg-surface shadow-card">
+    <div className="rounded-md border border-hairline bg-surface shadow-card">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-small">
-          <thead className="border-b border-ink-200 bg-navy-50 text-left">
+          <thead className="border-b border-hairline bg-navy-50 text-left">
             <tr>
               {["Category", "In app", "Email", "Delivery"].map((h) => (
                 <th key={h} className="px-4 py-2.5 text-axis font-medium tracking-[0.06em] text-ink-500 uppercase">
@@ -49,10 +49,10 @@ export function PreferencesForm({ initial }: { initial: Pref[] }) {
           </thead>
           <tbody>
             {prefs.map((p, i) => (
-              <tr key={p.category} className="border-t border-ink-200 first:border-t-0">
+              <tr key={p.category} className="border-t border-hairline first:border-t-0">
                 <td className="px-4 py-3">
                   <div className="text-ink-900">{p.label}</div>
-                  <div className="text-[12px] text-ink-500">{p.note}</div>
+                  <div className="text-axis text-ink-500">{p.note}</div>
                 </td>
                 <td className="px-4 py-3">
                   <input type="checkbox" className="size-4 accent-[var(--navy-900)]" checked={p.inApp} onChange={(e) => set(i, { inApp: e.target.checked })} aria-label={`${p.label} in app`} />
@@ -72,7 +72,7 @@ export function PreferencesForm({ initial }: { initial: Pref[] }) {
           </tbody>
         </table>
       </div>
-      <div className="flex justify-end border-t border-ink-200 px-4 py-3">
+      <div className="flex justify-end border-t border-hairline px-4 py-3">
         <Button
           disabled={busy}
           onClick={async () => {

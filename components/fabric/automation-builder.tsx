@@ -63,7 +63,7 @@ export function AutomationBuilder() {
   const setAct = (i: number, k: keyof Act, v: string) => setDraft((d) => ({ ...d, actions: d.actions.map((a, j) => (j === i ? { ...a, [k]: k === "dueInDays" ? Number(v) : v } : a)) }));
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <div className="space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+      <div className="space-y-4 rounded-md border border-hairline bg-surface p-5 shadow-card">
         <div className="eyebrow">Agent 41 · Automation builder</div>
         <FormField label="Describe the automation">
           <Textarea rows={4} value={request} onChange={(e) => setRequest(e.target.value)} placeholder="When a Mumbai deal above AED 5M closes, email the compliance officer and create a follow-up task in three days." />
@@ -73,7 +73,7 @@ export function AutomationBuilder() {
         </Button>
         {agent && <AgentOutput agent="Automation builder" output={agent.output} model={agent.model} costUsd={agent.costUsd} />}
       </div>
-      <div className="space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
+      <div className="space-y-4 rounded-md border border-hairline bg-surface p-5 shadow-card">
         <div className="eyebrow">Review</div>
         <FormField label="Name">
           <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />

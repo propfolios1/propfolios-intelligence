@@ -96,7 +96,7 @@ export function RunControls({ mandateId, reference, memoId, memoStatus, canDelet
       </DropdownMenu>
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent>
-          <DialogTitle className="font-display text-card text-navy-900">Delete {reference}?</DialogTitle>
+          <DialogTitle className="font-display text-section text-navy-900">Delete {reference}?</DialogTitle>
           <DialogDescription className="mt-2 text-ui text-ink-700">The research, simulation, debate and memo are deleted with it. The audit log keeps a record of the deletion.</DialogDescription>
           <div className="mt-6 flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setConfirmDelete(false)}>

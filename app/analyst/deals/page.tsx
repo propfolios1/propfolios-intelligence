@@ -78,7 +78,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
                     </div>
                     <div className="space-y-2">
                       {col.map((r) => (
-                        <Link key={r.deal.id} href={`/analyst/deals/${r.deal.id}`} className="block rounded-sm border border-ink-200 bg-surface p-3 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
+                        <Link key={r.deal.id} href={`/analyst/deals/${r.deal.id}`} className="block rounded-sm border border-hairline bg-surface p-3 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
                           <div className="num text-axis text-ink-500">{r.deal.reference}</div>
                           <div className="mt-1 text-small font-medium text-ink-900">{r.property}</div>
                           <div className="text-small text-ink-700">{r.client}</div>
