@@ -5,8 +5,8 @@ export function Card({ className, interactive, ...props }: React.HTMLAttributes<
   return (
     <div
       className={cn(
-        "rounded-md border border-hairline bg-surface shadow-card",
-        interactive && "transition-[transform,border-color] duration-250 ease-out hover:-translate-y-px hover:border-ink-400",
+        "rounded-md border border-hairline bg-surface",
+        interactive && "transition-[border-color,background-color] duration-150 hover:border-ink-200",
         className,
       )}
       {...props}
@@ -18,8 +18,8 @@ export function CardHeader({ className, eyebrow, title, actions, ...props }: Omi
   return (
     <div className={cn("flex items-start justify-between gap-4 px-6 pt-5 pb-4", className)} {...props}>
       <div className="min-w-0">
-        {eyebrow && <div className="eyebrow mb-1.5">{eyebrow}</div>}
-        {title && <h3 className="text-body font-medium text-ink-900">{title}</h3>}
+        {eyebrow && <div className="label-caps mb-1">{eyebrow}</div>}
+        {title && <h3 className="text-card font-medium text-ink-900">{title}</h3>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>

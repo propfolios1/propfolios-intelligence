@@ -116,7 +116,7 @@ function Column({ stage, cards, activeId, activeFrom }: { stage: MandateStatus; 
           </Link>
         )}
       </header>
-      <div className="flex flex-col gap-2 pt-2 md:min-h-[200px]">
+      <div className="flex flex-col gap-2 pt-2 md:min-h-[72px]">
         {cards.map((c) => (
           <DraggableCard key={c.id} card={c} dimmed={activeId === c.id} />
         ))}

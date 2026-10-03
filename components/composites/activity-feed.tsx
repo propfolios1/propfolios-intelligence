@@ -1,5 +1,6 @@
-import { RelativeTime } from "@/components/ui/relative-time";
+import { Bot, Cog, User } from "lucide-react";
 import Link from "next/link";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { cn } from "@/lib/utils";
 
 export interface ActivityItem {
@@ -14,35 +15,38 @@ export interface ActivityItem {
   model?: string | null;
 }
 
-/** Chronological agent and human activity. Agent rows carry model and cost. */
+const ICON = { agent: Bot, user: User, system: Cog } as const;
+
+/** Activity rows: 40px, a 16px line icon, actor in 14px 500, action in 14px ink-700, relative time in 12px mono ink-400. */
 export function ActivityFeed({ items, linkMandates = true, className }: { items: ActivityItem[]; linkMandates?: boolean; className?: string }) {
-  if (!items.length) return <p className={cn("py-6 text-small text-ink-500", className)}>No activity yet.</p>;
+  if (!items.length) return <p className={cn("py-6 text-ui text-ink-500", className)}>No activity in this workspace yet. Agent runs, approvals and edits appear here as they happen.</p>;
   return (
-    <ul className={cn("divide-y divide-hairline", className)}>
-      {items.map((a) => (
-        <li key={a.id} className="grid grid-cols-[8px_1fr_auto] items-baseline gap-3 py-3">
-          <span className={cn("size-1.5 translate-y-[-1px] rounded-full", a.actorType === "agent" ? "bg-gold-500" : a.actorType === "user" ? "bg-navy-900" : "bg-ink-400")} aria-hidden />
-          <div className="min-w-0 text-small">
-            <span className="font-medium text-ink-900">{a.actorName}</span> <span className="text-ink-700">{a.action}</span>
-            {a.reference && !a.action.includes(a.reference) &&
-              (linkMandates && a.mandateId ? (
-                <Link href={`/analyst/mandates/${a.mandateId}`} className="num ml-1.5 text-ink-500 underline decoration-ink-200 underline-offset-2 hover:text-ink-900">
-                  {a.reference}
-                </Link>
-              ) : (
-                <span className="num ml-1.5 text-ink-500">{a.reference}</span>
-              ))}
-            {a.actorType === "agent" && (a.model || a.costUsd) ? (
-              <div className="num mt-0.5 text-axis text-ink-500">
-                {[a.model === "replay" ? "replay mode" : a.model, a.costUsd ? `$${a.costUsd.toFixed(4)}` : null].filter(Boolean).join(" · ")}
-              </div>
-            ) : null}
-          </div>
-          <time className="num shrink-0 text-axis text-ink-500" dateTime={new Date(a.createdAt).toISOString()}>
-            <RelativeTime iso={new Date(a.createdAt).toISOString()} />
-          </time>
-        </li>
-      ))}
+    <ul className={cn("divide-y divide-hairline-row", className)}>
+      {items.map((a) => {
+        const Icon = ICON[a.actorType];
+        const meta = a.actorType === "agent" && (a.model || a.costUsd) ? [a.model === "replay" ? "replay" : a.model, a.costUsd ? `$${a.costUsd.toFixed(3)}` : null].filter(Boolean).join(" · ") : null;
+        return (
+          <li key={a.id} className="flex h-10 items-center gap-3">
+            <Icon className="size-4 shrink-0 stroke-[1.5] text-ink-400" aria-hidden />
+            <div className="min-w-0 flex-1 truncate text-ui" title={meta ?? undefined}>
+              <span className="font-medium text-ink-900">{a.actorName}</span> <span className="text-ink-700">{a.action}</span>
+              {a.reference &&
+                !a.action.includes(a.reference) &&
+                (linkMandates && a.mandateId ? (
+                  <Link href={`/analyst/mandates/${a.mandateId}`} className="num ms-1.5 text-mono text-ink-500 hover:text-ink-900">
+                    {a.reference}
+                  </Link>
+                ) : (
+                  <span className="num ms-1.5 text-mono text-ink-500">{a.reference}</span>
+                ))}
+            </div>
+            {meta && <span className="num hidden shrink-0 text-axis text-ink-400 xl:inline">{meta}</span>}
+            <time className="num shrink-0 text-axis text-ink-400" dateTime={new Date(a.createdAt).toISOString()}>
+              <RelativeTime iso={new Date(a.createdAt).toISOString()} />
+            </time>
+          </li>
+        );
+      })}
     </ul>
   );
 }

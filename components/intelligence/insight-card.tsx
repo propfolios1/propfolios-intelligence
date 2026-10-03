@@ -8,7 +8,7 @@ import { LiveRefresh } from "@/components/realtime/realtime-indicator";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import { RelativeTime } from "@/components/ui/relative-time";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 export interface InsightView {
   id: string;
@@ -55,9 +55,9 @@ export function InsightCard({ insight, onChanged, compact }: { insight: InsightV
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-axis uppercase tracking-[0.12em] text-ink-500">{k.label}</span>
+            <span className="label-caps">{k.label}</span>
             <SeverityBadge severity={insight.severity} />
-            <span className="ml-auto text-small text-ink-500">{insight.dueAt ? `Due ${new Date(insight.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}` : <RelativeTime iso={insight.createdAt} />}</span>
+            <span className="num ms-auto text-axis text-ink-400">{insight.dueAt ? `Due ${formatDate(insight.dueAt)}` : <RelativeTime iso={insight.createdAt} />}</span>
           </div>
           <h4 className="mt-1.5 text-ui font-medium text-ink-900">{insight.title}</h4>
           {!compact && <p className="mt-1 text-small text-ink-700">{insight.body}</p>}

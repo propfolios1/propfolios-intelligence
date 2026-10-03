@@ -3,6 +3,7 @@
 import { Check, Copy, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { FormField, Input, Select, Textarea } from "@/components/ui/form";
@@ -128,7 +129,7 @@ function ResultLine({ action }: { action: ActionView }) {
     );
   }
   if (action.kind === "escalate" && typeof r.newAnalystName === "string") return <p className="mt-1 text-small text-ink-500">Reassigned to {r.newAnalystName}.</p>;
-  if (action.kind === "schedule_follow_up" && typeof r.dueAt === "string") return <p className="mt-1 text-small text-ink-500">Due {new Date(r.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}.</p>;
+  if (action.kind === "schedule_follow_up" && typeof r.dueAt === "string") return <p className="mt-1 text-small text-ink-500">Due <span className="num">{formatDate(r.dueAt)}</span></p>;
   return null;
 }
 

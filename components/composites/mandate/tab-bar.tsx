@@ -17,26 +17,24 @@ export type MandateTab = (typeof MANDATE_TABS)[number][0];
 /** Sticky section bar under the top bar. Numbered tabs, the active one underlined in ink. */
 export function TabBar({ id, active, counts = {} }: { id: string; active: MandateTab; counts?: Partial<Record<MandateTab, number>> }) {
   return (
-    <div data-no-print className="sticky top-12 z-20 -mx-6 border-b border-hairline bg-canvas px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
-      <nav className="scrollbar-thin -mb-px flex gap-8 overflow-x-auto" aria-label="Mandate sections">
-        {MANDATE_TABS.map(([key, label], i) => (
+    <div data-no-print className="sticky top-12 z-20 -mx-4 border-b border-hairline bg-canvas px-4 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
+      <nav className="scrollbar-thin -mb-px flex gap-6 overflow-x-auto" aria-label="Mandate sections">
+        {MANDATE_TABS.map(([key, label]) => (
           <Link
             key={key}
             href={`/analyst/mandates/${id}?tab=${key}`}
             scroll={false}
             aria-current={active === key ? "page" : undefined}
             className={cn(
-              "flex h-12 shrink-0 items-baseline gap-2 border-b pt-4 text-small transition-[color,border-color] duration-120",
-              active === key ? "border-navy-900 font-medium text-ink-900" : "border-transparent text-ink-700 hover:text-ink-900",
+              "flex h-8 shrink-0 items-center gap-1.5 border-b-2 text-ui transition-[color,border-color] duration-150",
+              active === key ? "border-gold-500 text-ink-900" : "border-transparent text-ink-500 hover:text-ink-900",
             )}
           >
-            <span className="num text-axis text-ink-500">{String(i + 1).padStart(2, "0")}</span>
             {label}
             {counts[key] ? <span className="num text-axis text-ink-500">{counts[key]}</span> : null}
           </Link>
         ))}
-        <Link href={`/analyst/mandates/${id}/journey`} className="flex h-12 shrink-0 items-baseline gap-2 border-b border-transparent pt-4 text-small text-ink-700 transition-[color,border-color] duration-120 hover:text-ink-900">
-          <span className="num text-axis text-ink-500">{String(MANDATE_TABS.length + 1).padStart(2, "0")}</span>
+        <Link href={`/analyst/mandates/${id}/journey`} className="flex h-8 shrink-0 items-center border-b-2 border-transparent text-ui text-ink-500 transition-[color,border-color] duration-150 hover:text-ink-900">
           Journey
         </Link>
       </nav>

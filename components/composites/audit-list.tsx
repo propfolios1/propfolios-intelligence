@@ -21,14 +21,14 @@ export interface AuditEvent {
   outputTokens?: number;
   durationMs?: number;
 }
-import { cn, formatUsdCost } from "@/lib/utils";
+import { cn, formatDate, formatUsdCost } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
 
 function stamp(iso: string) {
   const d = new Date(iso);
   return {
-    day: d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
-    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    day: formatDate(d),
+    time: formatDate(d, "time"),
   };
 }
 

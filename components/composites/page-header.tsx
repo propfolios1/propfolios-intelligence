@@ -3,8 +3,9 @@ import { navKey } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 /**
- * Eyebrow, Instrument Serif title, a sentence of context, actions on the right.
- * A single rule closes the header; there is no card around it.
+ * Page header: an 11px uppercase eyebrow, the title in Playfair (40px, 32px
+ * on phones), a 14px ink-500 subtitle, and the primary action on the right.
+ * A single hairline closes it; there is no card around it.
  */
 export function PageHeader({
   eyebrow,
@@ -30,15 +31,15 @@ export function PageHeader({
   eyebrow = tr(eyebrow);
   return (
     <header className={cn(rule && "border-b border-hairline pb-8", className)}>
-      {eyebrow && <div className="eyebrow mb-5">{eyebrow}</div>}
+      {eyebrow && <div className="label-caps mb-3">{eyebrow}</div>}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h1 className="font-display text-section text-navy-900 md:text-title">{title}</h1>
-          {subtitle && <p className="mt-4 max-w-[60ch] text-body text-ink-700">{subtitle}</p>}
+          <h1 className="font-display text-page-sm font-medium text-navy-900 md:text-title">{title}</h1>
+          {subtitle && <p className="mt-3 max-w-[64ch] text-ui text-ink-500">{subtitle}</p>}
         </div>
-        {actions && <div className="flex shrink-0 flex-wrap items-center gap-3 lg:pb-1.5">{actions}</div>}
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 lg:pb-1">{actions}</div>}
       </div>
-      {meta && <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-small text-ink-700">{meta}</div>}
+      {meta && <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-meta text-ink-500">{meta}</div>}
     </header>
   );
 }

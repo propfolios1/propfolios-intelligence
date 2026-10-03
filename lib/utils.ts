@@ -45,20 +45,29 @@ export function formatUsdCost(value: number) {
   return `$${value.toFixed(value < 1 ? 3 : 2)}`;
 }
 
+/** ISO calendar date, YYYY-MM-DD, in the Gulf time zone: the one convention for tables, lists and metadata. */
+export function isoDate(iso: string | Date) {
+  const d = typeof iso === "string" ? new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso) : iso;
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dubai", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+
+/**
+ * Dates. "short" (the default, for tables and metadata) is YYYY-MM-DD;
+ * "datetime" adds 24-hour time; "long" spells the date out for documents
+ * and page eyebrows. Activity feeds use relativeTime instead.
+ */
 export function formatDate(iso: string | Date, style: "short" | "long" | "time" | "datetime" = "short") {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
+  const d = typeof iso === "string" ? new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso) : iso;
+  const time = () => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dubai", hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
   switch (style) {
     case "long":
-      return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Dubai" });
     case "time":
-      return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+      return time();
     case "datetime":
-      return `${d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })} · ${d.toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`;
+      return `${isoDate(d)} ${time()}`;
     default:
-      return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      return isoDate(d);
   }
 }
 
