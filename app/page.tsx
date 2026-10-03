@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
+import { Agents } from "@/components/home/agents";
 import { Hero } from "@/components/home/hero";
 import { Modules } from "@/components/home/modules";
 import { Numbers } from "@/components/home/numbers";
@@ -53,6 +54,7 @@ export default async function Landing() {
         <Numbers />
         <Problem />
         <Modules />
+        <Agents />
       </main>
     </AccessProvider>
   );
