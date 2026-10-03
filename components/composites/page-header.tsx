@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+import { navKey } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,6 +23,11 @@ export function PageHeader({
   className?: string;
   rule?: boolean;
 }) {
+  const t = useTranslations("nav");
+  // Titles and eyebrows that are navigation labels follow the interface language; other copy stays as written.
+  const tr = (v: React.ReactNode) => (typeof v === "string" ? v.split(" · ").map((p) => (t.has(navKey(p)) ? t(navKey(p)) : p)).join(" · ") : v);
+  title = tr(title);
+  eyebrow = tr(eyebrow);
   return (
     <header className={cn(rule && "border-b border-ink-200 pb-8", className)}>
       {eyebrow && <div className="eyebrow mb-5">{eyebrow}</div>}

@@ -14,7 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { usePalette } from "./command-palette";
 import { SEGMENT_LABEL, type Area } from "./nav-config";
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "./language-switcher";
 import { NavList } from "./sidebar-nav";
+import { useNavLabel } from "./use-nav-label";
 
 export interface Notification {
   id: string;
@@ -22,6 +25,7 @@ export interface Notification {
   detail: string;
   at: string;
   severity?: string;
+  href?: string;
 }
 
 export function TopBar({ area, notifications }: { area: Area; notifications: Notification[] }) {
@@ -32,9 +36,12 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
   React.useEffect(() => setMac(/Mac|iPhone|iPad/.test(navigator.platform)), []);
 
   const named = useUi((s) => s.crumbs);
-  const crumbs = segments.slice(1).map((seg, i) => ({
-    label: named[seg] ?? SEGMENT_LABEL[seg] ?? (/^[0-9a-f-]{36}$/.test(seg) ? "Detail" : decodeURIComponent(seg).replace(/-/g, " ")),
-    href: "/" + segments.slice(0, i + 2).join("/"),
+  const t = useTranslations("shell");
+  const tr = useNavLabel();
+  const skip = segments.length > 1 ? 1 : 0;
+  const crumbs = segments.slice(skip).map((seg, i) => ({
+    label: named[seg] ?? (SEGMENT_LABEL[seg] ? tr(SEGMENT_LABEL[seg]) : /^[0-9a-f-]{36}$/.test(seg) ? tr("Detail") : decodeURIComponent(seg).replace(/-/g, " ")),
+    href: "/" + segments.slice(0, i + skip + 1).join("/"),
   }));
 
   return (
@@ -61,16 +68,16 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
         onClick={palette.open}
         className="hidden h-8 w-[320px] items-center justify-between rounded-sm border border-ink-200 px-3 text-small text-ink-500 transition-[border-color] duration-120 hover:border-ink-200 md:flex"
       >
-        Search
+        {t("search")}
         <Kbd>{mac ? "⌘K" : "Ctrl K"}</Kbd>
       </button>
 
       <div className="flex items-center justify-end gap-2">
-        <Button variant="ghost" size="icon" aria-label="Keyboard shortcuts" className="hidden md:inline-flex" onClick={() => useUi.getState().setShortcutsOpen(true)}>
+        <Button variant="ghost" size="icon" aria-label={t("shortcuts")} className="hidden md:inline-flex" onClick={() => useUi.getState().setShortcutsOpen(true)}>
           <Keyboard className="!size-4" />
         </Button>
         <Button variant="ghost" size="sm" className="md:hidden" onClick={palette.open}>
-          Search
+          {t("search")}
         </Button>
         <Popover>
           <PopoverTrigger asChild>
@@ -81,11 +88,11 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
           </PopoverTrigger>
           <PopoverContent align="end" className="w-[360px] p-0">
             <div className="flex items-baseline justify-between border-b border-ink-200 px-5 py-3.5">
-              <span className="eyebrow">Open alerts</span>
+              <span className="eyebrow">{t("notificationsTitle")}</span>
               <span className="num text-small text-ink-500">{notifications.length}</span>
             </div>
             <ul className="max-h-[380px] overflow-y-auto">
-              {notifications.length === 0 && <li className="px-5 py-6 text-small text-ink-500">No open alerts.</li>}
+              {notifications.length === 0 && <li className="px-5 py-6 text-small text-ink-500">{t("nothingUnread")}</li>}
               {notifications.map((n) => (
                 <li key={n.id} className="border-b border-ink-200 px-5 py-4 last:border-b-0">
                   <div className="flex items-baseline justify-between gap-4">
@@ -96,9 +103,19 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
                     <span className="num shrink-0 text-axis text-ink-500">{n.at}</span>
                   </div>
                   <p className="mt-1 text-small text-ink-700">{n.detail}</p>
+                  {n.href && (
+                    <Link href={n.href} className="mt-1.5 inline-block text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
+                      {t("open")}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
+            <div className="border-t border-ink-200 px-5 py-3">
+              <Link href="/notifications" className="text-small text-navy-900 underline decoration-ink-200 underline-offset-4 hover:decoration-navy-900">
+                {t("allNotifications")}
+              </Link>
+            </div>
           </PopoverContent>
         </Popover>
       </div>
@@ -107,24 +124,26 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
 }
 
 function MobileNav({ area }: { area: Area }) {
+  const t = useTranslations("shell");
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
   React.useEffect(() => setOpen(false), [pathname]);
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Trigger asChild>
-        <Button variant="ghost" size="icon-sm" className="-ml-1 lg:hidden" aria-label="Open navigation">
+        <Button variant="ghost" size="icon-sm" className="-ms-1 lg:hidden" aria-label={t("openNavigation")}>
           <Menu className="!size-4" />
         </Button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogOverlay />
-        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 left-0 z-50 w-72 border-r border-ink-200 bg-canvas py-5 pr-4 shadow-float outline-none data-[state=open]:animate-sheet-in">
+        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 start-0 z-50 w-72 border-e border-ink-200 bg-canvas py-5 pr-4 shadow-float outline-none data-[state=open]:animate-sheet-in">
           <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
           <div className="mb-8 px-5">
             <BrandMark size="sm" />
           </div>
           <NavList area={area} pathname={pathname} />
+          <LanguageSwitcher className="mt-8 px-5" />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

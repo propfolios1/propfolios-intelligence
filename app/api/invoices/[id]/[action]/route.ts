@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { audit, handle, parseBody } from "@/lib/api";
-import { HttpError, requireApiUser } from "@/lib/auth";
+import { HttpError, requireApiUser, requirePermission } from "@/lib/auth";
 import { runTaxAdvisor } from "@/lib/commission/agents";
 import { recordPayment } from "@/lib/commission/service";
 import { formatLocal } from "@/lib/format";
@@ -14,6 +14,7 @@ import { scope } from "@/lib/tenant-db";
 /** POST /api/invoices/{id}/{payment|void|send|agent}. Administrators only. */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ id: string; action: string }> }) => {
   const user = await requireApiUser(["tenant_admin"]);
+  requirePermission(user, "invoices:manage");
   const { id, action } = await params;
   const db = await getDb();
   const actor = { tenantId: user.tenantId, name: user.name };

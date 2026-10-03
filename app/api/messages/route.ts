@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { handle, parseBody } from "@/lib/api";
 import { HttpError, requireApiUser, type CurrentUser } from "@/lib/auth";
+import { notifyMentions } from "@/lib/os/notify";
 import { assertClientAccess, listMessages } from "@/lib/queries";
 
 function resolveClient(user: CurrentUser, clientId?: string) {
@@ -25,5 +26,6 @@ export const POST = handle(async (req: Request) => {
   const clientId = resolveClient(user, input.clientId);
   const db = await getDb();
   const [m] = await db.insert(s.messages).values({ tenantId: user.tenantId, clientId, authorName: user.name, authorRole: user.role, body: input.body }).returning();
+  if (input.body.includes("@")) await notifyMentions(db, { tenantId: user.tenantId, text: input.body, author: user.name, href: `/analyst/clients/${clientId}`, context: "Client conversation" });
   return NextResponse.json(m, { status: 201 });
 });

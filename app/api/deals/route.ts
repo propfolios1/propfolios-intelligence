@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { audit, handle, parseBody } from "@/lib/api";
-import { requireApiUser } from "@/lib/auth";
+import { requireApiUser, requirePermission } from "@/lib/auth";
 import { createDeal, listDeals } from "@/lib/deals/service";
 
 export const GET = handle(async () => {
@@ -26,6 +26,7 @@ const body = z.object({
 /** Opens a deal: stages, the jurisdiction's closing checklist, and deal.created (forecast, offer strategy, closing plan). */
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin", "analyst"]);
+  requirePermission(user, "deals:manage");
   const b = await parseBody(req, body);
   const deal = await createDeal(await getDb(), { tenantId: user.tenantId, name: user.name, id: user.id }, b);
   await audit(user, "created deal", { entityType: "deal", entityId: deal.id, after: deal });

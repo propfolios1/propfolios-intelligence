@@ -23,7 +23,7 @@ export function BrandMark({ className, inverted = false, size = "md", name }: { 
   const sub = inverted ? "color-mix(in oklab, var(--surface) 70%, transparent)" : "var(--ink-500)";
   const topSize = top.length > 12 ? 13 : 17;
   return (
-    <svg viewBox="0 0 200 44" width={width} height={(width / 200) * 44} role="img" aria-label={brand} className={cn("block shrink-0", className)}>
+    <svg viewBox="0 0 200 44" width={width} height={(width / 200) * 44} role="img" aria-label={brand} direction="ltr" className={cn("block shrink-0", className)}>
       <text x="0" y="16" fill={ink} style={{ fontFamily: "var(--font-inter), Inter, sans-serif", fontWeight: 600, fontSize: topSize, letterSpacing: "0.2em" }}>
         {top}
       </text>

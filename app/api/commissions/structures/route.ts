@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { audit, handle, parseBody } from "@/lib/api";
-import { requireApiUser } from "@/lib/auth";
+import { requireApiUser, requirePermission } from "@/lib/auth";
 import { structureBody } from "@/lib/commission/schemas";
 import { ensureDefaultStructures } from "@/lib/commission/service";
 import { scope } from "@/lib/tenant-db";
@@ -17,6 +17,7 @@ export const GET = handle(async () => {
 
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin"]);
+  requirePermission(user, "commissions:structures");
   const b = await parseBody(req, structureBody);
   const db = await getDb();
   if (b.isDefault) await db.update(s.commissionStructures).set({ isDefault: false }).where(scope(s.commissionStructures, user.tenantId));

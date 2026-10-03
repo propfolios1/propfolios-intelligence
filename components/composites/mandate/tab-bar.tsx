@@ -35,6 +35,10 @@ export function TabBar({ id, active, counts = {} }: { id: string; active: Mandat
             {counts[key] ? <span className="num text-axis text-ink-500">{counts[key]}</span> : null}
           </Link>
         ))}
+        <Link href={`/analyst/mandates/${id}/journey`} className="flex h-12 shrink-0 items-baseline gap-2 border-b border-transparent pt-4 text-small text-ink-700 transition-[color,border-color] duration-120 hover:text-ink-900">
+          <span className="num text-axis text-ink-500">{String(MANDATE_TABS.length + 1).padStart(2, "0")}</span>
+          Journey
+        </Link>
       </nav>
     </div>
   );

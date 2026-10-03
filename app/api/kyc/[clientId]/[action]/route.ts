@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { audit, handle, parseBody } from "@/lib/api";
-import { HttpError, requireApiUser } from "@/lib/auth";
+import { HttpError, requireApiUser, requirePermission } from "@/lib/auth";
 import { runAmlScreener, runKycAnalyzer } from "@/lib/client/agents";
 import { reviewAml } from "@/lib/client/aml";
 import { decideKyc, updateKycDocument } from "@/lib/client/kyc";
@@ -14,6 +14,7 @@ const DOC = z.enum(["passport", "emirates_id", "proof_of_address", "source_of_fu
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ clientId: string; action: string }> }) => {
   const user = await requireApiUser(["tenant_admin"]);
   const { clientId, action } = await params;
+  requirePermission(user, action === "decide" ? "kyc:decide" : action === "aml-review" ? "aml:disposition" : "kyc:review");
   const db = await getDb();
   const actor = { tenantId: user.tenantId, name: user.name };
   switch (action) {

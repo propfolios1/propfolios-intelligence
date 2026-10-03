@@ -84,6 +84,15 @@ function clientAgent(agent: "kyc-analyzer" | "aml-screener" | "client-success-ag
   };
 }
 
+/** Routes the event to the people who need it, then sends the notifications. */
+const routeNotification: EventHandler = {
+  agent: "notification-router",
+  run: async (db, ev) => {
+    const { routeEventNotification } = await import("@/lib/os/notify-router");
+    return routeEventNotification(db, ev);
+  },
+};
+
 /**
  * Which agents each OS event triggers (one to three per event), in order.
  * Commission, client and BI handlers are registered by their modules below.
@@ -91,11 +100,11 @@ function clientAgent(agent: "kyc-analyzer" | "aml-screener" | "client-success-ag
 export const HANDLERS: Partial<Record<OsEventType, EventHandler[]>> = {
   "deal.created": [dealAgent("deal-predictor"), dealAgent("offer-strategist"), dealAgent("closing-coordinator")],
   "deal.offer_sent": [dealAgent("negotiation-coach"), dealAgent("deal-predictor")],
-  "deal.contract_signed": [dealAgent("closing-coordinator"), dealAgent("payment-reminder"), dealAgent("deal-predictor")],
+  "deal.contract_signed": [dealAgent("closing-coordinator"), dealAgent("payment-reminder"), routeNotification],
   "mandate.created": [clientAgent("kyc-analyzer"), clientAgent("goal-tracker")],
   "mandate.researched": [clientAgent("aml-screener")],
   "mandate.approved": [clientAgent("client-success-agent")],
   "deal.closed": [commissionChain, clientAgent("client-success-agent")],
   "commission.computed": [commissionAgent("anomaly-detector"), commissionAgent("tax-advisor")],
-  "invoice.paid": [collections],
+  "invoice.paid": [collections, routeNotification],
 };

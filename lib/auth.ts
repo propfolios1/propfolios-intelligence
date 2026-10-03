@@ -1,6 +1,7 @@
 import "server-only";
 import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { type AccessRole, can, DEFAULT_ACCESS, type Permission } from "./rbac/permissions";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { getDb } from "@/db";
@@ -28,6 +29,8 @@ export interface CurrentUser {
   /** For client users: their client record. For staff previewing the portal: the client being previewed. */
   clientId: string | null;
   demo: boolean;
+  /** Fine-grained role for permission checks (lib/rbac/permissions). */
+  accessRole: AccessRole;
 }
 
 export type AuthState =
@@ -157,6 +160,7 @@ async function toCurrentUser(row: typeof users.$inferSelect, demo: boolean): Pro
     impersonating,
     clientId: role === "client" ? row.clientId : role === "platform_admin" ? null : await previewClientId(tenantId),
     demo,
+    accessRole: impersonating ? "tenant_admin" : ((row.accessRole as AccessRole | null) ?? DEFAULT_ACCESS[role]),
   };
 }
 
@@ -273,4 +277,12 @@ export async function assertSeatAvailable(tenantId: string, extra = 1, excludeUs
   if (limit !== null && current + extra > limit) {
     throw new HttpError(402, `The ${plan.name} plan includes ${limit} staff seats and all are in use. Upgrade in Billing to add more.`);
   }
+}
+
+/** API routes: throws 403 unless the user's access role grants the permission. */
+export function requirePermission(user: CurrentUser, permission: Permission) {
+  if (can(user.accessRole, permission)) return;
+  // Refusals are audited: the permission suggester reads them.
+  void import("./api").then((m) => m.audit(user, `refused: ${permission}`, { entityType: "permission" })).catch(() => undefined);
+  throw new HttpError(403, "Your role does not permit this action.");
 }

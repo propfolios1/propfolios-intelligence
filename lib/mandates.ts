@@ -32,5 +32,7 @@ export async function createMandate(db: DB, user: CurrentUser & { apiKey?: boole
     .values({ ...input, tenantId: user.tenantId, reference, analystId: user.apiKey ? null : user.demo || user.role !== "client" ? user.id : null, status: "INTAKE", timeline: initialTimeline() })
     .returning();
   await audit(user, `created mandate ${reference}`, { entityType: "mandate", entityId: m!.id, mandateId: m!.id });
+  const { publish } = await import("@/lib/ai/orchestration/event-bus");
+  await publish(db, { type: "mandate.created", tenantId: user.tenantId, entityType: "mandate", entityId: m!.id, mandateId: m!.id, clientId: m!.clientId, actor: user.name, payload: { label: `${reference}: ${m!.title}`, href: `/analyst/mandates/${m!.id}` } });
   return m!;
 }

@@ -15,6 +15,7 @@ const isPublic = createRouteMatcher([
   "/api/demo/underwrite",
   "/api/mcp(.*)",
   "/api/setup",
+  "/api/locale",
   "/api/cron(.*)",
   "/opengraph-image(.*)",
   "/icon(.*)",

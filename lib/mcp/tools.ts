@@ -13,6 +13,7 @@ import { createMandate, createMandateSchema } from "@/lib/mandates";
 import { getMarket, getPortfolio, listProperties } from "@/lib/queries";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { scope } from "@/lib/tenant-db";
+import { OS_TOOLS } from "./os-tools";
 
 export interface ToolContext {
   db: DB;
@@ -133,6 +134,7 @@ export const MCP_TOOLS = {
       );
     },
   }),
+  ...OS_TOOLS,
 } as const;
 
 export type ToolName = keyof typeof MCP_TOOLS;
@@ -140,7 +142,7 @@ export const TOOL_NAMES = Object.keys(MCP_TOOLS) as ToolName[];
 
 /** Validates, rate-limits, runs and audits one tool call. */
 export async function callTool(ctx: ToolContext, name: string, raw: unknown) {
-  const tool = (MCP_TOOLS as Record<string, ToolDef<z.ZodObject>>)[name];
+  const tool = (MCP_TOOLS as unknown as Record<string, ToolDef<z.ZodObject>>)[name];
   if (!tool) throw new HttpError(404, `Unknown tool "${name}". Available: ${TOOL_NAMES.join(", ")}.`);
   const parsed = tool.input.safeParse(raw ?? {});
   if (!parsed.success) throw new HttpError(422, z.prettifyError(parsed.error));

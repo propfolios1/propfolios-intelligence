@@ -1,4 +1,5 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { notFound, redirect } from "next/navigation";
@@ -46,6 +47,13 @@ async function searchIndex(user: CurrentUser, area: Area): Promise<SearchItem[]>
 async function notifications(user: CurrentUser, area: Area) {
   if (area === "platform") return [];
   const db = await getDb();
+  const own = await db
+    .select()
+    .from(s.notifications)
+    .where(and(eq(s.notifications.tenantId, user.tenantId), eq(s.notifications.userId, user.id), isNull(s.notifications.readAt)))
+    .orderBy(desc(s.notifications.createdAt))
+    .limit(6);
+  const mine = own.map((n) => ({ id: n.id, title: n.title, detail: n.body, at: relativeTime(n.createdAt.toISOString()), severity: n.priority === "high" ? "HIGH" : undefined, href: n.href ?? undefined }));
   const clientOnly = area === "client" && user.clientId;
   const rows = await db
     .select({ a: s.alerts, clientName: s.clients.name })
@@ -54,7 +62,7 @@ async function notifications(user: CurrentUser, area: Area) {
     .where(and(eq(s.alerts.tenantId, user.tenantId), eq(s.alerts.acknowledged, false), clientOnly ? eq(s.alerts.clientId, user.clientId!) : undefined))
     .orderBy(desc(s.alerts.createdAt))
     .limit(8);
-  return rows.map((r) => ({ id: r.a.id, title: r.a.title, detail: area === "client" ? r.a.detail : `${r.clientName}. ${r.a.detail}`, at: relativeTime(r.a.createdAt.toISOString()), severity: r.a.severity }));
+  return [...mine, ...rows.map((r) => ({ id: r.a.id, title: r.a.title, detail: area === "client" ? r.a.detail : `${r.clientName}. ${r.a.detail}`, at: relativeTime(r.a.createdAt.toISOString()), severity: r.a.severity }))];
 }
 
 export async function AppShell({ area, children }: { area: Area; children: React.ReactNode }) {
@@ -68,7 +76,7 @@ export async function AppShell({ area, children }: { area: Area; children: React
       </div>
     );
   }
-  const [items, alerts] = await Promise.all([searchIndex(user, area), notifications(user, area)]);
+  const [items, alerts, t] = await Promise.all([searchIndex(user, area), notifications(user, area), getTranslations("shell")]);
   let previewing: string | null = null;
   if (area === "client" && user.role !== "client" && user.clientId) {
     const db = await getDb();
@@ -77,8 +85,8 @@ export async function AppShell({ area, children }: { area: Area; children: React
   }
   return (
     <CommandPaletteProvider items={items}>
-      <a href="#main" className="sr-only z-50 rounded-sm bg-navy-900 px-3 py-2 text-surface focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
-        Skip to content
+      <a href="#main" className="sr-only z-50 rounded-sm bg-navy-900 px-3 py-2 text-surface focus:not-sr-only focus:fixed focus:start-3 focus:top-3">
+        {t("skip")}
       </a>
       <div className="flex min-h-dvh">
         <SidebarNav area={area} viewer={{ name: user.name, role: user.impersonating ? `Viewing ${user.tenantSlug} as administrator` : (user.title ?? user.role.replace("_", " ")), email: user.email, userRole: user.role, platformAdmin: user.platformAdmin, impersonating: user.impersonating, demo: user.demo }} />

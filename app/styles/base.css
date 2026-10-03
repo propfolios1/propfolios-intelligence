@@ -61,6 +61,9 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum", "zero";
+  /* Figures, currencies and references read left to right in Arabic too. */
+  unicode-bidi: isolate;
+  direction: ltr;
 }
 
 /* The signature small caps label. */

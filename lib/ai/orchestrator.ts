@@ -382,6 +382,10 @@ export async function advanceMandate(mandateId: string, opts: { tenantId: string
         ran.push(stage);
         emit({ type: "stage", mandateId, stage, agent, status: "complete", costUsd: r.costUsd, durationMs: r.durationMs });
         emit({ type: "status", mandateId, status: to });
+        if (stage === "RESEARCH") {
+          const { publish } = await import("./orchestration/event-bus");
+          await publish(db, { type: "mandate.researched", tenantId: opts.tenantId, entityType: "mandate", entityId: mandateId, mandateId, clientId: b.mandate.clientId, actor: opts.actor, payload: { label: `${b.mandate.reference}: research complete`, href: `/analyst/mandates/${mandateId}?tab=research` } });
+        }
         if (to === "REVIEW") await patchTimeline(db, mandateId, "REVIEW", { status: "running", startedAt: new Date().toISOString(), model: "human" });
       } catch (err) {
         const message = (err as Error).message;
@@ -413,7 +417,10 @@ export async function markDelivered(db: DB, mandateId: string, approver: string)
   const now = new Date().toISOString();
   await patchTimeline(db, mandateId, "REVIEW", { status: "complete", completedAt: now, model: "human" });
   await patchTimeline(db, mandateId, "DELIVERED", { status: "complete", startedAt: now, completedAt: now, model: "human" });
-  await db.update(s.mandates).set({ status: "DELIVERED", deliveredAt: new Date() }).where(eq(s.mandates.id, mandateId));
+  const [m] = await db.update(s.mandates).set({ status: "DELIVERED", deliveredAt: new Date() }).where(eq(s.mandates.id, mandateId)).returning();
   emit({ type: "status", mandateId, status: "DELIVERED" });
-  void approver;
+  if (m) {
+    const { publish } = await import("./orchestration/event-bus");
+    await publish(db, { type: "mandate.approved", tenantId: m.tenantId, entityType: "mandate", entityId: mandateId, mandateId, clientId: m.clientId, actor: approver, payload: { label: `${m.reference}: memo approved and delivered`, href: `/analyst/mandates/${mandateId}/journey` } });
+  }
 }

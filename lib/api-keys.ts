@@ -46,6 +46,7 @@ export async function userFromApiKey(req: Request): Promise<ApiKeyUser | null> {
     impersonating: false,
     clientId: null,
     demo: false,
+    accessRole: "analyst",
     apiKey: true,
   };
 }

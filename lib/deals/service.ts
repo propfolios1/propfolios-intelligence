@@ -34,7 +34,8 @@ async function dealOr404(db: DB, tenantId: string, dealId: string) {
 }
 
 export async function nextDealReference(db: DB, tenantId: string) {
-  const [r] = await db.select({ n: sql<number>`count(*)::int` }).from(s.deals).where(scope(s.deals, tenantId));
+  // Highest numbered reference, not a row count: historical (DL-H) and removed deals must never cause a collision.
+  const [r] = await db.select({ n: sql<number>`coalesce(max(substring(${s.deals.reference} from '^DL-([0-9]+)$')::int), 0)` }).from(s.deals).where(scope(s.deals, tenantId));
   return `DL-${String((r?.n ?? 0) + 1).padStart(4, "0")}`;
 }
 

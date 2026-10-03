@@ -5,6 +5,9 @@ import { TenantProvider } from "@/components/tenant-provider";
 import { brandStyle, resolveBrand } from "@/lib/brand";
 import { palette } from "@/lib/design/tokens";
 import { Providers } from "@/components/providers";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
+import { RTL, type Locale } from "@/lib/i18n/config";
 import "./globals.css";
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600"], style: ["normal", "italic"], variable: "--font-playfair", display: "swap" });
@@ -26,12 +29,14 @@ export async function generateMetadata(): Promise<Metadata> {
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const brand = await resolveBrand();
+  const [brand, locale, messages] = await Promise.all([resolveBrand(), getLocale(), getMessages()]);
   const body = (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} ${jetbrains.variable}`} style={brandStyle(brand)}>
+    <html lang={locale} dir={RTL.has(locale as Locale) ? "rtl" : "ltr"} className={`${playfair.variable} ${inter.variable} ${jetbrains.variable}`} style={brandStyle(brand)}>
       <body>
         <TenantProvider brand={brand}>
-          <Providers clerk={clerkEnabled}>{children}</Providers>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <Providers clerk={clerkEnabled}>{children}</Providers>
+          </NextIntlClientProvider>
         </TenantProvider>
       </body>
     </html>

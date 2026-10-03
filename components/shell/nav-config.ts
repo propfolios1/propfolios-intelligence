@@ -36,6 +36,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/market", label: "Market", key: "k" },
         { href: "/analyst/federation", label: "Federation", key: "f" },
         { href: "/analyst/benchmarks", label: "Benchmarks", key: "b" },
+        { href: "/analyst/ai-memory", label: "AI memory" },
         { href: "/analyst/assistant", label: "Assistant", key: "a", feature: "assistant" },
       ],
     },
@@ -48,7 +49,13 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/india/tax-calculator", label: "Tax calculator" },
       ],
     },
-    { title: "Account", items: [{ href: "/analyst/settings", label: "Settings", key: "s" }] },
+    {
+      title: "Account",
+      items: [
+        { href: "/notifications", label: "Notifications", key: "n" },
+        { href: "/analyst/settings", label: "Settings", key: "s" },
+      ],
+    },
   ],
   client: [
     {
@@ -79,6 +86,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/client/india", label: "India" },
         { href: "/client/nri", label: "NRI plan" },
         { href: "/client/messages", label: "Messages", key: "m" },
+        { href: "/notifications", label: "Notifications", key: "n" },
         { href: "/client/assistant", label: "Assistant", key: "a", feature: "assistant" },
         { href: "/client/settings", label: "Settings", key: "s" },
       ],
@@ -111,6 +119,9 @@ export const NAV: Record<Area, NavSection[]> = {
     {
       title: "Governance",
       items: [
+        { href: "/admin/compliance", label: "Compliance", key: "y" },
+        { href: "/admin/automations", label: "Automations", key: "a" },
+        { href: "/admin/ai-control", label: "AI control", key: "x" },
         { href: "/admin/audit", label: "Audit log", key: "l" },
         { href: "/admin/insights-config", label: "Intelligence", key: "t" },
         { href: "/admin/integrations", label: "Integrations", key: "n" },
@@ -127,6 +138,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/platform/federation", label: "Federation", key: "f" },
         { href: "/platform/federation/dashboard", label: "Federation dashboard" },
         { href: "/platform/bi", label: "Business intelligence", key: "b" },
+        { href: "/platform/agents", label: "Agents", key: "a" },
       ],
     },
   ],
@@ -183,6 +195,13 @@ export const SEGMENT_LABEL: Record<string, string> = {
   bi: "Business intelligence",
   "data-products": "Data products",
   "market-insights": "Market insights",
+  compliance: "Compliance",
+  automations: "Automations",
+  "ai-control": "AI control",
+  "ai-memory": "AI memory",
+  agents: "Agents",
+  notifications: "Notifications",
+  journey: "Journey",
 };
 
 export const AREA_LABEL: Record<Area, string> = { analyst: "Analyst desk", client: "Client portal", admin: "Administration", platform: "Nakhla platform" };

@@ -2,10 +2,11 @@ import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { audit, handle, parseBody } from "@/lib/api";
-import { HttpError, requireApiUser } from "@/lib/auth";
+import { HttpError, requireApiUser, requirePermission } from "@/lib/auth";
 import { DEAL_AGENT_NAMES, type DealAgentName, runDealAgent } from "@/lib/deals/agents";
 import { DEAL_STAGES } from "@/lib/deals/domain";
 import { addNegotiationRound, closeDeal, createOffer, generateContract, getDeal, loseDeal, respondOffer, sendForSignature, setStage, submitOffer, updateChecklistItem, updatePayment } from "@/lib/deals/service";
+import { notifyMentions } from "@/lib/os/notify";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 120;
@@ -37,6 +38,9 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
   if (!before) throw new HttpError(404, "Deal not found.");
   const b = (await parseBody(req, S[action as Action])) as never;
   const a = action as Action;
+  if (a === "close") requirePermission(user, "deals:close");
+  else if (a === "send") requirePermission(user, "contracts:send");
+  else if (a !== "agent") requirePermission(user, "deals:manage");
   let result: unknown;
   switch (a) {
     case "stage":
@@ -53,9 +57,12 @@ export const POST = handle(async (req: Request, { params }: { params: Promise<{ 
       result = await respondOffer(db, actor, x.offerId, x.decision, x.response);
       break;
     }
-    case "round":
-      result = await addNegotiationRound(db, actor, id, b as z.infer<typeof S.round>);
+    case "round": {
+      const x = b as z.infer<typeof S.round>;
+      result = await addNegotiationRound(db, actor, id, x);
+      if (x.notes) await notifyMentions(db, { tenantId: user.tenantId, text: x.notes, author: user.name, href: `/analyst/deals/${id}?tab=negotiations`, context: `${before.deal.reference} negotiation note` });
       break;
+    }
     case "contract": {
       const c = await generateContract(db, actor, id, (b as z.infer<typeof S.contract>).type);
       after(() => runDealAgent(db, actor, id, "contract-reviewer", { contractId: c.id }).then(() => undefined, (e: Error) => console.error("contract review failed", e)));
