@@ -53,9 +53,9 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
           <SimpleTable
             rows={rows}
             minWidth={1000}
-            empty="No deals yet. Open one from a mandate or with Open deal."
+            empty="No deals yet. Open one with Open deal, or from a delivered mandate."
             columns={[
-              { key: "r", header: "Deal", cell: (r) => <Link href={`/analyst/deals/${r.deal.id}`} className="font-medium text-navy-900 underline decoration-ink-200 underline-offset-4"><span className="num">{r.deal.reference}</span></Link> },
+              { key: "r", header: "Deal", cell: (r) => <Link href={`/analyst/deals/${r.deal.id}`} className="text-ink-900 hover:underline"><span className="num">{r.deal.reference}</span></Link> },
               { key: "t", header: "Property", cell: (r) => `${r.property}, ${r.city}` },
               { key: "c", header: "Client", cell: (r) => r.client },
               { key: "j", header: "Jurisdiction", cell: (r) => JURISDICTION_LABEL[r.deal.jurisdiction] },
@@ -66,30 +66,35 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
             ]}
           />
         ) : (
-          <div className="scrollbar-thin -mx-6 overflow-x-auto px-6 md:mx-0 md:px-0">
-            <div className="grid min-w-[1180px] grid-cols-7 gap-3">
+          <div className="scrollbar-thin -mx-4 overflow-x-auto px-4 pb-4 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
+            <div className="flex min-w-max gap-3">
               {DEAL_STAGES.map((st) => {
                 const col = rows.filter((r) => (st === "closed" ? r.deal.status === "won" : r.deal.status === "active" && r.deal.stage === st));
                 return (
-                  <div key={st} className="rounded-md bg-navy-50 p-2">
-                    <div className="flex items-baseline justify-between px-1 py-2">
-                      <span className="eyebrow">{STAGE_LABEL[st]}</span>
+                  <section key={st} aria-label={STAGE_LABEL[st]} className="w-[280px] shrink-0">
+                    <header className="flex h-8 items-center gap-2">
+                      <h3 className="label-caps">{STAGE_LABEL[st]}</h3>
                       <span className="num text-axis text-ink-500">{col.length}</span>
-                    </div>
-                    <div className="space-y-2">
+                    </header>
+                    <div className="flex flex-col gap-2 pt-2">
                       {col.map((r) => (
-                        <Link key={r.deal.id} href={`/analyst/deals/${r.deal.id}`} className="block rounded-sm border border-hairline bg-surface p-3 shadow-card transition-[border-color] duration-150 hover:border-ink-400">
-                          <div className="num text-axis text-ink-500">{r.deal.reference}</div>
-                          <div className="mt-1 text-small font-medium text-ink-900">{r.property}</div>
-                          <div className="text-small text-ink-700">{r.client}</div>
-                          <div className="mt-2 flex items-baseline justify-between">
-                            <span className="num text-small text-ink-900">{formatLocal(r.deal.value, r.deal.currency)}</span>
-                            {r.deal.probability !== null && <span className={cn("num text-axis", r.deal.probability >= 0.6 ? "text-success" : "text-ink-500")}>{Math.round(r.deal.probability * 100)}%</span>}
+                        <Link key={r.deal.id} href={`/analyst/deals/${r.deal.id}`} className="flex h-[60px] flex-col justify-center rounded-md border border-hairline bg-surface px-3 transition-[border-color] duration-150 hover:border-ink-200">
+                          <div className="flex items-center gap-2">
+                            <span className="min-w-0 flex-1 truncate text-ui font-medium text-ink-900">{r.client}</span>
+                            <span className={cn("size-1.5 shrink-0 rounded-full", st === "closed" ? "bg-success" : "bg-gold-500")} aria-hidden />
+                            <span className="num shrink-0 text-axis text-ink-400" title="Probability of closing">
+                              {r.deal.probability !== null ? `${Math.round(r.deal.probability * 100)}%` : ""}
+                            </span>
+                          </div>
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <span className="min-w-0 flex-1 truncate text-meta text-ink-500">{r.property}</span>
+                            <span className="num shrink-0 text-axis text-ink-400">{r.deal.reference}</span>
                           </div>
                         </Link>
                       ))}
+                      {col.length === 0 && <p className="pt-2 text-meta text-ink-400">No deals at this stage</p>}
                     </div>
-                  </div>
+                  </section>
                 );
               })}
             </div>
