@@ -45,7 +45,7 @@ export function DebateTab({ bull, bear, judge }: { bull: DebateCase; bear: Debat
       <section className="mt-24 border-t border-ink-200 pt-10">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <h2 className="eyebrow">Decision</h2>
-          <span className="flex items-center gap-3">
+          <span className="flex flex-wrap items-center gap-3">
             <span className="num text-small text-ink-500">{Math.round(judge.confidence * 100)}% confidence</span>
             <RecommendationPill value={judge.recommendation} />
             <RiskPill value={judge.riskRating} />

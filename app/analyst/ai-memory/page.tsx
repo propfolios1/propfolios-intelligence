@@ -64,7 +64,7 @@ export default async function AiMemory() {
         {learned.length === 0 ? (
           <p className="rounded-lg border border-ink-200 bg-surface px-6 py-10 text-center text-small text-ink-500">The agents have not learned anything yet. Memory forms as deals close, memos are approved and reports are written.</p>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {learned.map((m) => (
               <article key={m.id} className="rounded-lg border border-ink-200 bg-surface p-5 shadow-card">
                 <div className="flex items-start justify-between gap-3">

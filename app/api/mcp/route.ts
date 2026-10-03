@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import type { z } from "zod";
 import { getDb } from "@/db";
-import { userFromApiKey } from "@/lib/api-keys";
+import { userFromApiKey, presentsBearer } from "@/lib/api-keys";
 import { HttpError, requireApiUser, type CurrentUser } from "@/lib/auth";
 import { callTool, MCP_TOOLS, TOOL_NAMES } from "@/lib/mcp/tools";
 
@@ -12,6 +12,7 @@ export const maxDuration = 300;
 async function caller(req: Request): Promise<(CurrentUser & { apiKey?: boolean }) | null> {
   const keyUser = await userFromApiKey(req);
   if (keyUser) return keyUser;
+  if (presentsBearer(req)) return null;
   try {
     return await requireApiUser(["tenant_admin", "analyst"]);
   } catch {

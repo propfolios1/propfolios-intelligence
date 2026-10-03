@@ -86,7 +86,7 @@ export default async function Benchmarks({ searchParams }: { searchParams: Promi
       {tab === "reports" && (
         <>
           <Section title="Write a report" description="Monthly pulses are shared with clients; quarterly outlooks stay internal until you share them.">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div>
                 <div className="eyebrow mb-2">Agent 38 · Market report writer</div>
                 <BiJob job="market-report" label="Write monthly pulse" agent="Market report writer" regions={MARKETS.map((m) => m.region)} />

@@ -80,7 +80,7 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
   }, []);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -268,7 +268,7 @@ export function TaxCalculator({ defaults, compact }: { defaults?: { jurisdiction
               </AgentOutput>
             )}
             {!compact && (
-              <div className="grid gap-6 xl:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                 {[
                   ["Registration requirements", quote.registration],
                   ["Compliance checklist", quote.checklist],

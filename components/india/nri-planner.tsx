@@ -27,7 +27,7 @@ export function NriPlanner({ properties, clientId, initial }: { properties: { id
   };
   const o = run?.output;
   return (
-    <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[320px_minmax(0,1fr)]">
       <div className="h-fit space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
         <FormField label="Property">
           <Select value={propertyId} onChange={(e) => setPropertyId(e.target.value)}>

@@ -47,7 +47,7 @@ export default async function KycFile({ params }: { params: Promise<{ client_id:
           ]}
         />
       </Section>
-      <div className="grid gap-x-8 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-8 xl:grid-cols-2">
         <Section title="Assessment" eyebrow="Agent 29 · KYC analyzer">
           <RunAgent endpoint={`/api/kyc/${id}/agent`} body={{ agent: "kyc-analyzer" }} agentLabel="KYC analyzer" initial={init(analyzer)} />
         </Section>

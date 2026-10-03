@@ -35,7 +35,7 @@ export function LandRecordUpload({ propertyId, state }: { propertyId: string; st
   };
   return (
     <form onSubmit={submit} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
-      <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
         <FormField label="Record type" hint="Detected from the content when left blank.">
           <Select value={kind} onChange={(e) => setKind(e.target.value)}>
             <option value="">Detect automatically</option>

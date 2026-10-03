@@ -34,7 +34,8 @@ export default async function IntegrationsPage() {
   return (
     <PageContainer className="pt-10 md:pt-12">
       <PageHeader title="Integrations" subtitle={`${rows.filter((r) => r[3]).length} of ${rows.length} services connected. Connections are set by the platform operator in Vercel.`} />
-      <table className="mt-8 w-full border-separate border-spacing-0">
+      <div className="mt-8 overflow-x-auto">
+      <table className="w-full min-w-[600px] border-separate border-spacing-0">
         <thead>
           <tr>
             {["Service", "Used for", "Variable", "Status"].map((x) => (
@@ -55,6 +56,7 @@ export default async function IntegrationsPage() {
           ))}
         </tbody>
       </table>
+      </div>
 
       <div className="mt-12 grid grid-cols-1 gap-6 xl:grid-cols-12">
         <Card className="xl:col-span-7">

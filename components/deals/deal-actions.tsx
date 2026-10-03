@@ -98,7 +98,7 @@ export function RoundForm({ dealId, currency }: { dealId: string; currency: stri
   const [notes, setNotes] = React.useState("");
   return (
     <form
-      className="grid gap-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card md:grid-cols-2"
+      className="grid grid-cols-1 gap-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card md:grid-cols-2"
       onSubmit={async (e) => {
         e.preventDefault();
         const r = await run("round", { party, price: price ?? undefined, asks: lines(asks), concessions: lines(concessions), notes: notes || undefined }, "Round recorded");

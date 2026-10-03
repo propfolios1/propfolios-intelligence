@@ -21,6 +21,9 @@ export type ApiKeyUser = CurrentUser & { apiKey: true };
  * Resolves "Authorization: Bearer nk_live_…" to an analyst-level identity in
  * the key's tenant. Suspended or cancelled workspaces are refused.
  */
+/** True when the request presents a bearer credential: it must then be a valid key, never fall back to a session. */
+export const presentsBearer = (req: Request) => /^Bearer\s+\S+/i.test(req.headers.get("authorization") ?? "");
+
 export async function userFromApiKey(req: Request): Promise<ApiKeyUser | null> {
   const header = req.headers.get("authorization") ?? "";
   const m = header.match(/^Bearer\s+(nk_live_[A-Za-z0-9_-]{20,})$/);

@@ -60,7 +60,7 @@ export default async function PlatformBi() {
         />
       </Section>
       <Section title="Data products" eyebrow="Agent 39 · Data product packager">
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {products.map((p, i) => {
             const pk = packagers[DATA_PRODUCTS.findIndex((d) => d.slug === p.slug)] ?? packagers[i];
             return (

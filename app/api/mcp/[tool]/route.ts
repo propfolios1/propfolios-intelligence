@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { handle } from "@/lib/api";
-import { userFromApiKey } from "@/lib/api-keys";
+import { presentsBearer, userFromApiKey } from "@/lib/api-keys";
 import { HttpError, requireApiUser } from "@/lib/auth";
 import { callTool, MCP_TOOLS } from "@/lib/mcp/tools";
 
@@ -11,7 +11,10 @@ export const maxDuration = 300;
 type Ctx = { params: Promise<{ tool: string }> };
 
 async function caller(req: Request) {
-  return (await userFromApiKey(req)) ?? (await requireApiUser(["tenant_admin", "analyst"]));
+  const keyUser = await userFromApiKey(req);
+  if (keyUser) return keyUser;
+  if (presentsBearer(req)) throw new HttpError(401, "Invalid or revoked API key.");
+  return requireApiUser(["tenant_admin", "analyst"]);
 }
 
 /** Tool descriptor: name, description and JSON Schema of its arguments. */

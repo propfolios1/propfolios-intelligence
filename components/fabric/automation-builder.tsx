@@ -62,7 +62,7 @@ export function AutomationBuilder() {
   const setCond = (i: number, k: keyof Cond, v: string) => setDraft((d) => ({ ...d, conditions: d.conditions.map((c, j) => (j === i ? { ...c, [k]: k === "value" && d.conditions[i]!.field === "deal_value_aed" ? Number(v) : v } : c)) }));
   const setAct = (i: number, k: keyof Act, v: string) => setDraft((d) => ({ ...d, actions: d.actions.map((a, j) => (j === i ? { ...a, [k]: k === "dueInDays" ? Number(v) : v } : a)) }));
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <div className="space-y-4 rounded-md border border-ink-200 bg-surface p-5 shadow-card">
         <div className="eyebrow">Agent 41 · Automation builder</div>
         <FormField label="Describe the automation">

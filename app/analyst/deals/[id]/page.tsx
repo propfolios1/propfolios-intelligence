@@ -99,7 +99,7 @@ export default async function DealPage({ params, searchParams }: { params: Promi
       </div>
 
       {tab === "overview" && (
-        <div className="grid gap-x-8 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 xl:grid-cols-2">
           <Section title="Forecast" eyebrow="Agent 19 · Deal predictor">
             <RunAgent endpoint={`/api/deals/${id}/agent`} body={{ agent: "deal-predictor" }} agentLabel="Deal predictor" initial={predictor} refresh />
           </Section>
@@ -196,7 +196,7 @@ export default async function DealPage({ params, searchParams }: { params: Promi
             const sigs = d.signatures.filter((x) => x.contractId === c.id);
             return (
               <Section key={c.id} title={`${c.title}, version ${c.version}`} eyebrow={`${c.provider === "dropbox_sign" ? "Dropbox Sign" : "Native signature"} · ${c.status.replace(/_/g, " ")}`} actions={c.status === "draft" ? <SendForSignature dealId={id} contractId={c.id} defaults={[{ party: deal.side === "buy" ? "buyer" : "seller", name: d.client.name, email: `${d.client.name.toLowerCase().replace(/[^a-z]+/g, ".").replace(/^\.|\.$/g, "")}@clients.example` }, { party: deal.side === "buy" ? "seller" : "buyer", name: deal.counterparty, email: `${deal.counterparty.toLowerCase().replace(/[^a-z]+/g, ".").replace(/^\.|\.$/g, "")}@counterparty.example` }]} /> : undefined}>
-                <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
                   <article className="prose-pf max-h-[520px] overflow-y-auto rounded-md border border-ink-200 bg-surface p-6 text-small shadow-card" dangerouslySetInnerHTML={{ __html: c.contentHtml }} />
                   <div className="space-y-3">
                     <div className="rounded-md border border-ink-200 bg-surface p-4 text-small shadow-card">

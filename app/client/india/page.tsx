@@ -24,7 +24,7 @@ export default async function ClientIndiaPage() {
         {rows.length === 0 ? (
           <EmptyState glyph="opportunities" headline="No Indian holdings on record." note="Your advisor can model an Indian acquisition with the calculator below." />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {rows.map((r) => (
               <article key={r.portfolio.id} className="rounded-md border border-ink-200 bg-surface p-5 shadow-card">
                 <div className="flex items-start justify-between gap-3">

@@ -29,7 +29,7 @@ export interface CrossValidationView {
 /** Compact verdict chip: agreement and consensus. */
 export function CrossValidationBadge({ agreement, consensus, flagged }: { agreement: string; consensus: string; flagged: boolean }) {
   return (
-    <StatusPill tone={flagged ? "error" : "complete"}>
+    <StatusPill tone={flagged ? "error" : "complete"} className="h-auto min-h-5 max-w-full shrink py-0.5 whitespace-normal">
       {flagged ? <ShieldAlert className="mr-1 size-3" aria-hidden /> : <ShieldCheck className="mr-1 size-3" aria-hidden />}
       {agreement === "unanimous" ? "Models agree" : agreement === "majority" ? "Models split 2:1" : "Models disagree"} · {REC[consensus] ?? consensus}
     </StatusPill>
@@ -73,7 +73,7 @@ export function CrossValidationPanel({ mandateId, cv }: { mandateId: string; cv:
           </h3>
           <p className="mt-1 max-w-[62ch] text-small text-ink-500">The committee decision is re-run without the debate transcript on a deep, a primary and a fast model. Any disagreement flags the mandate for a person to decide.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
           {cv && <CrossValidationBadge agreement={cv.agreement} consensus={cv.consensus} flagged={cv.flagged && !cv.resolvedBy} />}
           <Button variant="secondary" size="sm" onClick={run} disabled={busy}>
             {cv ? "Run again" : "Run cross-validation"}
