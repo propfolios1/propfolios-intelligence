@@ -8,9 +8,9 @@ function Tip(p: unknown) {
 }
 
 /**
- * Cash flows. Annual: net flow bars (outflows in the reference tone) with the
- * cumulative position as an area with a subtle navy gradient. Monthly: a single
- * gradient area.
+ * Cash flows. Annual: net flow bars (outflows in ink-400) with the cumulative
+ * position as a navy-100 to transparent area. Monthly: the area alone. No
+ * gridlines, no strokes on areas, no animation.
  */
 export function CashFlowChart({
   data,
@@ -26,8 +26,8 @@ export function CashFlowChart({
   const gradient = (
     <defs>
       <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="var(--navy-900)" stopOpacity={0.14} />
-        <stop offset="100%" stopColor="var(--navy-900)" stopOpacity={0} />
+        <stop offset="0%" stopColor="var(--navy-100)" stopOpacity={1} />
+        <stop offset="100%" stopColor="var(--navy-100)" stopOpacity={0} />
       </linearGradient>
     </defs>
   );
@@ -39,7 +39,7 @@ export function CashFlowChart({
           <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: C.rule }} dy={8} interval="preserveStartEnd" minTickGap={28} />
           <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={(v: number) => (Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : `${Math.round(v / 1e3)}K`)} width={48} orientation="right" />
           <Tooltip content={Tip} cursor={{ stroke: C.reference, strokeDasharray: "2 3" }} isAnimationActive={false} />
-          <Area type="monotone" dataKey="value" name="Net income" stroke={C.primary} strokeWidth={1.5} fill={`url(#${id}-fill)`} isAnimationActive={false} />
+          <Area type="monotone" dataKey="value" name="Net income" stroke="none" fill={`url(#${id}-fill)`} isAnimationActive={false} activeDot={{ r: 3, fill: C.primary, stroke: "none" }} />
         </AreaChart>
       </ResponsiveContainer>
     );
@@ -52,7 +52,7 @@ export function CashFlowChart({
         <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={(v: number) => (Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : `${Math.round(v / 1e3)}K`)} width={52} orientation="right" />
         <ReferenceLine y={0} stroke={C.reference} />
         <Tooltip content={Tip} cursor={{ fill: C.fill }} isAnimationActive={false} />
-        <Area type="monotone" dataKey="cumulative" name="Cumulative" stroke={C.primary} strokeWidth={1.5} fill={`url(#${id}-fill)`} isAnimationActive={false} />
+        <Area type="monotone" dataKey="cumulative" name="Cumulative" stroke="none" fill={`url(#${id}-fill)`} isAnimationActive={false} />
         <Bar dataKey="net" name="Net flow" isAnimationActive={false} fill="var(--navy-700)" shape={(props: unknown) => {
           const p = props as { x: number; y: number; width: number; height: number; value: number };
           const h = Math.abs(p.height);

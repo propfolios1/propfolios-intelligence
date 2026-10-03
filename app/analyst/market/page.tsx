@@ -47,7 +47,7 @@ export default async function MarketPage() {
         <Card className="xl:col-span-8">
           <CardHeader eyebrow="Indexed to 100 twelve months ago" title="Price per sq ft" />
           <CardContent>
-            <LineSeries data={indexed} x="month" series={regions.slice(0, 2).map((r) => ({ key: r.region, label: r.region }))} height={300} format="number" grid />
+            <LineSeries data={indexed} x="month" series={regions.slice(0, 2).map((r) => ({ key: r.region, label: r.region }))} height={300} format="number" />
           </CardContent>
         </Card>
         <Card className="xl:col-span-4">

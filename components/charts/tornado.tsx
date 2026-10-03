@@ -24,8 +24,8 @@ export function Tornado({ data }: { data: { driver: string; low: number; high: n
             <span className="truncate text-small text-ink-700">{d.driver}</span>
             <div className="relative h-5">
               <span className="absolute inset-y-[-10px] left-1/2 w-px bg-ink-500" aria-hidden />
-              <span className="absolute top-1 right-1/2 h-3 bg-ink-500" style={{ width: pct(d.low) }} />
-              <span className="absolute top-1 left-1/2 h-3 bg-navy-900" style={{ width: pct(d.high) }} />
+              <span className="absolute top-1 right-1/2 h-3 bg-ink-400" style={{ width: pct(d.low) }} />
+              <span className="absolute top-1 left-1/2 h-3 bg-navy-700" style={{ width: pct(d.high) }} />
               <span className="num absolute top-1/2 -translate-y-1/2 pr-2 text-axis text-ink-700" style={{ right: `calc(50% + ${pct(d.low)})` }}>
                 {d.low.toFixed(1)}
               </span>
@@ -37,11 +37,11 @@ export function Tornado({ data }: { data: { driver: string; low: number; high: n
         ))}
       </div>
       <figcaption className="mt-3 flex justify-end gap-5">
-        <span className="eyebrow flex items-center gap-2 text-ink-700">
-          <span className="h-2 w-3 bg-ink-500" /> Downside
+        <span className="flex items-center gap-2 text-axis text-ink-500">
+          <span className="size-2 rounded-full bg-ink-400" /> Downside
         </span>
-        <span className="eyebrow flex items-center gap-2 text-ink-700">
-          <span className="h-2 w-3 bg-navy-900" /> Upside
+        <span className="flex items-center gap-2 text-axis text-ink-500">
+          <span className="size-2 rounded-full bg-navy-700" /> Upside
         </span>
       </figcaption>
     </figure>

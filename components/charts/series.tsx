@@ -5,7 +5,6 @@ import {
   AreaChart,
   Bar,
   BarChart,
-  CartesianGrid,
   Cell,
   Line,
   LineChart,
@@ -16,7 +15,7 @@ import {
   YAxis,
   type TooltipContentProps,
 } from "recharts";
-import { AXIS_TICK, C, ChartLegend, ChartTooltip, FORMAT, type ChartFormat } from "./chart-kit";
+import { AXIS_TICK, C, ChartLegend, ChartTooltip, FORMAT, SERIES, type ChartFormat } from "./chart-kit";
 
 function tooltip(format: ChartFormat) {
   function SeriesTooltip(p: unknown) {
@@ -25,44 +24,47 @@ function tooltip(format: ChartFormat) {
   return SeriesTooltip;
 }
 
-/** Area: ink-100 fill under a 1.5px navy stroke. No gradient, no grid. */
+/** Area: a navy-100 to transparent fill with no stroke. No grid, no animation. */
 export function AreaSeries({ data, x, y, name, height = 240, format = "compact" }: { data: object[]; x: string; y: string; name: string; height?: number; format?: ChartFormat }) {
+  const id = `area-${y}`;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 16 }}>
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--navy-100)" stopOpacity={1} />
+            <stop offset="100%" stopColor="var(--navy-100)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
         <XAxis dataKey={x} tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: C.rule }} dy={8} interval="preserveStartEnd" minTickGap={32} />
         <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={FORMAT[format]} width={52} orientation="right" domain={["auto", "auto"]} />
         <Tooltip content={tooltip(format)} cursor={{ stroke: C.reference, strokeWidth: 1, strokeDasharray: "2 3" }} offset={8} isAnimationActive={false} />
-        <Area type="linear" dataKey={y} name={name} stroke={C.primary} strokeWidth={1.5} fill={C.fill} fillOpacity={1} isAnimationActive={false} activeDot={{ r: 3, fill: C.primary, stroke: "none" }} />
+        <Area type="linear" dataKey={y} name={name} stroke="none" fill={`url(#${id})`} fillOpacity={1} isAnimationActive={false} activeDot={{ r: 3, fill: C.primary, stroke: "none" }} />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
-/** Lines: 2px, navy primary, gold comparison. Dots only under 10 points. */
+/** Lines: 1.5px, navy-700 primary, navy-500 secondary, ink-400 tertiary. No dots, no grid. */
 export function LineSeries({
   data,
   x,
   series,
   height = 280,
   format = "compact",
-  grid = false,
 }: {
   data: object[];
   x: string;
   series: { key: string; label: string }[];
   height?: number;
   format?: ChartFormat;
-  grid?: boolean;
 }) {
-  const colors = [C.primary, C.comparison];
-  const dots = data.length < 10;
+  const colors = SERIES;
   return (
     <div>
       <ChartLegend items={series.map((s, i) => ({ label: s.label, color: colors[i] ?? C.reference }))} />
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 12, right: 4, bottom: 0, left: 16 }}>
-          {grid && <CartesianGrid vertical={false} stroke={C.rule} strokeDasharray="1 4" />}
           <XAxis dataKey={x} tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: C.rule }} dy={8} interval="preserveStartEnd" minTickGap={36} />
           <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={FORMAT[format]} width={52} orientation="right" domain={["auto", "auto"]} />
           <Tooltip content={tooltip(format)} cursor={{ stroke: C.reference, strokeWidth: 1, strokeDasharray: "2 3" }} offset={8} isAnimationActive={false} />
@@ -73,9 +75,9 @@ export function LineSeries({
               dataKey={s.key}
               name={s.label}
               stroke={colors[i] ?? C.reference}
-              strokeWidth={2}
-              dot={dots ? { r: 2.5, fill: colors[i], stroke: "none" } : false}
-              activeDot={{ r: 3.5, fill: colors[i], stroke: "none" }}
+              strokeWidth={1.5}
+              dot={false}
+              activeDot={{ r: 3, fill: colors[i], stroke: "none" }}
               isAnimationActive={false}
             />
           ))}
@@ -118,7 +120,7 @@ export function BarSeries({
           {rows.map((r, i) => (
             <Cell
               key={i}
-              fill={diverging && r[y]! < 0 ? C.reference : emphasiseLast && i !== rows.length - 1 ? "color-mix(in oklab, var(--navy-900) 30%, var(--canvas))" : C.primary}
+              fill={diverging && r[y]! < 0 ? C.reference : emphasiseLast && i !== rows.length - 1 ? "var(--navy-500)" : C.primary}
             />
           ))}
         </Bar>
