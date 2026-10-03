@@ -34,8 +34,12 @@
 
   /* 2px gold focus ring with a 2px offset on every interactive element. Never removed. */
   :focus-visible {
-    outline: 2px solid var(--gold-500) !important;
+    outline: 2px solid var(--gold-500);
     outline-offset: 2px;
+  }
+  /* The palette's search field is the dialog itself; its caret is the focus indicator. */
+  [cmdk-input]:focus-visible {
+    outline: none;
   }
 
   /* Checkboxes and radios: 16px, navy when checked. */

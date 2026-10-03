@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 /** Link-based tab bar for server pages (?tab=key), numbered like the mandate tabs. */
 export function SectionTabs({ base, tabs, active, label, param = "tab", extra = "" }: { base: string; tabs: readonly (readonly [string, string])[]; active: string; label: string; param?: string; extra?: string }) {
   return (
-    <div className="sticky top-14 z-20 -mx-6 border-b border-hairline bg-canvas px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
+    <div className="sticky top-12 z-20 -mx-6 border-b border-hairline bg-canvas px-6 md:-mx-12 md:px-12 xl:-mx-20 xl:px-20">
       <nav className="scrollbar-thin -mb-px flex gap-8 overflow-x-auto" aria-label={label}>
         {tabs.map(([key, text], i) => (
           <Link

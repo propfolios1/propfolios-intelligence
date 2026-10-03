@@ -75,7 +75,7 @@
     "detail": "Detail"
   },
   "shell": {
-    "search": "Search",
+    "search": "Search or jump to…",
     "skip": "Skip to content",
     "notificationsTitle": "Notifications and alerts",
     "nothingUnread": "Nothing unread.",

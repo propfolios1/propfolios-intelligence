@@ -20,7 +20,7 @@ const AREA_ROLES: Record<Area, Role[]> = { analyst: ["tenant_admin", "analyst"],
 
 async function searchIndex(user: CurrentUser, area: Area): Promise<SearchItem[]> {
   const db = await getDb();
-  const nav: SearchItem[] = navFor(area).flatMap((sec) => sec.items.map((i) => ({ id: `nav-${i.href}`, group: "Actions" as const, label: i.label, href: i.href })));
+  const nav: SearchItem[] = navFor(area).flatMap((sec) => sec.items.map((i) => ({ id: `nav-${i.href}`, group: "Actions" as const, label: `Go to ${i.label.toLowerCase()}`, href: i.href, keywords: [i.label] })));
   if (area === "platform") {
     const all = await db.select({ id: s.tenants.id, name: s.tenants.name, slug: s.tenants.slug, plan: s.tenants.plan }).from(s.tenants);
     return [...nav, { id: "a-new-tenant", group: "Actions", label: "Create tenant", href: "/platform/tenants/new" }, ...all.map((t) => ({ id: `t-${t.id}`, group: "Clients" as const, label: t.name, sub: `${t.slug} · ${t.plan.replace("_", "-")}`, href: `/platform/tenants/${t.id}` }))];
@@ -29,17 +29,26 @@ async function searchIndex(user: CurrentUser, area: Area): Promise<SearchItem[]>
     const props = await db.select({ slug: s.properties.slug, name: s.properties.name, community: s.properties.community }).from(s.properties).where(eq(s.properties.tenantId, user.tenantId));
     return [...nav, ...props.map((p) => ({ id: `p-${p.slug}`, group: "Properties" as const, label: p.name, sub: p.community, href: `/client/opportunities?q=${encodeURIComponent(p.name)}` }))];
   }
-  const [mandates, props, clients] = await Promise.all([
+  const [mandates, props, clients, deals, developers, memos, documents] = await Promise.all([
     listMandates(db, user),
     db.select({ slug: s.properties.slug, name: s.properties.name, community: s.properties.community }).from(s.properties).where(eq(s.properties.tenantId, user.tenantId)),
     db.select({ id: s.clients.id, name: s.clients.name, type: s.clients.type, residency: s.clients.residency }).from(s.clients).where(eq(s.clients.tenantId, user.tenantId)),
+    db.select({ id: s.deals.id, reference: s.deals.reference, title: s.deals.title, stage: s.deals.stage }).from(s.deals).where(eq(s.deals.tenantId, user.tenantId)).orderBy(desc(s.deals.createdAt)).limit(60),
+    db.select({ name: s.developers.name, market: s.developers.market }).from(s.developers).where(eq(s.developers.tenantId, user.tenantId)),
+    db.select({ id: s.memos.id, title: s.memos.title, status: s.memos.status }).from(s.memos).where(eq(s.memos.tenantId, user.tenantId)).orderBy(desc(s.memos.createdAt)).limit(40),
+    db.select({ id: s.documents.id, title: s.documents.title, type: s.documents.type, mandateId: s.documents.mandateId }).from(s.documents).where(eq(s.documents.tenantId, user.tenantId)).orderBy(desc(s.documents.createdAt)).limit(60),
   ]);
   return [
-    { id: "a-new", group: "Actions", label: "Create Mandate", href: "/analyst/mandates/new", keywords: ["new", "create"] },
+    { id: "a-new", group: "Actions", label: "Create mandate", href: "/analyst/mandates/new", keywords: ["new", "create"] },
+    { id: "a-new-deal", group: "Actions", label: "Open deal", href: "/analyst/deals", keywords: ["new", "create", "deal"] },
     ...nav,
     ...mandates.map((m) => ({ id: `m-${m.id}`, group: "Mandates" as const, label: m.reference, sub: `${m.title} · ${m.clientName} · ${STAGE_LABEL[m.status]}`, href: `/analyst/mandates/${m.id}`, keywords: [m.propertyName] })),
-    ...props.map((p) => ({ id: `p-${p.slug}`, group: "Properties" as const, label: p.name, sub: p.community, href: `/analyst/properties/${p.slug}` })),
+    ...deals.map((d) => ({ id: `d-${d.id}`, group: "Deals" as const, label: d.reference, sub: `${d.title} · ${d.stage.replace(/_/g, " ")}`, href: `/analyst/deals/${d.id}` })),
     ...clients.map((c) => ({ id: `c-${c.id}`, group: "Clients" as const, label: c.name, sub: `${c.type} · ${c.residency}`, href: `/analyst/clients/${c.id}` })),
+    ...props.map((p) => ({ id: `p-${p.slug}`, group: "Properties" as const, label: p.name, sub: p.community, href: `/analyst/properties/${p.slug}` })),
+    ...developers.map((d) => ({ id: `v-${d.name}`, group: "Developers" as const, label: d.name, sub: d.market, href: "/analyst/developers" })),
+    ...memos.map((m) => ({ id: `memo-${m.id}`, group: "Memos" as const, label: m.title, sub: m.status.replace(/_/g, " "), href: `/analyst/memos/${m.id}` })),
+    ...documents.map((d) => ({ id: `doc-${d.id}`, group: "Documents" as const, label: d.title, sub: d.type.replace(/_/g, " "), href: d.mandateId ? `/analyst/mandates/${d.mandateId}?tab=documents` : "/client/documents" })),
     ...(user.role === "tenant_admin" ? navFor("admin").flatMap((sec) => sec.items).map((i) => ({ id: `adm-${i.href}`, group: "Actions" as const, label: i.label, sub: "Administration", href: i.href })) : []),
   ];
 }
@@ -106,7 +115,7 @@ export async function AppShell({ area, children }: { area: Area; children: React
               Previewing the client portal as <span className="font-medium text-ink-900">{previewing}</span>. Choose another client from Clients.
             </div>
           )}
-          <TopBar area={area} notifications={alerts} />
+          <TopBar area={area} notifications={alerts} viewerName={user.name} />
           <main id="main" className="flex-1">
             <PageTransition area={area}>{children}</PageTransition>
           </main>

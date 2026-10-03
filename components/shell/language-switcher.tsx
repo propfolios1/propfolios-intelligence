@@ -34,3 +34,26 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     </label>
   );
 }
+
+/** The language choice as menu items, for the account menu. */
+export function LocaleMenuItems({ Item }: { Item: React.ComponentType<{ onSelect?: (e: Event) => void; children: React.ReactNode; className?: string }> }) {
+  const locale = useLocale() as Locale;
+  const router = useRouter();
+  return (
+    <>
+      {LOCALES.map((l) => (
+        <Item
+          key={l}
+          className="justify-between"
+          onSelect={async () => {
+            await fetch("/api/locale", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ locale: l }) });
+            router.refresh();
+          }}
+        >
+          <span lang={l}>{LOCALE_NAME[l]}</span>
+          {l === locale && <span className="size-1.5 rounded-full bg-gold-500" aria-label="Current" />}
+        </Item>
+      ))}
+    </>
+  );
+}

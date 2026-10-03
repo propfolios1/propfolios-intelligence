@@ -104,7 +104,7 @@ export function FilterBuilder({ fields, value, onChange }: { fields: FilterField
                   </ul>
                 ) : (
                   <div className="flex gap-2">
-                    <input autoFocus inputMode={editing.type === "number" ? "decimal" : "text"} className="h-8 w-full rounded-sm border border-hairline px-2 text-small outline-none focus:border-navy-900" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={editing.op ? `${editing.op} value` : "Contains"} />
+                    <input autoFocus inputMode={editing.type === "number" ? "decimal" : "text"} className="h-8 w-full rounded-sm border border-hairline px-2 text-small" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={editing.op ? `${editing.op} value` : "Contains"} />
                     <Button size="sm" type="submit">
                       Apply
                     </Button>

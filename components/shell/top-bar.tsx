@@ -1,11 +1,11 @@
 "use client";
 
-import { Bell, Keyboard, Menu } from "lucide-react";
+import { Bell, ChevronRight, Menu, Search } from "lucide-react";
 import { useUi } from "@/lib/store";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { BrandMark } from "@/components/brand/brand-mark";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { DialogOverlay } from "@/components/ui/dialog";
@@ -16,7 +16,7 @@ import { usePalette } from "./command-palette";
 import { SEGMENT_LABEL, type Area } from "./nav-config";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "./language-switcher";
-import { NavList } from "./sidebar-nav";
+import { NavList, Wordmark } from "./sidebar-nav";
 import { useNavLabel } from "./use-nav-label";
 
 export interface Notification {
@@ -28,7 +28,7 @@ export interface Notification {
   href?: string;
 }
 
-export function TopBar({ area, notifications }: { area: Area; notifications: Notification[] }) {
+export function TopBar({ area, notifications, viewerName }: { area: Area; notifications: Notification[]; viewerName: string }) {
   const pathname = usePathname();
   const palette = usePalette();
   const segments = pathname.split("/").filter(Boolean);
@@ -45,17 +45,19 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
   }));
 
   return (
-    <header data-no-print className="sticky top-0 z-30 grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-hairline bg-canvas px-6 md:px-12 xl:px-20">
+    <header data-no-print className="sticky top-0 z-30 grid h-12 grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-hairline bg-canvas px-4 md:px-12 xl:px-20">
       <div className="flex min-w-0 items-center gap-3">
         <MobileNav area={area} />
-        <nav aria-label="Breadcrumb" className="flex min-w-0 items-baseline gap-2 text-small">
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-meta">
           {crumbs.map((c, i) => (
             <React.Fragment key={c.href}>
-              {i > 0 && <span className="text-ink-500">/</span>}
+              {i > 0 && <ChevronRight className="size-3 shrink-0 stroke-[1.5] text-ink-400" aria-hidden />}
               {i === crumbs.length - 1 ? (
-                <span className={cn("truncate text-ink-900", /^[A-Z]+-\d+$/.test(c.label) && "num")}>{c.label}</span>
+                <span aria-current="page" className={cn("truncate font-medium text-ink-900", /^[A-Z]+-\d+$/.test(c.label) && "num font-normal")}>
+                  {c.label}
+                </span>
               ) : (
-                <Link href={c.href} className="truncate text-ink-700 transition-[color] duration-120 hover:text-ink-900">
+                <Link href={c.href} className="truncate text-ink-500 transition-[color] duration-150 hover:text-ink-900">
                   {c.label}
                 </Link>
               )}
@@ -66,24 +68,23 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
 
       <button
         onClick={palette.open}
-        className="hidden h-8 w-[320px] items-center justify-between rounded-sm border border-hairline px-3 text-small text-ink-500 transition-[border-color] duration-120 hover:border-hairline md:flex"
+        aria-keyshortcuts="Meta+K Control+K"
+        className="hidden h-8 w-[320px] items-center gap-2 rounded-sm border border-hairline bg-surface px-3 text-meta text-ink-400 transition-[border-color] duration-150 hover:border-ink-300 md:flex"
       >
-        {t("search")}
+        <Search className="size-3.5 shrink-0 stroke-[1.5]" aria-hidden />
+        <span className="flex-1 text-start">{t("search")}</span>
         <Kbd>{mac ? "⌘K" : "Ctrl K"}</Kbd>
       </button>
 
       <div className="flex items-center justify-end gap-2">
-        <Button variant="ghost" size="icon" aria-label={t("shortcuts")} className="hidden md:inline-flex" onClick={() => useUi.getState().setShortcutsOpen(true)}>
-          <Keyboard className="!size-4" />
-        </Button>
         <Button variant="ghost" size="sm" className="md:hidden" onClick={palette.open}>
           {t("search")}
         </Button>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={`Notifications, ${notifications.length} unread`} className="relative">
+            <Button variant="ghost" size="icon-sm" aria-label={`Notifications, ${notifications.length} unread`} className="relative">
               <Bell className="!size-4" />
-              {notifications.length > 0 && <span className="absolute top-2 right-2 size-1.5 rounded-full bg-gold-500" aria-hidden />}
+              {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-gold-500" aria-hidden />}
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-[360px] p-0">
@@ -118,6 +119,9 @@ export function TopBar({ area, notifications }: { area: Area; notifications: Not
             </div>
           </PopoverContent>
         </Popover>
+        <Link href="/notifications?tab=preferences" aria-label="Your account and notification preferences" className="rounded-full" title={viewerName}>
+          <Avatar name={viewerName} size={28} />
+        </Link>
       </div>
     </header>
   );
@@ -137,13 +141,13 @@ function MobileNav({ area }: { area: Area }) {
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogOverlay />
-        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 start-0 z-50 w-72 border-e border-hairline bg-canvas py-5 pr-4 shadow-float outline-none data-[state=open]:animate-sheet-in">
+        <DialogPrimitive.Content aria-describedby={undefined} className="fixed inset-y-0 start-0 z-50 flex w-60 flex-col overflow-y-auto border-e border-hairline bg-ink-50 px-2 pb-6 shadow-modal outline-none data-[state=open]:animate-sheet-in">
           <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
-          <div className="mb-8 px-5">
-            <BrandMark size="sm" />
+          <div className="flex h-12 shrink-0 items-center px-2">
+            <Wordmark area={area} />
           </div>
           <NavList area={area} pathname={pathname} />
-          <LanguageSwitcher className="mt-8 px-5" />
+          <LanguageSwitcher className="mt-6 px-2" />
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

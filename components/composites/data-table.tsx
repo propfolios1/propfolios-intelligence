@@ -247,7 +247,7 @@ export function DataTable<T>({
                     onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                     onKeyDown={(e) => moveFocus(e, row.original)}
                     className={cn(
-                      "group/row h-14 outline-none transition-[background-color] duration-120 hover:bg-ink-100 focus:bg-ink-100",
+                      "group/row h-14 transition-[background-color] duration-120 hover:bg-ink-100 focus:bg-ink-100",
                       onRowClick && "cursor-pointer",
                     )}
                   >
