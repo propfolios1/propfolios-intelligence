@@ -3,74 +3,51 @@
 import * as React from "react";
 import { Segmented } from "@/components/ui/segmented";
 import { cn } from "@/lib/utils";
+import { Sparkline } from "./stat-card";
 
 const RATES = { AED: 1, USD: 1 / 3.6725, INR: 22.6 } as const;
 type Ccy = keyof typeof RATES;
-const SYMBOL: Record<Ccy, string> = { AED: "AED ", USD: "USD ", INR: "INR " };
-
-function compact(v: number) {
-  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
-}
+const money = (v: number, c: Ccy) => new Intl.NumberFormat("en-US", { style: "currency", currency: c, currencyDisplay: "code", maximumFractionDigits: 0 }).format(v).replace(/ /g, " ");
 
 /**
- * The portfolio's headline. The number is the display, set in Playfair Display.
- * Switching currency counts the figure over 400ms; nothing animates on load.
+ * The portfolio headline: total value in 48px JetBrains Mono, the gain over
+ * cost as a signed delta, a 100 by 32 trend line, then IRR, cash yield and
+ * holdings in a hairline row. Currency switches instantly.
  */
-export function PortfolioHero({ valueAed: valueUsd, costAed: costUsd, gainPct: qoq, irr, cashYield }: { valueAed: number; costAed: number; gainPct: number; irr: number; cashYield: number }) {
+export function PortfolioHero({ valueAed, costAed, gainPct, irr, cashYield, holdings, trend }: { valueAed: number; costAed: number; gainPct: number; irr: number; cashYield: number; holdings: number; trend?: number[] }) {
   const [ccy, setCcy] = React.useState<Ccy>("AED");
-  const [shown, setShown] = React.useState(valueUsd);
-  const from = React.useRef(valueUsd);
-  const raf = React.useRef<number | undefined>(undefined);
-
-  const change = (next: Ccy) => {
-    setCcy(next);
-    const target = valueUsd * RATES[next];
-    const start = performance.now();
-    const origin = from.current;
-    cancelAnimationFrame(raf.current!);
-    const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / 400);
-      const eased = 1 - Math.pow(1 - p, 3);
-      const v = origin + (target - origin) * eased;
-      setShown(v);
-      from.current = v;
-      if (p < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-  };
-  React.useEffect(() => () => cancelAnimationFrame(raf.current!), []);
-
+  const gain = (valueAed - costAed) * RATES[ccy];
+  const up = gain >= 0;
   return (
-    <section className="grid grid-cols-1 gap-x-6 gap-y-12 border-b border-hairline pb-12 lg:grid-cols-12">
-      <div className="lg:col-span-8">
-        <div className="flex items-baseline justify-between gap-6">
-          <span className="eyebrow">Portfolio value</span>
-          <Segmented label="Currency" value={ccy} onChange={change} options={(Object.keys(RATES) as Ccy[]).map((c) => ({ value: c, label: c }))} />
+    <section className="border-b border-hairline pb-8">
+      <div className="flex items-center justify-between gap-6">
+        <span className="label-caps">Portfolio value</span>
+        <Segmented label="Currency" value={ccy} onChange={setCcy} options={(Object.keys(RATES) as Ccy[]).map((c) => ({ value: c, label: c }))} />
+      </div>
+      <div className="num mt-2 text-figure-lg text-ink-900" aria-live="polite">
+        {money(valueAed * RATES[ccy], ccy)}
+      </div>
+      <div className={cn("num mt-2 text-ui", up ? "text-success" : "text-danger")}>
+        {up ? "▲ +" : "▼ −"}
+        {money(Math.abs(gain), ccy)} ({up ? "+" : "−"}
+        {Math.abs(gainPct).toFixed(1)}%)
+        <span className="ms-2 font-sans text-meta text-ink-500">over cost of {money(costAed * RATES[ccy], ccy)}</span>
+      </div>
+      {trend && trend.length > 1 && <Sparkline data={trend} width={100} height={32} className="mt-3" label="Income received, 24 months" />}
+      <div className="stat-row mt-6 border-t border-b-0 border-hairline pb-0">
+        <div>
+          <div className="label-caps">Net IRR</div>
+          <div className="num mt-2 text-figure text-ink-900">{irr.toFixed(1)}%</div>
         </div>
-        <div className="mt-6 font-display text-hero leading-[1.02] tracking-[-0.04em] text-navy-900 md:text-hero" aria-live="polite">
-          {SYMBOL[ccy]}
-          {compact(shown)}
+        <div>
+          <div className="label-caps">Net cash yield</div>
+          <div className="num mt-2 text-figure text-ink-900">{cashYield.toFixed(1)}%</div>
         </div>
-        <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <span className={cn("num text-body", qoq >= 0 ? "text-success" : "text-danger")}>
-            {qoq >= 0 ? "↑" : "↓"} {Math.abs(qoq).toFixed(1)}%
-          </span>
-          <span className="text-small text-ink-500">above cost</span>
-          <span className="text-small text-ink-500">
-            Cost basis <span className="num text-ink-700">{SYMBOL[ccy]}{compact(costUsd * RATES[ccy])}</span>
-          </span>
+        <div>
+          <div className="label-caps">Holdings</div>
+          <div className="num mt-2 text-figure text-ink-900">{holdings}</div>
         </div>
       </div>
-      <dl className="grid grid-cols-2 gap-x-6 self-end lg:col-span-4">
-        <div className="border-t border-hairline pt-4">
-          <dt className="eyebrow">Net IRR</dt>
-          <dd className="num mt-4 text-figure text-ink-900">{irr.toFixed(1)}%</dd>
-        </div>
-        <div className="border-t border-hairline pt-4">
-          <dt className="eyebrow">Cash yield</dt>
-          <dd className="num mt-4 text-figure text-ink-900">{cashYield.toFixed(1)}%</dd>
-        </div>
-      </dl>
     </section>
   );
 }

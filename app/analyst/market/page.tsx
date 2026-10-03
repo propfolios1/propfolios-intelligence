@@ -8,7 +8,6 @@ import { tenantFeatures } from "@/lib/features";
 import { PageHeader } from "@/components/composites/page-header";
 import { StatCard } from "@/components/composites/stat-card";
 import { PageContainer } from "@/components/shell/page-container";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TD, TH, THead, TR } from "@/components/ui/table";
 import { getDb } from "@/db";
 import { requireRole } from "@/lib/auth";
@@ -38,81 +37,105 @@ export default async function MarketPage() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Market intelligence" title="Market" subtitle="Twelve months of residential transactions, pricing, supply and absorption for the four principal emirates. Sources: DLD, ADREC and municipal registers." />
-      <section className="mt-8 stat-row">
+      <section className="stat-row">
         {regions.map((r) => (
           <StatCard key={r.region} label={r.region} value={Math.round(r.latest.medianPriceSqft).toLocaleString("en-US")} unit="AED / sq ft" delta={r.priceChangePct} deltaLabel="12 months" spark={r.series.map((m) => m.medianPriceSqft)} />
         ))}
       </section>
-      <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <Card className="xl:col-span-8">
-          <CardHeader eyebrow="Indexed to 100 twelve months ago" title="Price per sq ft" />
-          <CardContent>
-            <LineSeries data={indexed} x="month" series={regions.slice(0, 2).map((r) => ({ key: r.region, label: r.region }))} height={300} format="number" />
-          </CardContent>
-        </Card>
-        <Card className="xl:col-span-4">
-          <CardHeader eyebrow="Agent" title="Market timing" />
-          <CardContent>
-            {features.marketTiming ? <MarketTiming regions={regions.map((r) => r.region)} /> : <p className="text-small text-ink-500">The market timing agent is not enabled for this workspace.</p>}
-          </CardContent>
-        </Card>
-        <Card className="xl:col-span-8">
-          <CardHeader eyebrow="Month-on-month change in median price per sq ft, percent" title="Where prices moved" />
-          <CardContent>
-            <Heatmap rows={regions.map((r) => r.region)} cols={heatCols} values={heatVals} />
-          </CardContent>
-        </Card>
-        <Card className="xl:col-span-4">
-          <CardHeader eyebrow="Cross-border agent" title="UAE versus India" />
-          <CardContent>{features.crossBorder ? <ArbitrageCard /> : <p className="text-small text-ink-500">The cross-border agent is not enabled for this workspace.</p>}</CardContent>
-        </Card>
-        <Card className="xl:col-span-6">
-          <CardHeader eyebrow="Dubai, monthly" title="Transactions" actions={<span className="num text-small text-ink-500">{last.transactions.toLocaleString("en-US")} latest</span>} />
-          <CardContent>
-            <BarSeries data={dubai.series.map((m) => ({ month: m.month.slice(0, 7), tx: m.transactions }))} x="month" y="tx" name="Transactions" height={220} emphasiseLast format="number" />
-          </CardContent>
-        </Card>
-        <Card className="xl:col-span-6">
-          <CardHeader eyebrow="Dubai, monthly" title="Supply handed over" />
-          <CardContent>
-            <BarSeries data={dubai.series.map((m) => ({ month: m.month.slice(0, 7), units: m.supplyUnits }))} x="month" y="units" name="Units" height={220} format="number" />
-          </CardContent>
-        </Card>
+      <section className="mt-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <div>
+            <h2 className="font-display text-section text-navy-900">Price per sq ft</h2>
+            <p className="mt-1 text-meta text-ink-500">Indexed to 100 twelve months ago</p>
+          </div>
+        </div>
+        <div className="mt-4">
+          <LineSeries data={indexed} x="month" series={regions.slice(0, 2).map((r) => ({ key: r.region, label: r.region }))} height={320} format="number" />
+        </div>
       </section>
-      <section className="mt-8">
-        <Table>
-          <THead>
-            <TR>
-              <TH>Emirate</TH>
-              <TH numeric>Transactions</TH>
-              <TH numeric>Median AED / sq ft</TH>
-              <TH numeric>12-month change</TH>
-              <TH numeric>Off-plan share</TH>
-              <TH numeric>Gross yield</TH>
-              <TH numeric>Absorption</TH>
-              <TH>Signal</TH>
-            </TR>
-          </THead>
-          <tbody>
-            {regions.map((r) => (
-              <TR key={r.region}>
-                <TD className="font-medium">{r.region}</TD>
-                <TD numeric>{r.latest.transactions.toLocaleString("en-US")}</TD>
-                <TD numeric>{Math.round(r.latest.medianPriceSqft).toLocaleString("en-US")}</TD>
-                <TD numeric className="text-success">+{r.priceChangePct.toFixed(1)}%</TD>
-                <TD numeric>{r.latest.offPlanShare.toFixed(1)}%</TD>
-                <TD numeric>{r.latest.rentalYield.toFixed(1)}%</TD>
-                <TD numeric>{r.latest.absorptionRate.toFixed(0)}%</TD>
-                <TD>
-                  {(() => {
-                    const sig = signals.find((x) => x.region === r.region)!;
-                    return <StatusPill tone={sig.signal === "BUY" ? "complete" : sig.signal === "SELL" ? "error" : "neutral"}>{sig.signal}</StatusPill>;
-                  })()}
-                </TD>
+
+      <section className="mt-10">
+        <h2 className="font-display text-section text-navy-900">Timing signals</h2>
+        <p className="mt-1 text-meta text-ink-500">BUY, HOLD or SELL per emirate from twelve months of price, absorption, supply and yield, with the market timing agent&apos;s confidence.</p>
+        <div className="mt-4">
+          <Table>
+            <THead>
+              <TR>
+                <TH>Market</TH>
+                <TH>Signal</TH>
+                <TH numeric>Confidence</TH>
+                <TH numeric>Transactions</TH>
+                <TH numeric>Median AED / sq ft</TH>
+                <TH numeric>12-month change</TH>
+                <TH numeric>Off-plan share</TH>
+                <TH numeric>Gross yield</TH>
+                <TH numeric>Absorption</TH>
               </TR>
-            ))}
-          </tbody>
-        </Table>
+            </THead>
+            <tbody>
+              {regions.map((r) => {
+                const sig = signals.find((x) => x.region === r.region)!;
+                return (
+                  <TR key={r.region}>
+                    <TD className="font-medium">{r.region}</TD>
+                    <TD>
+                      <StatusPill tone={sig.signal === "BUY" ? "complete" : sig.signal === "SELL" ? "error" : "progress"}>{sig.signal}</StatusPill>
+                    </TD>
+                    <TD numeric>{Math.round(sig.confidence * 100)}%</TD>
+                    <TD numeric>{r.latest.transactions.toLocaleString("en-US")}</TD>
+                    <TD numeric>{Math.round(r.latest.medianPriceSqft).toLocaleString("en-US")}</TD>
+                    <TD numeric className={r.priceChangePct >= 0 ? "text-success" : "text-danger"}>
+                      {r.priceChangePct >= 0 ? "+" : ""}
+                      {r.priceChangePct.toFixed(1)}%
+                    </TD>
+                    <TD numeric>{r.latest.offPlanShare.toFixed(1)}%</TD>
+                    <TD numeric>{r.latest.rentalYield.toFixed(1)}%</TD>
+                    <TD numeric>{r.latest.absorptionRate.toFixed(0)}%</TD>
+                  </TR>
+                );
+              })}
+            </tbody>
+          </Table>
+        </div>
+      </section>
+
+      <section className="mt-10 grid grid-cols-1 gap-10 xl:grid-cols-2">
+        <div className="min-w-0">
+          <h2 className="font-display text-section text-navy-900">Run the market timing agent</h2>
+          <p className="mt-1 text-meta text-ink-500">A fresh signal with its rationale and a backtest against the last twelve months.</p>
+          <div className="mt-4">{features.marketTiming ? <MarketTiming regions={regions.map((r) => r.region)} /> : <p className="text-meta text-ink-500">The market timing agent is switched off for this workspace in Administration, AI control.</p>}</div>
+        </div>
+        <div className="min-w-0">
+          <h2 className="font-display text-section text-navy-900">UAE versus India</h2>
+          <p className="mt-1 text-meta text-ink-500">Return arbitrage after tax, currency and repatriation, from the cross-border agent.</p>
+          <div className="mt-4">{features.crossBorder ? <ArbitrageCard /> : <p className="text-meta text-ink-500">The cross-border agent is switched off for this workspace in Administration, AI control.</p>}</div>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-display text-section text-navy-900">Where prices moved</h2>
+        <p className="mt-1 text-meta text-ink-500">Month-on-month change in median price per sq ft, percent</p>
+        <div className="mt-4">
+          <Heatmap rows={regions.map((r) => r.region)} cols={heatCols} values={heatVals} />
+        </div>
+      </section>
+
+      <section className="mt-10 grid grid-cols-1 gap-10 xl:grid-cols-2">
+        <div className="min-w-0">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-section text-navy-900">Dubai transactions</h2>
+            <span className="num text-mono text-ink-500">{last.transactions.toLocaleString("en-US")} latest</span>
+          </div>
+          <div className="mt-4">
+            <BarSeries data={dubai.series.map((m) => ({ month: m.month.slice(0, 7), tx: m.transactions }))} x="month" y="tx" name="Transactions" height={220} emphasiseLast format="number" />
+          </div>
+        </div>
+        <div className="min-w-0">
+          <h2 className="font-display text-section text-navy-900">Dubai supply handed over</h2>
+          <div className="mt-4">
+            <BarSeries data={dubai.series.map((m) => ({ month: m.month.slice(0, 7), units: m.supplyUnits }))} x="month" y="units" name="Units" height={220} format="number" />
+          </div>
+        </div>
       </section>
     </PageContainer>
   );
