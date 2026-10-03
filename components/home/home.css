@@ -1,0 +1,253 @@
+/*
+ * Landing page motion. Loaded only by the platform landing (app/page.tsx).
+ * Everything here animates opacity or transform; durations follow the
+ * 150/250/400ms scale except the ambient loops (mesh, marquee).
+ */
+
+.home-mesh {
+  position: absolute;
+  inset: -30%;
+  opacity: 0.15;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 45% at 30% 35%, var(--gold-500) 0%, transparent 70%),
+    radial-gradient(45% 50% at 70% 60%, var(--navy-900) 0%, transparent 70%),
+    radial-gradient(35% 40% at 55% 20%, var(--gold-500) 0%, transparent 70%),
+    radial-gradient(50% 50% at 20% 80%, var(--navy-900) 0%, transparent 70%);
+  animation: home-mesh 30s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  will-change: transform;
+}
+.home-mesh-reverse {
+  animation-direction: alternate-reverse;
+  opacity: 0.15;
+  background:
+    radial-gradient(40% 45% at 70% 40%, var(--navy-900) 0%, transparent 70%),
+    radial-gradient(45% 50% at 30% 60%, var(--gold-500) 0%, transparent 70%),
+    radial-gradient(35% 40% at 45% 80%, var(--navy-900) 0%, transparent 70%),
+    radial-gradient(50% 50% at 80% 20%, var(--gold-500) 0%, transparent 70%);
+}
+@keyframes home-mesh {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate3d(6%, -4%, 0) rotate(8deg) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-5%, 5%, 0) rotate(-6deg) scale(0.96);
+  }
+  100% {
+    transform: translate3d(3%, 2%, 0) rotate(4deg) scale(1.04);
+  }
+}
+
+/* Trust bar: two identical tracks, translated by exactly one track. */
+.home-marquee {
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.home-marquee-track {
+  animation: home-marquee 40s linear infinite;
+}
+.home-marquee:hover .home-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes home-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Gold pulse: the live dot. */
+.home-pulse {
+  position: relative;
+}
+.home-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--gold-500);
+  animation: home-pulse 2400ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes home-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* Streaming text in the preview: each line enters in sequence. */
+.home-stream > * {
+  opacity: 0;
+  animation: home-line 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 380ms + 200ms);
+}
+@keyframes home-line {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Bars and fills that grow from the left or the bottom. */
+.home-grow-x {
+  transform-origin: left center;
+  animation: home-grow-x 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 150ms);
+}
+.home-grow-y {
+  transform-origin: center bottom;
+  animation: home-grow-y 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 40ms + 150ms);
+}
+@keyframes home-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes home-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.home-pop {
+  animation: home-pop 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 200ms;
+}
+@keyframes home-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* The final line of the problem section: a gold rule that draws itself. */
+.home-underline {
+  background: var(--gold-500);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1) 200ms;
+}
+.home-underline[data-drawn="true"] {
+  transform: scaleX(1);
+}
+
+/*
+ * Module previews loop continuously; hovering the card halves the period.
+ * Each preview reads --loop (its base period) and the card sets --rate.
+ */
+.home-module {
+  --rate: 1;
+}
+.home-module:hover,
+.home-module:focus-within {
+  --rate: 0.5;
+}
+.home-loop {
+  animation-duration: calc(var(--loop, 4s) * var(--rate, 1));
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-iteration-count: infinite;
+  animation-delay: calc(var(--i, 0) * var(--step, 300ms) * var(--rate, 1));
+}
+.home-loop-line {
+  animation-name: home-loop-line;
+  transform-origin: left center;
+}
+@keyframes home-loop-line {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+.home-loop-fade {
+  animation-name: home-loop-fade;
+}
+@keyframes home-loop-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  15%,
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+.home-loop-bar {
+  animation-name: home-loop-bar;
+  transform-origin: center bottom;
+}
+@keyframes home-loop-bar {
+  0% {
+    transform: scaleY(0.15);
+  }
+  30%,
+  80% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0.15);
+  }
+}
+.home-loop-draw {
+  animation-name: home-loop-draw;
+  transform-origin: left center;
+}
+@keyframes home-loop-draw {
+  0% {
+    transform: scaleX(0);
+  }
+  45%,
+  85% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-mesh,
+  .home-marquee-track,
+  .home-loop {
+    animation: none !important;
+  }
+  .home-stream > *,
+  .home-loop-fade {
+    opacity: 1;
+  }
+}
