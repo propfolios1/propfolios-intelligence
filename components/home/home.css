@@ -240,7 +240,27 @@
   }
 }
 
+.home-loop-wipe {
+  animation-name: home-loop-wipe;
+}
+@keyframes home-loop-wipe {
+  0% {
+    transform: translateX(0);
+  }
+  60%,
+  90% {
+    transform: translateX(101%);
+  }
+  100% {
+    transform: translateX(101%);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .home-loop-wipe {
+    display: none;
+  }
   .home-mesh,
   .home-marquee-track,
   .home-loop {

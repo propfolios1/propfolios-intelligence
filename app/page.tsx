@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
 import { Hero } from "@/components/home/hero";
+import { Modules } from "@/components/home/modules";
 import { Numbers } from "@/components/home/numbers";
 import { Problem } from "@/components/home/problem";
 import "@/components/home/home.css";
@@ -51,6 +52,7 @@ export default async function Landing() {
         <Hero clientHref={clientHref} />
         <Numbers />
         <Problem />
+        <Modules />
       </main>
     </AccessProvider>
   );
