@@ -136,3 +136,54 @@ In `docs/screenshots`, production build, 1440 px wide (full page) unless noted, 
 | 46-analyst-insights.jpg | Insights feed and follow-ups |
 | 47-analyst-federation.jpg | Federated baselines for the firm's segments |
 | 48-client-insights.jpg | Client insights |
+
+## 8. Brokerage repositioning (October 2026)
+
+Nakhla is now positioned as the operating system for real estate brokerages in six markets. Product-level copy no longer names PropFolios; it appears only as a customer on the public site.
+
+### Modules added
+
+| Module | Tables (drizzle/0006) | Pages | APIs |
+| --- | --- | --- | --- |
+| Lead management and CRM | `leads`, `lead_activities` | `/analyst/leads` (board, list, sources), `/analyst/leads/[id]` | `/api/leads`, `/api/leads/[id]/{stage,activity,qualify}`, `/api/leads/inbound/[portal]` (API key) |
+| Listing management | `listings`, `listing_syndications` | `/analyst/listings`, `/analyst/listings/[id]` | `/api/listings`, `/api/listings/[id]`, `/api/listings/[id]/{syndicate,describe}`, `/api/feeds/[tenant]/[portal]` (signed token) |
+| Marketing | `campaigns` | `/analyst/marketing` | `/api/campaigns`, `/api/campaigns/draft`, `/api/campaigns/[id]/send` |
+| Team and operations | `offices`, `office_members`, `team_targets`, `recruits` | `/admin/team` | `/api/team/recruits`, `/api/team/recruits/[id]` |
+| Rental management | `tenancies`, `rent_payments`, `maintenance_requests` | `/analyst/rentals` | `/api/rentals`, `/api/rentals/payments/[id]`, `/api/rentals/[id]/maintenance`, `/api/rentals/maintenance/[id]` |
+| Referrals | `referrals` | `/analyst/referrals` | `/api/referrals` |
+
+The existing modules cover client management, transaction coordination, commission and finance, AI research and underwriting, deal execution, post-close servicing and analytics, for twelve in all.
+
+- **Markets.** `lib/markets.ts` holds six markets. The UAE and India have the full regulatory engine. The UK, Singapore, Australia and the US are localised for currency, fee tax, listing permit, agent licence, AML regime and portals. The registry covers 18 portals in total.
+- **Agents.** Three new agents: lead qualifier, listing writer and campaign writer. There are now 48 agents.
+- **Permissions.** Five new permissions: `leads:manage`, `listings:manage`, `marketing:send`, `rentals:manage` and `team:manage`.
+- **Row-level security.** The migration adds 52 policies, for 298 in total across 76 tenant tables. `scripts/verify-rls.mjs` passes for all thirteen new tables. Landlords see their own tenancies, rent and maintenance; referrers see their own referrals. Everything else is staff-only.
+- **Tests.** Scoring, rent schedules, inbound normalisation, the market registry and the ROI arithmetic, plus the shared agent test for the three new agents.
+
+### Public site
+
+`/` has 18 sections. Every figure on it is read from the code or the deployed database:
+
+- the agent count comes from the catalogue;
+- the RLS count comes from `pg_policies` when the page is served;
+- the shortcut count comes from the navigation config;
+- the visitor count comes from a presence heartbeat.
+
+Agent examples and the research replay come from each agent's deterministic engine (`lib/home-examples.ts`).
+
+Where the brief asked for something the product cannot yet support, the page states what is true instead:
+
+| Brief asked for | Page shows |
+| --- | --- |
+| 40+ markets | Six markets, with coverage stated per market |
+| Logos of firms in three countries | One firm in production, two seeded demonstration workspaces labelled as such, and three open founding places |
+| $2.14 per mandate, 92% memo accuracy, 15-minute research | Verifiable figures (agents, RLS policies, Monte Carlo paths, audited runs) |
+| SOC 2 Type II in progress; GDPR, PDPL and DPDP compliant | SOC 2 planned (no audit started); request, consent and retention workflows built in for each regime |
+| Native iOS and Android apps with offline mode and biometrics | The web app at phone width; native apps on the roadmap |
+| 50+ native integrations, 200+ via MCP | The 33 connections that are wired, plus the MCP server |
+| A watched 3-minute demo video | A link to the live demo |
+| Footer links to About, Careers, Press, Blog, API Docs, Changelog, Status, Privacy and Terms | Links to sections and pages that exist (no such pages exist yet) |
+
+### Shared fix
+
+Dialogs across the application were rendered off-centre. The keyframes animated `translate(-50%, -50%)` on top of Tailwind's translate utilities, so the offset was applied twice. The keyframes now move the dialog 8px only.
