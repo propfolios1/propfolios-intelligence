@@ -16,7 +16,7 @@ export const agentCore = z.object({
 });
 export type AgentCore = z.infer<typeof agentCore>;
 
-export type AgentModule = "core" | "india" | "deals" | "commission" | "client" | "bi" | "fabric";
+export type AgentModule = "core" | "india" | "deals" | "commission" | "client" | "bi" | "fabric" | "brokerage";
 
 export class AgentDisabledError extends Error {
   constructor(public agent: string) {

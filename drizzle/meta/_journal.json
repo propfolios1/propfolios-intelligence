@@ -43,6 +43,13 @@
       "when": 1791038818264,
       "tag": "0005_full_os",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791090753416,
+      "tag": "0006_brokerage",
+      "breakpoints": true
     }
   ]
 }

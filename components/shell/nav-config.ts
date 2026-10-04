@@ -22,12 +22,14 @@ import {
   Globe2,
   Handshake,
   Inbox,
+  KeyRound,
   Landmark,
   LayoutDashboard,
   LineChart,
   ListChecks,
   type LucideIcon,
   MapPin,
+  Megaphone,
   MessageSquare,
   Network,
   Palette,
@@ -41,6 +43,7 @@ import {
   Sparkles,
   SquareStack,
   Target,
+  UserCog,
   Users,
   Workflow,
 } from "lucide-react";
@@ -73,6 +76,16 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/commissions", label: "My commissions" },
         { href: "/analyst/memos", label: "Memos", key: "o" },
         { href: "/analyst/clients", label: "Clients", key: "c" },
+      ],
+    },
+    {
+      title: "Brokerage",
+      items: [
+        { href: "/analyst/leads", label: "Leads", key: "l" },
+        { href: "/analyst/listings", label: "Listings", key: "t" },
+        { href: "/analyst/marketing", label: "Marketing" },
+        { href: "/analyst/rentals", label: "Rentals", key: "r" },
+        { href: "/analyst/referrals", label: "Referrals" },
       ],
     },
     {
@@ -146,6 +159,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/admin/users", label: "Users", key: "u" },
         { href: "/admin/branding", label: "Branding", key: "b" },
         { href: "/admin/billing", label: "Billing", key: "i" },
+        { href: "/admin/team", label: "Team and offices", key: "m" },
       ],
     },
     {
@@ -249,6 +263,12 @@ export const SEGMENT_LABEL: Record<string, string> = {
   agents: "Agents",
   notifications: "Notifications",
   journey: "Journey",
+  leads: "Leads",
+  listings: "Listings",
+  marketing: "Marketing",
+  rentals: "Rentals",
+  referrals: "Referrals",
+  team: "Team and offices",
 };
 
 /** 16px line icons at 1.5px stroke, one per destination. */
@@ -260,6 +280,12 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/analyst/commissions": Coins,
   "/analyst/memos": FileText,
   "/analyst/clients": Users,
+  "/analyst/leads": Inbox,
+  "/analyst/listings": SquareStack,
+  "/analyst/marketing": Megaphone,
+  "/analyst/rentals": KeyRound,
+  "/analyst/referrals": GitBranch,
+  "/admin/team": UserCog,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,
   "/analyst/market": LineChart,

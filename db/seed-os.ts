@@ -2,6 +2,7 @@ import { and, eq, isNull, like, type SQL } from "drizzle-orm";
 import type { DB } from "@/db";
 import * as s from "@/db/schema";
 import { seedPlatformBi, seedTenantBi } from "./seed-bi";
+import { seedBrokerage } from "./seed-brokerage";
 import { seedClientLayer } from "./seed-client";
 import { seedCommissions } from "./seed-commission";
 import { seedDeals, seedJourney } from "./seed-deals";
@@ -47,7 +48,8 @@ export async function seedTenantOs(db: DB, t: OsSeedTarget) {
     const journey = await seedJourney(db, t);
     const bi = await seedTenantBi(db, t.tenantId);
     const fabric = await seedFabricRecords(db, t);
-    return { india: true, ...automations, ...fabric, ...deals, ...journey, ...commissions, ...client, ...bi };
+    const brokerage = await seedBrokerage(db, t);
+    return { india: true, ...automations, ...fabric, ...deals, ...journey, ...commissions, ...client, ...bi, brokerage };
   });
 }
 

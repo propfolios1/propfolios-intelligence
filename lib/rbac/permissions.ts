@@ -78,6 +78,11 @@ export const PERMISSIONS = {
   "reports:generate": "Generate client reports and statements",
   "clients:read": "Read client records",
   "clients:write": "Edit client records",
+  "leads:manage": "Capture, work and convert leads",
+  "listings:manage": "Create listings and syndicate them to portals",
+  "marketing:send": "Send marketing campaigns",
+  "rentals:manage": "Manage tenancies, rent and maintenance",
+  "team:manage": "Offices, targets and recruiting",
   "portal:own": "Own portfolio, documents and reports",
   "portal:sign": "Sign documents",
   "portal:instruct": "Instruct the advisers (approve transactions)",
@@ -86,9 +91,9 @@ export const PERMISSIONS = {
 export type Permission = keyof typeof PERMISSIONS;
 
 const STAFF_READ: Permission[] = ["clients:read", "commissions:view_own", "reports:generate"];
-const ANALYST: Permission[] = [...STAFF_READ, "mandates:create", "mandates:run", "deals:manage", "contracts:send", "clients:write", "kyc:review"];
-const SENIOR: Permission[] = [...ANALYST, "mandates:approve", "deals:close", "commissions:view_all", "automations:manage", "audit:read"];
-const FIRM_ADMIN: Permission[] = [...SENIOR, "firm:users", "firm:settings", "firm:ai_control", "commissions:structures", "invoices:manage", "kyc:decide", "aml:disposition", "compliance:requests"];
+const ANALYST: Permission[] = [...STAFF_READ, "mandates:create", "mandates:run", "deals:manage", "contracts:send", "clients:write", "kyc:review", "leads:manage", "listings:manage", "rentals:manage"];
+const SENIOR: Permission[] = [...ANALYST, "mandates:approve", "deals:close", "commissions:view_all", "automations:manage", "audit:read", "marketing:send"];
+const FIRM_ADMIN: Permission[] = [...SENIOR, "firm:users", "firm:settings", "firm:ai_control", "commissions:structures", "invoices:manage", "kyc:decide", "aml:disposition", "compliance:requests", "team:manage"];
 
 export const MATRIX: Record<AccessRole, Permission[]> = {
   platform_admin: Object.keys(PERMISSIONS) as Permission[],
@@ -97,7 +102,7 @@ export const MATRIX: Record<AccessRole, Permission[]> = {
   tenant_admin: FIRM_ADMIN,
   senior_analyst: SENIOR,
   analyst: ANALYST,
-  junior_analyst: [...STAFF_READ, "mandates:create", "mandates:run", "kyc:review"],
+  junior_analyst: [...STAFF_READ, "mandates:create", "mandates:run", "kyc:review", "leads:manage"],
   compliance_officer: ["clients:read", "kyc:review", "kyc:decide", "aml:disposition", "compliance:requests", "audit:read", "commissions:view_all"],
   client_principal: ["portal:own", "portal:sign", "portal:instruct", "portal:messages"],
   client_delegate: ["portal:own", "portal:sign", "portal:messages"],
