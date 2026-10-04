@@ -1,21 +1,59 @@
 "use client";
 
+import { BarChart3, Building2, Check, Calculator, FileSignature, Handshake, KeyRound, Megaphone, Repeat, Search, UserCheck, Users, Workflow, type LucideIcon } from "lucide-react";
 import type * as React from "react";
-import { Eyebrow, Heading, Reveal, Section } from "./motion";
+import { Eyebrow, Heading, Reveal } from "./motion";
 
 const v = (vars: Record<string, string | number>) => vars as React.CSSProperties;
 
-function DossierPreview() {
-  const lines = [92, 78, 86, 64];
+/* ------------------------------------------------------------ mini previews */
+
+function Leads() {
+  const rows = [
+    ["Rahul Khanna", "Bayut", 78],
+    ["Grace Okafor", "Dubizzle", 72],
+    ["Neha Kulkarni", "MagicBricks", 66],
+    ["Tom Gallagher", "Rightmove", 51],
+  ] as const;
   return (
-    <div className="flex h-full flex-col justify-center gap-2.5" style={v({ "--loop": "5s", "--step": "220ms" })}>
-      <div className="mb-1 flex items-center justify-between text-[11px] text-ink-500">
-        <span className="font-medium text-ink-900">Dossier · Emaar Beachfront</span>
-        <span className="num">6 sources</span>
+    <ul className="flex h-full flex-col justify-center" style={v({ "--loop": "5s", "--step": "260ms" })}>
+      {rows.map(([n, s, sc], k) => (
+        <li key={n} className="home-loop home-loop-fade flex items-center justify-between border-b border-hairline-row py-1.5 text-[12px]" style={v({ "--i": k })}>
+          <span className="text-ink-900">{n}</span>
+          <span className="flex items-center gap-3 text-ink-500">
+            {s}
+            <span className="num w-6 text-right text-ink-900">{sc}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Portals() {
+  return (
+    <div className="flex h-full flex-col justify-center gap-3" style={v({ "--loop": "4s", "--step": "300ms" })}>
+      <div className="text-[12px] text-ink-900">LS-0001 · Marina Gate 2</div>
+      <div className="flex flex-wrap gap-2">
+        {["Bayut", "Property Finder", "Dubizzle"].map((p, k) => (
+          <span key={p} className="home-loop home-loop-fade flex items-center gap-1.5 rounded-full border border-hairline px-2 py-0.5 text-[11px] text-ink-700" style={v({ "--i": k })}>
+            <span className="size-1.5 rounded-full bg-success" aria-hidden />
+            {p}
+          </span>
+        ))}
       </div>
-      {lines.map((w, k) => (
+      <div className="num text-[11px] text-ink-500">Trakheesi permit 7120345611</div>
+    </div>
+  );
+}
+
+function Lines({ n = 4, loop = "5s" }: { n?: number; loop?: string }) {
+  const w = [92, 78, 86, 64, 88, 70];
+  return (
+    <div className="flex h-full flex-col justify-center gap-2.5" style={v({ "--loop": loop, "--step": "220ms" })}>
+      {w.slice(0, n).map((x, k) => (
         <div key={k} className="flex items-center gap-2">
-          <span className="home-loop home-loop-line block h-2 rounded-full bg-navy-100" style={v({ "--i": k, width: `${w}%` })} />
+          <span className="home-loop home-loop-line block h-2 rounded-full bg-navy-100" style={v({ "--i": k, width: `${x}%` })} />
           {k % 2 === 0 && (
             <span className="home-loop home-loop-fade num text-[10px] text-navy-700" style={v({ "--i": k + 1 })}>
               [{k / 2 + 1}]
@@ -27,84 +65,36 @@ function DossierPreview() {
   );
 }
 
-function ScenarioPreview() {
-  const rows = [
-    ["Downside", "6.8%", 42],
-    ["Base", "11.4%", 70],
-    ["Upside", "15.9%", 98],
-  ] as const;
+function Bars({ values, loop = "4.5s" }: { values: number[]; loop?: string }) {
   return (
-    <div className="flex h-full items-end gap-4 md:gap-6" style={v({ "--loop": "4.5s", "--step": "180ms" })}>
-      {rows.map(([name, irr, h], k) => (
-        <div key={name} className="flex h-full flex-1 flex-col justify-end">
-          <div className="num text-[13px] text-ink-900">{irr}</div>
-          <div className="mt-1.5 flex h-[60%] items-end">
-            <span className={"home-loop home-loop-bar block w-full rounded-t-[2px] " + (k === 1 ? "bg-navy-900" : "bg-navy-100")} style={v({ "--i": k, height: `${h}%` })} />
-          </div>
-          <div className="mt-2 text-[11px] text-ink-500">{name}</div>
-        </div>
+    <div className="flex h-full items-end gap-1.5" style={v({ "--loop": loop, "--step": "90ms" })}>
+      {values.map((h, k) => (
+        <span key={k} className={"home-loop home-loop-bar block flex-1 rounded-t-[2px] " + (k === values.length - 1 ? "bg-navy-900" : "bg-navy-100")} style={v({ "--i": k, height: `${h}%` })} />
       ))}
     </div>
   );
 }
 
-function RiskPreview() {
-  const flags = [
-    ["High", "SPA delay clause", "bg-danger"],
-    ["Medium", "Escrow ahead of works", "bg-warning"],
-    ["Low", "Service charge high", "bg-ink-400"],
-  ] as const;
+function Checklist({ items, loop = "4.5s" }: { items: string[]; loop?: string }) {
   return (
-    <ul className="flex h-full flex-col justify-center gap-2.5" style={v({ "--loop": "4s", "--step": "260ms" })}>
-      {flags.map(([sev, text, dot], k) => (
-        <li key={text} className="home-loop home-loop-fade flex items-center gap-2 text-[12px] text-ink-700" style={v({ "--i": k })}>
-          <span className={"size-1.5 shrink-0 rounded-full " + dot} aria-hidden />
-          <span className="sr-only">{sev}</span>
-          <span className="truncate">{text}</span>
+    <ul className="flex h-full flex-col justify-center gap-1.5" style={v({ "--loop": loop, "--step": "280ms" })}>
+      {items.map((t, k) => (
+        <li key={t} className="home-loop home-loop-fade flex items-center gap-2 text-[12px] text-ink-700" style={v({ "--i": k })}>
+          <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-navy-900 text-surface" aria-hidden>
+            <Check className="size-2.5 stroke-[2]" />
+          </span>
+          {t}
         </li>
       ))}
     </ul>
   );
 }
 
-function SigningPreview() {
+function Ledger({ rows, loop = "4s" }: { rows: [string, string][]; loop?: string }) {
   return (
-    <div className="flex h-full flex-col justify-center" style={v({ "--loop": "4s", "--step": "0ms" })}>
-      <div className="flex flex-col gap-1.5">
-        {[100, 88, 94].map((w, k) => (
-          <span key={k} className="block h-1.5 rounded-full bg-ink-100" style={{ width: `${w}%` }} />
-        ))}
-      </div>
-      <div className="mt-4 flex items-end justify-between gap-4">
-        <div className="flex-1">
-          <svg viewBox="0 0 120 28" className="home-loop home-loop-draw h-6 w-28 text-navy-900" fill="none" aria-hidden>
-            <path d="M2 20c8-14 14-14 16-4s6 8 12-6 10-8 12 4 8 6 14-4 12-2 16 6 10 2 18-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <span className="mt-1 block h-px bg-ink-300" />
-          <span className="mt-1 block text-[10px] text-ink-500">Buyer · SPA, unit 1408</span>
-        </div>
-        <span className="home-loop home-loop-fade rounded-full border border-success/40 px-2 py-0.5 text-[10px] text-success" style={v({ "--i": 4, "--step": "300ms" })}>
-          Signed
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function InvoicePreview() {
-  const rows = [
-    ["Commission, 2%", "78,000"],
-    ["VAT, 5%", "3,900"],
-    ["Total", "81,900"],
-  ];
-  return (
-    <div className="flex h-full flex-col justify-center text-[12px]" style={v({ "--loop": "4s", "--step": "240ms" })}>
-      <div className="flex justify-between text-[11px] text-ink-500">
-        <span>Invoice INV-2026-0142</span>
-        <span className="num">AED</span>
-      </div>
+    <div className="flex h-full flex-col justify-center text-[12px]" style={v({ "--loop": loop, "--step": "240ms" })}>
       {rows.map(([l, a], k) => (
-        <div key={l} className={"home-loop home-loop-fade flex justify-between border-b border-hairline py-1.5 " + (k === 2 ? "font-medium text-ink-900" : "text-ink-700")} style={v({ "--i": k })}>
+        <div key={l} className={"home-loop home-loop-fade flex justify-between border-b border-hairline py-1.5 " + (k === rows.length - 1 ? "font-medium text-ink-900" : "text-ink-700")} style={v({ "--i": k })}>
           <span>{l}</span>
           <span className="num tabular-nums">{a}</span>
         </div>
@@ -113,54 +103,86 @@ function InvoicePreview() {
   );
 }
 
-function PortfolioPreview() {
+function Line() {
   return (
-    <div className="flex h-full flex-col" style={v({ "--loop": "5s", "--step": "0ms" })}>
-      <div className="flex items-baseline justify-between">
-        <span className="text-[11px] text-ink-500">Portfolio value, 12 months</span>
-        <span className="num text-[13px] text-ink-900">AED 48.2M</span>
-      </div>
-      <div className="relative mt-3 min-h-0 flex-1 overflow-hidden">
-        <svg viewBox="0 0 300 100" preserveAspectRatio="none" className="h-full w-full" aria-hidden>
-          <path d="M0 78 L27 74 L54 76 L81 66 L108 62 L135 64 L162 52 L189 48 L216 40 L243 42 L270 30 L300 24" fill="none" stroke="var(--navy-900)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-          <path d="M0 78 L27 74 L54 76 L81 66 L108 62 L135 64 L162 52 L189 48 L216 40 L243 42 L270 30 L300 24 L300 100 L0 100 Z" fill="var(--navy-100)" opacity="0.5" />
-        </svg>
-        <span className="home-loop home-loop-wipe absolute inset-0 bg-surface" aria-hidden />
-      </div>
+    <div className="relative h-full overflow-hidden" style={v({ "--loop": "5s", "--step": "0ms" })}>
+      <svg viewBox="0 0 300 100" preserveAspectRatio="none" className="h-full w-full" aria-hidden>
+        <path d="M0 80 L30 76 L60 78 L90 66 L120 62 L150 64 L180 52 L210 46 L240 40 L270 34 L300 24" fill="none" stroke="var(--navy-900)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+        <path d="M0 80 L30 76 L60 78 L90 66 L120 62 L150 64 L180 52 L210 46 L240 40 L270 34 L300 24 L300 100 L0 100 Z" fill="var(--navy-100)" opacity="0.5" />
+      </svg>
+      <span className="home-loop home-loop-wipe absolute inset-0 bg-surface" aria-hidden />
     </div>
   );
 }
 
-const MODULES: { n: string; title: string; body: string; preview: React.ReactNode; large?: boolean }[] = [
-  { n: "01", title: "Research", body: "A cited dossier on the market, the asset, the developer and the comparables, drafted in minutes and checked by a second model.", preview: <DossierPreview />, large: true },
-  { n: "02", title: "Underwriting", body: "Assumptions set by the agent, returns computed by the engine across 10,000 paths.", preview: <ScenarioPreview /> },
-  { n: "03", title: "Due diligence", body: "Severity-rated findings on title, escrow, the SPA, tax and valuation.", preview: <RiskPreview /> },
-  { n: "04", title: "Deal execution", body: "Offers, negotiation rounds, contracts and signatures against the closing checklist.", preview: <SigningPreview /> },
-  { n: "05", title: "Commission", body: "Closing computes the fee, splits it and issues the VAT or GST invoice.", preview: <InvoicePreview /> },
-  { n: "06", title: "Client portfolio", body: "Holdings revalued daily, with alerts, statements and quarterly reports in your brand, delivered before the client asks.", preview: <PortfolioPreview />, large: true },
-];
+/* ----------------------------------------------------------------- modules */
+
+type Mod = { n: string; title: string; body: string; icon: LucideIcon; preview: React.ReactNode };
+
+const M: Record<string, Mod> = {
+  leads: { n: "01", title: "Lead Management & CRM", icon: Users, body: "Enquiries from 18 portals, the website, WhatsApp and referrals, assigned on arrival and scored on facts a broker can check.", preview: <Leads /> },
+  listings: { n: "02", title: "Listing Management", icon: Building2, body: "Permits, copy and photographs checked against each portal's rules, then syndicated through signed feeds.", preview: <Portals /> },
+  clients: { n: "03", title: "Client Management", icon: UserCheck, body: "KYC and AML screening, a branded client portal and a portfolio revalued every day.", preview: <Checklist items={["Identity verified", "Source of funds", "Screening clear", "Portal invited"]} /> },
+  transactions: { n: "04", title: "Transaction Coordination", icon: FileSignature, body: "Offers, negotiation rounds, contracts and e-signature against each market's closing checklist.", preview: <Checklist items={["Offer accepted", "SPA reviewed", "Signed by both", "Transfer booked"]} /> },
+  commission: { n: "05", title: "Commission & Finance", icon: Calculator, body: "Splits, VAT, GST and TDS, invoices and reconciliation, computed the moment a deal closes.", preview: <Ledger rows={[["Commission, 2%", "46,200"], ["VAT, 5%", "2,310"], ["Broker, 60%", "27,720"], ["Invoice total", "48,510"]]} /> },
+  marketing: { n: "06", title: "Marketing & Brand", icon: Megaphone, body: "Consent-based audiences and campaign copy written from the listing's facts.", preview: <Lines n={3} /> },
+  team: { n: "07", title: "Team & Operations", icon: Workflow, body: "Offices, licences, onboarding, targets against actuals and recruiting.", preview: <Bars values={[40, 62, 55, 78, 70, 92]} /> },
+  research: { n: "08", title: "AI Research & Underwriting", icon: Search, body: "Cited dossiers, 10,000-path Monte Carlo and a bull and bear debate before every recommendation, written up as an Allocation Memo in the firm's house style.", preview: <Lines n={5} /> },
+  execution: { n: "09", title: "Deal Execution", icon: Handshake, body: "A deal predictor, offer strategist and negotiation coach on every live transaction.", preview: <Bars values={[30, 45, 60, 72, 81, 88]} loop="5s" /> },
+  servicing: { n: "10", title: "Post-Close Servicing", icon: Repeat, body: "Statements, quarterly reports, goals and referrals that keep the client after completion.", preview: <Line /> },
+  rentals: { n: "11", title: "Rental Management", icon: KeyRound, body: "Tenancies, rent schedules and arrears, renewals and maintenance, visible to landlords.", preview: <Ledger rows={[["Cheque 1 of 4", "Received"], ["Cheque 2 of 4", "Received"], ["Cheque 3 of 4", "Due"]]} loop="4.5s" /> },
+  bi: { n: "12", title: "Analytics & BI", icon: BarChart3, body: "Firm metrics, anonymised benchmarks against peer firms and quarterly outlooks.", preview: <Bars values={[52, 58, 49, 66, 71, 84, 79, 90]} /> },
+};
+
+function Card({ m, size }: { m: Mod; size: "lg" | "md" | "sm" }) {
+  const Icon = m.icon;
+  return (
+    <article className="home-module group flex h-full flex-col rounded-md border border-hairline bg-surface p-6 transition-[transform,border-color] duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-navy-300">
+      <div className="flex items-center justify-between">
+        <span className="num text-[14px] text-gold-500">{m.n}</span>
+        <Icon className="size-5 stroke-[1.5] text-ink-500" aria-hidden />
+      </div>
+      <h3 className="mt-4 text-[18px] font-medium text-navy-900">{m.title}</h3>
+      <p className={"mt-2 text-[14px] leading-[1.55] text-ink-700 " + (size === "lg" ? "line-clamp-3 max-w-[56ch]" : "line-clamp-3")}>{m.body}</p>
+      <div className="min-h-6 flex-1" />
+      <div className={"rounded-sm border border-hairline bg-canvas p-4 " + (size === "lg" ? "h-[168px]" : size === "md" ? "h-[132px]" : "h-[104px]")} aria-hidden>
+        {m.preview}
+      </div>
+    </article>
+  );
+}
 
 export function Modules() {
   return (
-    <Section id="modules">
-      <Reveal>
-        <Eyebrow>What you get</Eyebrow>
-        <Heading className="mt-3 max-w-[22ch]">Six modules. One record from brief to commission.</Heading>
-      </Reveal>
-      <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {MODULES.map((m, k) => (
-          <Reveal key={m.n} delay={(k % 3) * 0.06} className={m.large ? "md:col-span-2" : ""}>
-            <article className="home-module group flex h-full flex-col rounded-md border border-hairline bg-surface p-6 transition-[transform,border-color] duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-navy-300">
-              <div className="num text-[14px] text-gold-600">{m.n}</div>
-              <h3 className="mt-3 text-[18px] font-medium text-ink-900">{m.title}</h3>
-              <p className="mt-1.5 mb-6 line-clamp-2 text-[14px] leading-[1.55] text-ink-500">{m.body}</p>
-              <div className="mt-auto h-[152px] rounded-sm border border-hairline bg-canvas p-4" aria-hidden>
-                {m.preview}
-              </div>
-            </article>
+    <section id="modules" aria-label="Modules" className="home-noise relative scroll-mt-16">
+      <div className="relative mx-auto w-full max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
+        <Reveal>
+          <Eyebrow gold>Modules</Eyebrow>
+          <Heading className="mt-4 max-w-[18ch]">Twelve modules. One operating system.</Heading>
+        </Reveal>
+        <div className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-5">
+          <Reveal className="lg:col-span-3">
+            <Card m={M.leads!} size="lg" />
           </Reveal>
-        ))}
+          <Reveal delay={0.04} className="lg:col-span-2">
+            <Card m={M.research!} size="lg" />
+          </Reveal>
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[M.listings!, M.transactions!, M.commission!, M.clients!].map((m, k) => (
+            <Reveal key={m.n} delay={k * 0.04}>
+              <Card m={m} size="md" />
+            </Reveal>
+          ))}
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+          {[M.marketing!, M.team!, M.execution!, M.servicing!, M.rentals!, M.bi!].map((m, k) => (
+            <Reveal key={m.n} delay={k * 0.04}>
+              <Card m={m} size="sm" />
+            </Reveal>
+          ))}
+        </div>
       </div>
-    </Section>
+    </section>
   );
 }
