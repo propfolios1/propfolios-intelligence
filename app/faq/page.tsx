@@ -18,7 +18,7 @@ export default function FaqPage() {
       <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 pt-12 pb-24 sm:px-6 md:px-12 xl:px-20">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-12">
+            <div className="lg:sticky lg:top-24">
               <div className="eyebrow">Questions</div>
               <h1 className="mt-4 font-display text-[40px] leading-[1.1] text-navy-900">What brokerages ask before they switch</h1>
               <p className="mt-5 text-body text-ink-700">If your question is not here, the documentation goes deeper, and the team answers within one business day.</p>

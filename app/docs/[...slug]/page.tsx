@@ -22,7 +22,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
   return (
     <div className="grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)]">
       <aside className="hidden lg:block">
-        <div className="sticky top-8">
+        <div className="sticky top-24">
           <DocsNav active={`/docs/${d.slug}`} />
         </div>
       </aside>
