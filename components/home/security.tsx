@@ -36,7 +36,7 @@ const BADGES: {
     name: "UAE PDPL",
     status: "Workflows built in",
     tone: "built",
-    body: "Data subject requests logged against PDPL timelines, retention set per jurisdiction, and data hosted in the region the firm chooses.",
+    body: "Data subject requests logged against PDPL timelines, retention set per jurisdiction, and on Enterprise, storage in the region the firm chooses.",
   },
   {
     icon: Fingerprint,

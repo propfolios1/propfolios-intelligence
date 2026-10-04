@@ -1,11 +1,11 @@
 "use client";
 
+import { PLANS } from "@/lib/plans";
 import { animate, motion, useInView, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Check, Play } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { useAccess } from "./access";
 import { EASE } from "./motion";
 
 const STATES = ["Dashboard", "Mandate", "Memo", "Client", "Deal"] as const;
@@ -54,14 +54,13 @@ function HeroCursor({ area }: { area: React.RefObject<HTMLElement | null> }) {
 }
 
 export function Hero({ agents }: { agents: number }) {
-  const access = useAccess();
   const reduce = useReducedMotion();
   const section = React.useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end start"] });
   const parallax = useTransform(scrollYProgress, [0, 1], [0, -40]);
   const enter = (delay: number) => (reduce ? {} : { initial: { opacity: 0, y: 24 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, ease: EASE, delay } });
   return (
-    <section ref={section} id="top" className="relative -mt-16 flex min-h-dvh flex-col overflow-hidden pt-16" aria-label="Introduction">
+    <section ref={section} id="top" className="relative flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden" aria-label="Introduction">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="home-blob bg-navy-950" style={{ width: "52vw", height: "52vw", left: "-12vw", top: "-18vw" }} />
         <div className="home-blob bg-navy-900" style={{ width: "40vw", height: "40vw", right: "-8vw", top: "4vw", animationDelay: "-10s" }} />
@@ -78,11 +77,11 @@ export function Hero({ agents }: { agents: number }) {
           for real estate brokerages.
         </motion.h1>
         <motion.p {...enter(0.12)} className="mt-8 max-w-[720px] text-[18px] leading-[1.55] text-ink-700 md:text-[20px]">
-          From lead to close to portfolio. Research, underwriting, transactions, commissions, and client servicing — powered by {agents} AI agents. Built for six markets: the UAE, India, the UK, Singapore, Australia and the US.
+          Every enquiry answered in seconds, every listing on every portal, every commission split to the last fil. Leads, listings, deals, commission and compliance in one system, with {agents} AI agents doing the repetitive work. Localised for the UAE, India, the UK, Singapore, Australia and the US.
         </motion.p>
         <motion.div {...enter(0.18)} className="mt-10 flex flex-wrap items-center gap-3">
-          <Button size="lg" className="h-11 px-5 text-[15px]" onClick={() => access.open()}>
-            Request access
+          <Button asChild size="lg" className="h-11 px-5 text-[15px]">
+            <Link href="/trial">Start free trial</Link>
           </Button>
           <Button asChild size="lg" variant="ghost" className="h-11 px-4 text-[15px]">
             <Link href="/demo">
@@ -96,9 +95,11 @@ export function Hero({ agents }: { agents: number }) {
         </motion.div>
         <motion.p {...enter(0.36)} className="mt-10 mb-10 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-ink-500">
           <span className="home-pulse size-1.5 rounded-full bg-gold-500" aria-hidden />
-          <span className="text-ink-700">Live in production</span>
+          <span className="text-ink-700">14-day trial, no card</span>
           <span aria-hidden>·</span>
-          <span>Localised for the UAE, India, the UK, Singapore, Australia and the US</span>
+          <span>A working workspace for your market in under a minute</span>
+          <span aria-hidden>·</span>
+          <span>From AED {PLANS[0]!.priceAed.toLocaleString("en-US")} a month</span>
         </motion.p>
       </div>
     </section>

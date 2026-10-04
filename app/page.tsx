@@ -1,17 +1,18 @@
 import { sql } from "drizzle-orm";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
-import { AccessProvider } from "@/components/home/access";
 import { Agents } from "@/components/home/agents";
-import { DeepDive } from "@/components/home/deep-dive";
+import { Developers } from "@/components/home/developers";
+import { HomeFaq } from "@/components/home/faq";
 import { FinalCta } from "@/components/home/final-cta";
+import { LeadResponse } from "@/components/home/lead-response";
+import { Migration } from "@/components/home/migration";
+import { Segments } from "@/components/home/segments";
+import { SiteFooter, SiteHeader } from "@/components/marketing/site-chrome";
 import { Hero } from "@/components/home/hero";
-import { Nav } from "@/components/home/nav";
-import { Integrations } from "@/components/home/integrations";
 import { Markets } from "@/components/home/markets";
 import { Mobile } from "@/components/home/mobile";
 import { Modules } from "@/components/home/modules";
-import { PaletteDemo } from "@/components/home/palette-demo";
 import { Pricing } from "@/components/home/pricing";
 import { Problem } from "@/components/home/problem";
 import { Roi } from "@/components/home/roi";
@@ -24,8 +25,7 @@ import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
 import { getDb } from "@/db";
 import { agentCatalogue } from "@/lib/ai/usage";
-import { agentExamples, researchReplay } from "@/lib/home-examples";
-import { clerkEnabled } from "@/lib/auth";
+import { agentExamples } from "@/lib/home-examples";
 import { tenantForHost } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
@@ -62,7 +62,6 @@ async function TenantLanding({ name }: { name: string }) {
 export default async function Landing() {
   const tenant = await tenantForHost();
   if (tenant) return <TenantLanding name={tenant.configJson.brand_name} />;
-  const signInHref = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=analyst";
   const agents = agentCatalogue();
   const examples = agentExamples();
   // Counted on the live database so the figure on the page is the deployed one.
@@ -73,30 +72,34 @@ export default async function Landing() {
   const stats = [
     { value: agents.length, label: "AI agents", detail: "Each with a versioned prompt, a typed output schema and a deterministic fallback." },
     ...(policies ? [{ value: policies, label: "RLS policies", detail: "Row-level security policies on the deployed database, counted when this page was served." }] : []),
-    { value: 10_000, label: "Monte Carlo paths", detail: "Simulated on every underwriting run; P10, P50 and P90 are read from the distribution." },
+    { value: 6, label: "Markets", detail: "Portals, currency, tax and disclosure rules for the UAE, India, the UK, Singapore, Australia and the US." },
     { value: 100, suffix: "%", label: "Agent runs audited", detail: "Model, prompt version, tokens, duration and cost recorded for every run." },
   ];
+  // Eighteen sections, in the order a buyer asks their questions: what it is, why now, how it works, whether it fits, what it costs.
   return (
-    <AccessProvider>
-      <Nav signInHref={signInHref} />
+    <>
+      <SiteHeader />
       <main className="overflow-x-clip bg-canvas">
         <Hero agents={agents.length} />
         <TrustBar />
         <Problem />
+        <LeadResponse />
         <Solution agents={agents.length} />
         <Modules />
+        <Segments />
         <Agents agents={examples} stats={stats} />
         <Markets />
-        <DeepDive replay={researchReplay()} />
         <Screenshots />
+        <Migration />
         <Mobile />
-        <Integrations />
+        <Developers />
         <Security policies={policies} />
         <Roi />
         <Pricing />
-        <PaletteDemo />
+        <HomeFaq />
+        <FinalCta />
       </main>
-      <FinalCta />
-    </AccessProvider>
+      <SiteFooter />
+    </>
   );
 }
