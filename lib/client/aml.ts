@@ -13,7 +13,7 @@ import { scope } from "@/lib/tenant-db";
  */
 export const AML_PROVIDER = "Nakhla Screening (mock)";
 
-const SAMPLE_LIST: { list: string; type: "sanctions" | "pep" | "adverse_media"; name: string; note: string }[] = [
+export const SAMPLE_LIST: { list: string; type: "sanctions" | "pep" | "adverse_media"; name: string; note: string }[] = [
   { list: "Sample sanctions list (UN-format)", type: "sanctions", name: "Viktor Andreyevich Sokolov", note: "Asset freeze; arms procurement network." },
   { list: "Sample sanctions list (OFAC-format)", type: "sanctions", name: "Gulf Horizon General Trading FZE", note: "Designated entity; sanctions evasion." },
   { list: "Sample UAE local terrorist list", type: "sanctions", name: "Abdul Kareem Al Hashemi", note: "Local designation; financing." },

@@ -21,3 +21,6 @@ verify_jwt = true
 verify_jwt = true
 [functions.whatsapp-dispatch]
 verify_jwt = true
+
+[functions.compliance-monitoring]
+verify_jwt = true

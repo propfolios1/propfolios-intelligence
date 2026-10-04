@@ -1,4 +1,5 @@
 import "server-only";
+import { runMonitoring } from "@/lib/compliance/service";
 import { pollPortals } from "@/lib/portals/service";
 import { advanceTrials } from "@/lib/trial/service";
 import { dispatchQueued } from "@/lib/whatsapp/service";
@@ -15,4 +16,5 @@ export function installFeatureJobs() {
   registerJob("trial-lifecycle", (db) => advanceTrials(db));
   registerJob("portal-publish-poll", (db) => pollPortals(db));
   registerJob("whatsapp-dispatch", (db) => dispatchQueued(db));
+  registerJob("compliance-monitoring", (db) => runMonitoring(db));
 }

@@ -302,6 +302,9 @@ export const paymentsSchedule = pgTable(
     dueDate: date("due_date").notNull(),
     status: text("status").$type<"scheduled" | "due" | "paid" | "overdue" | "waived">().notNull().default("scheduled"),
     paidAt: at("paid_at"),
+    /** How the milestone was paid; cash and virtual assets trigger AML reporting thresholds. */
+    method: text("method").$type<"bank_transfer" | "cheque" | "cash" | "virtual_asset" | "mixed">(),
+    cashAmount: money("cash_amount"),
     reference: text("reference"),
     notes: text("notes"),
     ...ts,

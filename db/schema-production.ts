@@ -655,3 +655,120 @@ export const commissionCalculations = pgTable(
   },
   (t) => [index("comm_calc_deal_idx").on(t.dealId, t.createdAt), index("comm_calc_tenant_idx").on(t.tenantId)],
 );
+
+/* ===================================================== F9 COMPLIANCE CENTRE */
+
+export type ScreeningHit = { listId: string; list: string; name: string; score: number; topics: string[]; note: string; url: string | null };
+export type SubjectType = "client" | "lead" | "counterparty" | "beneficial_owner";
+
+/** Sanctions, PEP and adverse-media screening of any subject, with the analyst's disposition and the next scheduled re-screen. */
+export const amlScreenings = pgTable(
+  "aml_screenings",
+  {
+    id,
+    tenantId: tenantRef(),
+    subjectType: text("subject_type").$type<SubjectType>().notNull(),
+    subjectId: uuid("subject_id"),
+    entityType: text("entity_type").$type<"person" | "company">().notNull().default("person"),
+    name: text("name").notNull(),
+    birthDate: text("birth_date"),
+    nationality: text("nationality"),
+    jurisdiction: text("jurisdiction").notNull(),
+    provider: text("provider").notNull(),
+    status: text("status").$type<"clear" | "potential_match" | "confirmed_match" | "false_positive" | "error">().notNull(),
+    hits: jsonb("hits").$type<ScreeningHit[]>().notNull().default(sql`'[]'::jsonb`),
+    riskScore: integer("risk_score").notNull().default(0),
+    error: text("error"),
+    reviewedBy: userRef("reviewed_by"),
+    reviewedAt: at("reviewed_at"),
+    decisionNote: text("decision_note"),
+    nextReviewAt: at("next_review_at"),
+    retainUntil: at("retain_until").notNull(),
+    ...ts,
+  },
+  (t) => [index("aml_screen_tenant_idx").on(t.tenantId, t.createdAt), index("aml_screen_subject_idx").on(t.subjectType, t.subjectId), index("aml_screen_review_idx").on(t.nextReviewAt)],
+);
+
+export type KycDoc = { type: string; label: string; documentId: string | null; status: "missing" | "uploaded" | "verified" | "rejected"; expiresAt: string | null; note?: string | null };
+export type BeneficialOwner = { name: string; pct: number; nationality: string | null; pep: boolean };
+
+/** Customer due diligence per subject and jurisdiction: standard, simplified or enhanced, with documents, source of funds, beneficial owners and the decision. */
+export const kycVerifications = pgTable(
+  "kyc_verifications",
+  {
+    id,
+    tenantId: tenantRef(),
+    subjectType: text("subject_type").$type<SubjectType>().notNull(),
+    subjectId: uuid("subject_id"),
+    clientId: uuid("client_id"),
+    entityType: text("entity_type").$type<"person" | "company">().notNull().default("person"),
+    name: text("name").notNull(),
+    jurisdiction: text("jurisdiction").notNull(),
+    level: text("level").$type<"simplified" | "standard" | "enhanced">().notNull().default("standard"),
+    documents: jsonb("documents").$type<KycDoc[]>().notNull().default(sql`'[]'::jsonb`),
+    sourceOfFunds: text("source_of_funds"),
+    sourceOfWealth: text("source_of_wealth"),
+    pepDeclared: boolean("pep_declared").notNull().default(false),
+    beneficialOwners: jsonb("beneficial_owners").$type<BeneficialOwner[]>().notNull().default(sql`'[]'::jsonb`),
+    riskRating: text("risk_rating").$type<"low" | "medium" | "high">().notNull().default("medium"),
+    riskFactors: jsonb("risk_factors").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    status: text("status").$type<"draft" | "submitted" | "in_review" | "approved" | "rejected" | "expired">().notNull().default("draft"),
+    submittedAt: at("submitted_at"),
+    decidedBy: userRef("decided_by"),
+    decidedAt: at("decided_at"),
+    decisionNote: text("decision_note"),
+    expiresAt: at("expires_at"),
+    retainUntil: at("retain_until").notNull(),
+    ...ts,
+  },
+  (t) => [index("kyc_ver_tenant_idx").on(t.tenantId, t.status), index("kyc_ver_subject_idx").on(t.subjectType, t.subjectId), index("kyc_ver_client_idx").on(t.clientId)],
+);
+
+/** Rule results for a deal: CDD complete, screening clear, cash thresholds, EDD triggers, reports due. */
+export const complianceChecks = pgTable(
+  "compliance_checks",
+  {
+    id,
+    tenantId: tenantRef(),
+    dealId: uuid("deal_id").notNull(),
+    jurisdiction: text("jurisdiction").notNull(),
+    rule: text("rule").notNull(),
+    title: text("title").notNull(),
+    status: text("status").$type<"pass" | "action_required" | "fail" | "waived">().notNull(),
+    detail: text("detail").notNull(),
+    basis: text("basis").$type<"statutory" | "firm_policy">().notNull(),
+    waivedBy: userRef("waived_by"),
+    waiverReason: text("waiver_reason"),
+    evaluatedAt: at("evaluated_at").notNull().defaultNow(),
+    ...ts,
+  },
+  (t) => [uniqueIndex("compliance_checks_rule_idx").on(t.dealId, t.rule), index("compliance_checks_tenant_idx").on(t.tenantId, t.status)],
+);
+
+/** Regulatory reports prepared for filing (STR, SAR, REAR, CTR) and the CDD register, with their content, deadline and filing reference. */
+export const regulatoryReports = pgTable(
+  "regulatory_reports",
+  {
+    id,
+    tenantId: tenantRef(),
+    jurisdiction: text("jurisdiction").notNull(),
+    type: text("type").$type<"str" | "rear" | "ctr" | "sar" | "kyc_register">().notNull(),
+    title: text("title").notNull(),
+    period: text("period"),
+    dealId: uuid("deal_id"),
+    subjectName: text("subject_name"),
+    status: text("status").$type<"draft" | "ready" | "filed" | "withdrawn">().notNull().default("draft"),
+    format: text("format").$type<"goaml_xml" | "csv" | "narrative">().notNull(),
+    content: text("content").notNull(),
+    narrative: text("narrative"),
+    data: jsonb("data").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    dueAt: at("due_at"),
+    filedAt: at("filed_at"),
+    filedBy: userRef("filed_by"),
+    filingReference: text("filing_reference"),
+    preparedBy: userRef("prepared_by"),
+    retainUntil: at("retain_until").notNull(),
+    ...ts,
+  },
+  (t) => [index("reg_reports_tenant_idx").on(t.tenantId, t.status), index("reg_reports_due_idx").on(t.dueAt)],
+);

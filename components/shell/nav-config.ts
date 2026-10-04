@@ -146,6 +146,7 @@ export const NAV: Record<Area, NavSection[]> = {
       title: "Workspace",
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
+        { href: "/client/kyc", label: "Identity verification" },
         { href: "/client/invoices", label: "Invoices" },
         { href: "/client/tax-documents", label: "Tax documents" },
         { href: "/client/india", label: "India" },
@@ -311,6 +312,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/whatsapp": MessageCircle,
   "/admin/lead-response": Zap,
   "/admin/commission-structures": Calculator,
+  "/client/kyc": ShieldCheck,
   "/platform/health": HeartPulse,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,

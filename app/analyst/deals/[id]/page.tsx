@@ -18,6 +18,7 @@ import { getDeal } from "@/lib/deals/service";
 import { calculationHistory, dealCalculator } from "@/lib/commission/calc-service";
 import { formatMinor } from "@/lib/commission/calculator";
 import { CommissionCalculator, ScenarioList } from "@/components/commission/calculator";
+import { DealCompliance } from "@/components/compliance/compliance";
 import { formatLocal } from "@/lib/format";
 import { cn, formatDate, formatUsdCost } from "@/lib/utils";
 
@@ -59,6 +60,7 @@ export default async function DealPage({ params, searchParams }: { params: Promi
   const closeBlock = deal.status !== "active" ? "The deal is not active." : !signed ? "A signed contract is required." : openCritical.length ? `${openCritical.length} critical checklist items are open.` : undefined;
   const lastSubmitted = [...d.offers].reverse().find((o) => o.status === "submitted");
   const [predictor, strategist, coach, coordinator, reviewer, reminder] = await Promise.all(["deal-predictor", "offer-strategist", "negotiation-coach", "closing-coordinator", "contract-reviewer", "payment-reminder"].map((a) => initial(user.tenantId, a, a === "contract-reviewer" ? (d.contracts[0]?.id ?? id) : id)));
+  const amlChecks = tab === "checklist" ? await db.select().from(s.complianceChecks).where(and(eq(s.complianceChecks.tenantId, user.tenantId), eq(s.complianceChecks.dealId, id))) : [];
   const calc = tab === "commission" ? await dealCalculator(db, user.tenantId, id) : null;
   const calcHistory = tab === "commission" ? await calculationHistory(db, user.tenantId, id) : [];
   const audit =
@@ -234,6 +236,10 @@ export default async function DealPage({ params, searchParams }: { params: Promi
       )}
 
       {tab === "checklist" && (
+        <>
+        <Section title="Anti-money-laundering" description="Due diligence on our client, screening of both parties, enhanced due diligence triggers, cash thresholds and reports, under the deal's jurisdiction.">
+          <DealCompliance dealId={id} currency={cur} canWaive={user.role === "tenant_admin"} checks={amlChecks.map((c) => ({ id: c.id, rule: c.rule, title: c.title, status: c.status, detail: c.detail, basis: c.basis, waiverReason: c.waiverReason }))} payments={d.payments.map((p) => ({ id: p.id, milestone: p.milestone, amount: p.amount, method: p.method, cashAmount: p.cashAmount }))} />
+        </Section>
         <Section title="Closing checklist" description={`${d.checklist.filter((c) => c.status === "done" || c.status === "waived").length} of ${d.checklist.length} complete, from the ${JURISDICTION_LABEL[deal.jurisdiction]} rules engine.`}>
           <SimpleTable
             rows={d.checklist}
@@ -248,6 +254,7 @@ export default async function DealPage({ params, searchParams }: { params: Promi
             ]}
           />
         </Section>
+        </>
       )}
 
       {tab === "commission" && calc && (

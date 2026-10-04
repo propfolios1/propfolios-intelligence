@@ -67,6 +67,8 @@ export type TenantConfig = {
   locale?: "en" | "ar" | "hi" | "mr" | "kok";
   /** Data retention by jurisdiction, in years (Administration → Compliance). */
   retention?: { uaeYears: number; indiaYears: number; euYears: number; auditYears: number };
+  /** AML settings (Administration → Compliance). */
+  compliance?: { goamlEntityId: string | null; mlroName: string | null; mlroEmail: string | null; highRiskCountries: string[]; jurisdictions: ("AE" | "IN" | "GB" | "SG")[] };
   /** Platform tenants hold Nakhla operators only. */
   platform?: boolean;
 };
