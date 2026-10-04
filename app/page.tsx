@@ -5,6 +5,7 @@ import { Agents } from "@/components/home/agents";
 import { Customers } from "@/components/home/customers";
 import { FinalCta } from "@/components/home/final-cta";
 import { Hero } from "@/components/home/hero";
+import { Nav } from "@/components/home/nav";
 import { Markets } from "@/components/home/markets";
 import { Modules } from "@/components/home/modules";
 import { Numbers } from "@/components/home/numbers";
@@ -15,6 +16,7 @@ import { Screenshots } from "@/components/home/screenshots";
 import "@/components/home/home.css";
 import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
+import { agentCatalogue } from "@/lib/ai/usage";
 import { clerkEnabled } from "@/lib/auth";
 import { tenantForHost } from "@/lib/tenant";
 
@@ -53,10 +55,13 @@ export default async function Landing() {
   const tenant = await tenantForHost();
   if (tenant) return <TenantLanding name={tenant.configJson.brand_name} />;
   const clientHref = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=client";
+  const signInHref = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=analyst";
+  const agents = agentCatalogue();
   return (
     <AccessProvider>
+      <Nav signInHref={signInHref} />
       <main className="overflow-x-clip bg-canvas">
-        <Hero clientHref={clientHref} />
+        <Hero agents={agents.length} />
         <Numbers />
         <Problem />
         <Modules />

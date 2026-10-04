@@ -27,7 +27,7 @@ export interface Market {
   flag: string;
   coverage: Coverage;
   currency: "AED" | "INR" | "GBP" | "SGD" | "AUD" | "USD";
-  /** Centre of the market on the landing map, in the map's 0–1000 by 0–500 equirectangular frame. */
+  /** Principal city on the landing map, in a 0–1000 by 0–500 equirectangular frame. */
   map: { x: number; y: number };
   cities: string[];
   regulators: { name: string; role: string }[];
@@ -62,7 +62,7 @@ export const MARKETS: Record<MarketCode, Market> = {
     flag: "🇦🇪",
     coverage: "full",
     currency: "AED",
-    map: { x: 652, y: 198 },
+    map: { x: 654, y: 180 },
     cities: ["Dubai", "Abu Dhabi", "Sharjah"],
     regulators: [
       { name: "Dubai Land Department", role: "Title, transfers and the Trakheesi advertising permit" },
@@ -89,7 +89,7 @@ export const MARKETS: Record<MarketCode, Market> = {
     flag: "🇮🇳",
     coverage: "full",
     currency: "INR",
-    map: { x: 718, y: 210 },
+    map: { x: 702, y: 197 },
     cities: ["Mumbai", "Pune", "Goa"],
     regulators: [
       { name: "MahaRERA", role: "Project and agent registration in Maharashtra" },
@@ -117,7 +117,7 @@ export const MARKETS: Record<MarketCode, Market> = {
     flag: "🇬🇧",
     coverage: "localised",
     currency: "GBP",
-    map: { x: 494, y: 108 },
+    map: { x: 500, y: 107 },
     cities: ["London", "Manchester", "Edinburgh"],
     regulators: [
       { name: "HMRC", role: "Anti-money-laundering supervision of estate agency businesses" },
@@ -144,7 +144,7 @@ export const MARKETS: Record<MarketCode, Market> = {
     flag: "🇸🇬",
     coverage: "localised",
     currency: "SGD",
-    map: { x: 788, y: 262 },
+    map: { x: 788, y: 246 },
     cities: ["Singapore"],
     regulators: [
       { name: "CEA", role: "Licensing of estate agencies and registration of salespersons" },
@@ -171,7 +171,7 @@ export const MARKETS: Record<MarketCode, Market> = {
     flag: "🇦🇺",
     coverage: "localised",
     currency: "AUD",
-    map: { x: 880, y: 360 },
+    map: { x: 920, y: 344 },
     cities: ["Sydney", "Melbourne", "Brisbane"],
     regulators: [
       { name: "NSW Fair Trading", role: "Agent licensing and trust accounts in New South Wales" },
@@ -197,7 +197,7 @@ export const MARKETS: Record<MarketCode, Market> = {
     flag: "🇺🇸",
     coverage: "localised",
     currency: "USD",
-    map: { x: 230, y: 150 },
+    map: { x: 294, y: 137 },
     cities: ["New York", "Miami", "Los Angeles"],
     regulators: [
       { name: "State real estate commissions", role: "Broker and salesperson licensing" },
