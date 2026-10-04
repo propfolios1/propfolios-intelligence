@@ -116,7 +116,7 @@ function MemoDocument(m: MemoPdfInput) {
   const [first, ...rest] = m.brandName.trim().split(/\s+/);
   const primary = { color: m.primaryColor };
   return (
-    <Document title={m.title} author="PropFolios Intelligence" subject={`${m.reference} ${m.clientName}`} creator="PropFolios Intelligence">
+    <Document title={m.title} author={m.brandName} subject={`${m.reference} ${m.clientName}`} creator="Nakhla">
       <Page size="A4" style={st.page}>
         <View style={st.footerRule} fixed />
         <Text style={st.footerLeft} fixed>

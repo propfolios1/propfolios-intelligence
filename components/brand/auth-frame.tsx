@@ -54,9 +54,9 @@ export const clerkAppearance = {
 
 export function DemoPersonas() {
   const personas = [
-    ["admin", "Amol Bandekar", "PropFolios, tenant administrator"],
-    ["analyst", "Aisha Rahman", "PropFolios, senior analyst"],
-    ["client", "Ahmed Al Mansoori", "PropFolios client, AED 25M under advice"],
+    ["admin", "Amol Bandekar", "Demonstration firm, tenant administrator"],
+    ["analyst", "Aisha Rahman", "Demonstration firm, senior analyst"],
+    ["client", "Ahmed Al Mansoori", "Client of the demonstration firm"],
     ["platform", "Nakhla Operations", "Platform administrator, all tenants"],
   ] as const;
   return (

@@ -1,14 +1,16 @@
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import { AuthFrame, clerkAppearance, DemoPersonas } from "@/components/brand/auth-frame";
+import { resolveBrand } from "@/lib/brand";
 
 export const metadata = { title: "Create account" };
 
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  const brand = await resolveBrand();
   return (
-    <AuthFrame eyebrow="PropFolios Intelligence" title="Create account" subtitle="Clients: use the email address your relationship manager holds on file, and your portfolio is linked automatically.">
+    <AuthFrame eyebrow={brand.config.brand_name} title="Create account" subtitle="Clients: use the email address your relationship manager holds on file, and your portfolio is linked automatically.">
       {clerkEnabled ? (
         <>
           <SignUp routing="path" path="/sign-up" signInUrl="/sign-in" fallbackRedirectUrl="/home" appearance={clerkAppearance} />

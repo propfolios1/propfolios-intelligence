@@ -62,7 +62,7 @@ export const firmAnalyst = defineAgent({
   output: agentCore.extend({ strengths: z.array(z.string()), gaps: z.array(z.string()), priorities: z.array(z.object({ action: z.string(), metric: z.string(), impact: z.string() })) }),
   outputEntity: (i) => i.tenantId,
   memory: { types: ["analyst_patterns"] },
-  sample: { tenantId: "t1", firm: "PropFolios", metrics: [{ metric: "deal_cycle", label: "Deal cycle", value: 44, unit: "days", rankPct: 50, cohortMedian: 46, firms: 3, betterIsHigher: false }, { metric: "collection_days", label: "Collection period", value: 24, unit: "days", rankPct: 0, cohortMedian: 18, firms: 3, betterIsHigher: false }] },
+  sample: { tenantId: "t1", firm: "Demonstration firm", metrics: [{ metric: "deal_cycle", label: "Deal cycle", value: 44, unit: "days", rankPct: 50, cohortMedian: 46, firms: 3, betterIsHigher: false }, { metric: "collection_days", label: "Collection period", value: 24, unit: "days", rankPct: 0, cohortMedian: 18, firms: 3, betterIsHigher: false }] },
   replay: (i) => {
     const ranked = i.metrics.filter((m) => m.rankPct !== null);
     const strengths = ranked.filter((m) => m.rankPct! >= 60).map((m) => `${m.label}: ${m.value} ${m.unit} against a cohort median of ${m.cohortMedian} (rank ${m.rankPct}).`);

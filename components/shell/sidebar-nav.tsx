@@ -32,7 +32,7 @@ export interface ShellViewer {
 
 const DEMO_PERSONAS = [
   ["platform", "Nakhla Operations, platform"],
-  ["admin", "Amol Bandekar, PropFolios admin"],
+  ["admin", "Amol Bandekar, firm admin"],
   ["analyst", "Aisha Rahman, analyst"],
   ["client", "Ahmed Al Mansoori, client"],
 ] as const;

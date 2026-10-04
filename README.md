@@ -1,16 +1,17 @@
 # Nakhla
 
-Nakhla is the operating system for real estate advisory firms. Each firm (a tenant) gets its own branded workspace that runs the whole business, from the first brief to the commission in the bank:
+Nakhla is the AI-native operating system for real estate brokerages, built for six markets: the UAE and India with the full regulatory engine, and the UK, Singapore, Australia and the US localised for brokerage. Each firm (a tenant) gets its own branded workspace that runs the whole business, from the first lead to the commission in the bank:
 
+- **Brokerage.** Lead capture from 18 portals and direct channels with itemised scoring, listings checked against portal rules and syndicated through signed feeds, consent-based marketing, rentals and rent collection, referrals, and offices, licences, targets and recruiting.
 - **Mandates.** Specialist agents research, underwrite, value, diligence and write committee memos; three models review every recommendation independently.
 - **India.** Mumbai and Goa diligence, with MahaRERA and Goa RERA, land records (7/12, property card, Form I and XIV, comunidade), the Maharashtra and Goa stamp duty rules, and NRI planning.
 - **Deals.** Offers, negotiation rounds, contracts, electronic signature, closing checklists and payment schedules.
 - **Commission.** Structures, splits, VAT and GST invoices, payments, bank reconciliation and tax returns, computed automatically when a deal closes.
 - **Clients.** KYC, AML screening, quarterly reports, monthly statements, goals, tax documents and private banking.
 - **Business intelligence.** Firm metrics, cross-firm benchmarks and four data products.
-- **The fabric underneath.** One data model, eleven access roles, a full audit trail, GDPR, DPDP and UAE PDPL compliance, automations, notifications and five interface languages.
+- **The fabric underneath.** One data model, eleven access roles, a full audit trail, GDPR, DPDP and UAE PDPL request and consent workflows, automations, notifications and five interface languages.
 
-Forty-five agents do the work. An event bus starts the right agents whenever something happens, and every agent remembers what it has learned about the firm. Anonymised learnings from completed deals across firms calibrate every model: the more firms use Nakhla, the sharper it becomes for each of them.
+Forty-eight agents do the work. An event bus starts the right agents whenever something happens, and every agent remembers what it has learned about the firm. Anonymised learnings from completed deals across firms calibrate every model: the more firms use Nakhla, the sharper it becomes for each of them.
 
 Tenant number one is PropFolios.ae. Further firms sign up themselves at `/onboarding`, or you create them in the platform console at `/platform`. Anyone can try the analytical pipeline at `/demo` without an account.
 

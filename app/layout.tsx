@@ -17,11 +17,14 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["400"], variable
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await resolveBrand();
   const name = brand.config.brand_name;
+  const description = brand.config.platform
+    ? "Nakhla is the AI-native operating system for real estate brokerages: leads, listings, research, underwriting, deals, commissions and client servicing across six markets."
+    : `Research, underwriting and portfolio monitoring for private capital, by ${brand.name}.`;
   return {
     title: { default: name, template: `%s · ${name}` },
-    description: brand.config.platform
-      ? "Nakhla is the AI operating system for real estate advisory firms: research, underwriting, due diligence, memos and client portfolios."
-      : `Research, underwriting and portfolio monitoring for private capital, by ${brand.name}.`,
+    description,
+    openGraph: { title: name, description, siteName: name, type: "website" },
+    twitter: { card: "summary_large_image", title: name, description },
     metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   };
 }
