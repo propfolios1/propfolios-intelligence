@@ -1,124 +1,128 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { Check, Minus } from "lucide-react";
 import * as React from "react";
-import { EASE, Heading, Reveal, Section } from "./motion";
+import { MARKET_CODES, MARKETS, type MarketCode } from "@/lib/markets";
+import { EASE, Heading, Lead, Reveal, VIEWPORT } from "./motion";
+import { GRID, landCells } from "./world-dots";
 
-type Market = "UAE" | "India";
-
-const MARKETS: Record<Market, { flag: string; name: string; regions: string; currency: string; bullets: string[] }> = {
-  UAE: {
-    flag: "🇦🇪",
-    name: "United Arab Emirates",
-    regions: "Dubai · Abu Dhabi",
-    currency: "AED",
-    bullets: [
-      "DLD and ADREC transaction data, native",
-      "RERA Dubai escrow and Oqood registration",
-      "AED pricing, 5% VAT on every fee invoice",
-      "4% DLD transfer fee in every closing cost",
-      "Emaar, DAMAC and Aldar scored weekly",
-      "Off-plan and ready, underwritten separately",
-    ],
-  },
-  India: {
-    flag: "🇮🇳",
-    name: "India",
-    regions: "Mumbai · Goa",
-    currency: "INR",
-    bullets: [
-      "MahaRERA and Goa RERA project registries",
-      "IGR Maharashtra and Ready Reckoner rates",
-      "Stamp duty, GST and TDS under 194-IA",
-      "INR in lakh and crore, end to end",
-      "7/12 extract and Form I title review",
-      "Lodha, Oberoi, Prestige; under-construction and co-op",
-    ],
-  },
-};
+// Crop to the inhabited latitudes: roughly 78°N to 56°S.
+const VIEW = { x: 0, y: 34, w: 1000, h: 344 };
+const CELL = 1000 / GRID.cols;
 
 export function Markets() {
-  const [active, setActive] = React.useState<Market>("UAE");
-  const [round, setRound] = React.useState(0);
+  const [active, setActive] = React.useState<MarketCode>("AE");
   const reduce = useReducedMotion();
-  const select = (m: Market) => {
-    if (m === active) return;
-    setActive(m);
-    setRound((r) => r + 1);
-  };
+  const section = React.useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: section, offset: ["start end", "end start"] });
+  const parallax = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const dots = React.useMemo(() => landCells(), []);
+  const m = MARKETS[active];
   return (
-    <Section id="markets">
-      <Reveal className="flex flex-wrap items-end justify-between gap-6">
-        <Heading className="max-w-[20ch]">Built for UAE and India. Not one. Both.</Heading>
-        <div role="tablist" aria-label="Market" className="inline-flex rounded-sm border border-hairline bg-surface p-0.5">
-          {(Object.keys(MARKETS) as Market[]).map((m) => (
-            <button
-              key={m}
-              role="tab"
-              aria-selected={active === m}
-              aria-controls={`market-${m}`}
-              onClick={() => select(m)}
-              className={
-                "h-8 rounded-[4px] px-4 text-[13px] font-medium transition-colors duration-150 " + (active === m ? "bg-navy-900 text-surface" : "text-ink-700 hover:bg-ink-100 hover:text-ink-900")
-              }
-            >
-              <span className="mr-1.5" aria-hidden>
-                {MARKETS[m].flag}
-              </span>
-              {m}
-            </button>
-          ))}
-        </div>
-      </Reveal>
-      <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {(Object.keys(MARKETS) as Market[]).map((m) => {
-          const mk = MARKETS[m];
-          const on = active === m;
-          return (
-            <article
-              key={m}
-              id={`market-${m}`}
-              role="tabpanel"
-              aria-label={mk.name}
-              onClick={() => select(m)}
-              className={
-                "cursor-pointer rounded-md border bg-surface p-6 transition-[opacity,border-color] duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:p-8 " +
-                (on ? "border-navy-300 opacity-100" : "hidden border-hairline opacity-50 hover:opacity-80 lg:block")
-              }
-            >
+    <section ref={section} id="markets" aria-label="Markets" className="home-noise relative scroll-mt-16 overflow-hidden">
+      <div className="relative mx-auto w-full max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
+        <Reveal className="max-w-[860px]">
+          <Heading>Built for six markets. Localised in each.</Heading>
+          <Lead className="mt-6 max-w-[64ch]">Every field, currency, tax and portal adapts to the market a listing or a client is in. The UAE and India run the full regulatory engine; the UK, Singapore, Australia and the US are localised for brokerage today, with their regulator workflows next.</Lead>
+        </Reveal>
+        <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <motion.div style={{ y: reduce ? 0 : parallax }} className="relative">
+            <div className="relative" style={{ aspectRatio: `${VIEW.w} / ${VIEW.h}` }}>
+              <svg viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`} className="absolute inset-0 h-full w-full" aria-hidden>
+                {dots.map(([x, y]) => (
+                  <circle key={`${x}-${y}`} cx={x * CELL + CELL / 2} cy={y * CELL + CELL / 2} r={1.55} fill="var(--navy-900)" opacity={0.16} />
+                ))}
+              </svg>
+              {MARKET_CODES.map((code, k) => {
+                const mk = MARKETS[code];
+                const on = code === active;
+                return (
+                  <motion.button
+                    key={code}
+                    type="button"
+                    onClick={() => setActive(code)}
+                    aria-pressed={on}
+                    aria-label={`${mk.name}: show regulators, currency, portals and workflows`}
+                    initial={reduce ? false : { opacity: 0, scale: 0.4 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={VIEWPORT}
+                    transition={{ duration: 0.4, ease: EASE, delay: 0.2 + k * 0.04 }}
+                    className="group absolute -translate-x-1/2 -translate-y-1/2 p-2"
+                    style={{ left: `${((mk.map.x - VIEW.x) / VIEW.w) * 100}%`, top: `${((mk.map.y - VIEW.y) / VIEW.h) * 100}%` }}
+                  >
+                    <span className="relative flex size-3 items-center justify-center">
+                      <span className={"absolute inset-0 rounded-full " + (on ? "bg-gold-500" : "bg-navy-900")} />
+                      <svg className="absolute -inset-1 overflow-visible" viewBox="0 0 20 20" aria-hidden>
+                        <circle className="home-pin-ring" cx="10" cy="10" r="6" fill={on ? "var(--gold-500)" : "var(--navy-900)"} style={{ animationDelay: `${k * 400}ms` }} />
+                      </svg>
+                    </span>
+                    <span className={"absolute top-1/2 left-6 hidden -translate-y-1/2 rounded-full border px-2 py-0.5 sm:block text-[11px] whitespace-nowrap transition-colors duration-150 " + (on ? "border-navy-900 bg-navy-900 text-surface" : "border-hairline bg-surface/90 text-ink-700 group-hover:border-navy-300")}>
+                      {mk.code === "GB" ? "UK" : mk.code === "AE" ? "UAE" : mk.code === "US" ? "US" : mk.name}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Choose a market">
+              {MARKET_CODES.map((code) => (
+                <button key={code} type="button" aria-pressed={code === active} onClick={() => setActive(code)} className={"h-8 rounded-sm border px-3 text-[13px] transition-colors duration-150 " + (code === active ? "border-navy-900 bg-navy-900 text-surface" : "border-hairline bg-surface text-ink-700 hover:bg-ink-50")}>
+                  <span className="mr-1.5" aria-hidden>
+                    {MARKETS[code].flag}
+                  </span>
+                  {MARKETS[code].name}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+          <aside aria-live="polite" aria-label={`${m.name} details`} className="rounded-md border border-hairline bg-surface p-6">
+            <motion.div key={active} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: EASE }}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-[32px] leading-none" aria-hidden>
-                    {mk.flag}
+                  <div className="text-[28px] leading-none" aria-hidden>
+                    {m.flag}
                   </div>
-                  <h3 className="mt-4 font-display text-[24px] text-navy-900">{mk.name}</h3>
-                  <div className="mt-1 text-[13px] text-ink-500">{mk.regions}</div>
+                  <h3 className="mt-3 font-display text-[24px] leading-tight text-navy-900">{m.name}</h3>
+                  <p className="mt-1 text-[13px] text-ink-500">{m.cities.join(" · ")}</p>
                 </div>
-                <span className="num rounded-full border border-hairline px-2.5 py-0.5 text-[12px] text-ink-700">{mk.currency}</span>
+                <span className="num rounded-full border border-hairline px-2.5 py-0.5 text-[12px] text-ink-700">{m.currency}</span>
               </div>
-              <ul className="mt-8 border-t border-hairline">
-                {mk.bullets.map((b, k) => (
-                  <motion.li
-                    key={`${round}-${on}-${b}`}
-                    initial={reduce || !on ? false : { opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25, ease: EASE, delay: k * 0.05 }}
-                    className="num flex items-center gap-3 border-b border-hairline py-3 text-[13px] text-ink-700"
-                  >
-                    <span className={"size-1 shrink-0 rounded-full transition-colors duration-[250ms] " + (on ? "bg-navy-900" : "bg-ink-300")} aria-hidden />
-                    {b}
-                  </motion.li>
+              <span className={"mt-4 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium " + (m.coverage === "full" ? "bg-navy-900 text-surface" : "border border-hairline text-ink-700")}>{m.coverage === "full" ? "Full regulatory engine" : "Localised for brokerage"}</span>
+              <dl className="mt-6 space-y-4 text-[13px]">
+                <div>
+                  <dt className="text-[11px] font-medium tracking-[0.1em] text-ink-500 uppercase">Regulators</dt>
+                  <dd className="mt-1.5 space-y-1">
+                    {m.regulators.map((r) => (
+                      <p key={r.name} className="text-ink-700">
+                        <span className="text-ink-900">{r.name}</span> · {r.role}
+                      </p>
+                    ))}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium tracking-[0.1em] text-ink-500 uppercase">Portals</dt>
+                  <dd className="num mt-1.5 text-ink-700">{m.portals.map((p) => p.name).join(" · ")}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium tracking-[0.1em] text-ink-500 uppercase">Tax on fees</dt>
+                  <dd className="num mt-1.5 text-ink-700">{m.feeTax.ratePct ? `${m.feeTax.name} ${m.feeTax.ratePct}%` : "Set by state; none at federal level"}</dd>
+                </div>
+              </dl>
+              <ul className="mt-6 border-t border-hairline pt-4">
+                {m.workflows.map((w) => (
+                  <li key={w.label} className="flex items-center gap-2.5 py-1 text-[13px]">
+                    {w.available ? <Check className="size-3.5 shrink-0 stroke-[2] text-success" aria-hidden /> : <Minus className="size-3.5 shrink-0 stroke-[2] text-ink-300" aria-hidden />}
+                    <span className={w.available ? "text-ink-900" : "text-ink-500"}>
+                      {w.label}
+                      {!w.available && <span className="sr-only"> (on the roadmap)</span>}
+                    </span>
+                  </li>
                 ))}
               </ul>
-            </article>
-          );
-        })}
+            </motion.div>
+          </aside>
+        </div>
       </div>
-      <Reveal>
-        <p className="mt-10 max-w-[64ch] text-[16px] leading-[1.6] text-ink-700">
-          One tenant can operate in both. Switch markets with one click. Every field, currency, and workflow adapts.
-        </p>
-      </Reveal>
-    </Section>
+    </section>
   );
 }
