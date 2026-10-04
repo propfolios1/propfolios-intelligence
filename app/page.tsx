@@ -63,7 +63,6 @@ async function TenantLanding({ name }: { name: string }) {
 export default async function Landing() {
   const tenant = await tenantForHost();
   if (tenant) return <TenantLanding name={tenant.configJson.brand_name} />;
-  const clientHref = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=client";
   const signInHref = clerkEnabled ? "/sign-in" : "/api/demo/persona?as=analyst";
   const agents = agentCatalogue();
   const examples = agentExamples();
@@ -98,8 +97,8 @@ export default async function Landing() {
         <Roi />
         <Pricing />
         <PaletteDemo />
-        <FinalCta clientHref={clientHref} />
       </main>
+      <FinalCta />
     </AccessProvider>
   );
 }

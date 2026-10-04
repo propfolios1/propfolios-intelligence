@@ -18,6 +18,15 @@ export function Markets() {
   const { scrollYProgress } = useScroll({ target: section, offset: ["start end", "end start"] });
   const parallax = useTransform(scrollYProgress, [0, 1], [30, -30]);
   const dots = React.useMemo(() => landCells(), []);
+  // Footer links pick a market here.
+  React.useEffect(() => {
+    const on = (e: Event) => {
+      const code = (e as CustomEvent<MarketCode>).detail;
+      if (MARKET_CODES.includes(code)) setActive(code);
+    };
+    window.addEventListener("home:market", on);
+    return () => window.removeEventListener("home:market", on);
+  }, []);
   const m = MARKETS[active];
   return (
     <section ref={section} id="markets" aria-label="Markets" className="home-noise relative scroll-mt-16 overflow-hidden">

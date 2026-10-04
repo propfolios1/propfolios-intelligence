@@ -14,6 +14,7 @@ const isPublic = createRouteMatcher([
   "/demo",
   "/api/demo/underwrite",
   "/api/access-request",
+  "/api/presence",
   "/api/leads/inbound/(.*)",
   "/api/feeds/(.*)",
   "/api/mcp(.*)",
