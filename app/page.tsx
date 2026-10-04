@@ -8,6 +8,7 @@ import { DeepDive } from "@/components/home/deep-dive";
 import { FinalCta } from "@/components/home/final-cta";
 import { Hero } from "@/components/home/hero";
 import { Nav } from "@/components/home/nav";
+import { Integrations } from "@/components/home/integrations";
 import { Markets } from "@/components/home/markets";
 import { Mobile } from "@/components/home/mobile";
 import { Modules } from "@/components/home/modules";
@@ -89,6 +90,7 @@ export default async function Landing() {
         <DeepDive replay={researchReplay()} />
         <Screenshots />
         <Mobile />
+        <Integrations />
         <Customers />
         <Pricing />
         <PaletteDemo />
