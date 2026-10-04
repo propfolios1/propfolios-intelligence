@@ -15,6 +15,7 @@ import { Modules } from "@/components/home/modules";
 import { PaletteDemo } from "@/components/home/palette-demo";
 import { Pricing } from "@/components/home/pricing";
 import { Problem } from "@/components/home/problem";
+import { Roi } from "@/components/home/roi";
 import { Screenshots } from "@/components/home/screenshots";
 import { Security } from "@/components/home/security";
 import { Solution } from "@/components/home/solution";
@@ -94,6 +95,7 @@ export default async function Landing() {
         <Integrations />
         <Security policies={policies} />
         <Customers />
+        <Roi />
         <Pricing />
         <PaletteDemo />
         <FinalCta clientHref={clientHref} />
