@@ -9,6 +9,7 @@ import { FinalCta } from "@/components/home/final-cta";
 import { Hero } from "@/components/home/hero";
 import { Nav } from "@/components/home/nav";
 import { Markets } from "@/components/home/markets";
+import { Mobile } from "@/components/home/mobile";
 import { Modules } from "@/components/home/modules";
 import { PaletteDemo } from "@/components/home/palette-demo";
 import { Pricing } from "@/components/home/pricing";
@@ -87,6 +88,7 @@ export default async function Landing() {
         <Markets />
         <DeepDive replay={researchReplay()} />
         <Screenshots />
+        <Mobile />
         <Customers />
         <Pricing />
         <PaletteDemo />
