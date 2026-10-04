@@ -43,7 +43,7 @@ All checks were run against PostgreSQL 16 after `/api/setup?reset=1`, with the p
 | `npm install`, `type-check`, `lint`, `build` | Pass |
 | 90+ pages render | 93 page routes built. A browser sweep of 80 concrete URLs (every page, with real ids for the dynamic ones) returned HTTP 200 with **no console errors** |
 | iPhone 12 viewport (390 × 844) | All 80 URLs: no horizontal overflow, no console errors (four overflows found and fixed during this pass) |
-| RLS cross-tenant test, every new table | `npm run verify:rls` signs in as PropFolios through Clerk-style JWT claims (`sub`, `org_id`, role `authenticated`) and tries to read, update, delete and insert Gulf Realty rows in **all 60 tenant tables**. Result: **PASSED**, no leaks. Tables that hold secrets (API keys, signing tokens, share links, email outbox) refuse client reads entirely |
+| RLS cross-tenant test, every new table | `npm run verify:rls` signs in as the demonstration brokerage through Clerk-style JWT claims (`sub`, `org_id`, role `authenticated`) and tries to read, update, delete and insert Gulf Realty rows in **all 60 tenant tables**. Result: **PASSED**, no leaks. Tables that hold secrets (API keys, signing tokens, share links, email outbox) refuse client reads entirely |
 | Mumbai stamp duty = 6% | Unit test: 5% stamp duty plus 1% metro cess; registration 1% capped at INR 30,000. Goa: 3.5%, and 2.5% when every buyer is a woman |
 | Deal flow | Create, offer and accept, contract (SHA-256 hash), send for native signature. A wrong signer email returns 403 and a reused link returns 404. With 3 critical checklist items open, close is blocked (422). Then close; the events run 3, 2, 3, 2 and 2 agents |
 | Commission flow | The close computes the commission (INR 580,000 at 2%), splits it 40/20/40, issues an India GST invoice (18%, INR 104,400), reconciles a bank CSV and marks the invoice paid |
@@ -139,7 +139,7 @@ Everything happens in a web browser. The README has the same steps with more det
 11. **Webhooks.** In Clerk → **Webhooks**, add `https://YOUR-SITE/api/webhooks/clerk` (events `user.created` and `user.updated`), copy the signing secret into Vercel as `CLERK_WEBHOOK_SECRET`, and redeploy. If you use Dropbox Sign, set its account callback to `https://YOUR-SITE/api/webhooks/dropbox-sign`.
 12. **Create the database.** Open `https://YOUR-SITE/api/setup?secret=YOUR_SETUP_SECRET`. It should show `"ok": true`. This creates the 66 tables, the 246 security policies, the storage buckets and all the starting data. Running it again changes nothing.
 13. **Make yourself platform administrator.** Sign up on your site. In Clerk → **Users** → your name → **Public metadata**, set `{ "role": "platform_admin" }`, then sign out and back in.
-14. **Hand over the workspace.** Send Amol the sign-up link and tell him to register with `amol@propfolios.ae`. He lands in the PropFolios workspace with deals, commissions, KYC files, reports and the India desk ready. Languages are chosen at the foot of the sidebar.
+14. **Hand over the workspace.** Send the firm administrator the sign-up link. They land in the firm's workspace with deals, commissions, KYC files, reports and the India desk ready. Languages are chosen at the foot of the sidebar.
 
 ## Screenshots
 

@@ -111,6 +111,6 @@ export async function provisionTenant(input: ProvisionInput) {
     { tenantId, actorName: input.actor, actorType: "user", action: `created workspace on the ${plan.name} plan` },
     ...invites.map((i) => ({ tenantId, actorName: input.actor, actorType: "user" as const, action: `invited ${i.email} as ${i.role === "tenant_admin" ? "administrator" : "analyst"}` })),
   ]);
-  if (input.seedDemo) await seedTenantData(db, { tenantId, slug, staff: false, adminUserId: admin!.id, adminName: admin!.name });
+  if (input.seedDemo) await seedTenantData(db, { tenantId, slug, key: slug, staff: false, adminUserId: admin!.id, adminName: admin!.name });
   return { tenant: tenant!, adminUserId: admin!.id };
 }

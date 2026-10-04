@@ -44,7 +44,7 @@ export function FinalCta() {
   const cols: { title: string; links: { label: string; href?: string; onClick?: () => void }[] }[] = [
     { title: "Product", links: [{ label: "Modules", href: "#modules" }, { label: "Agents", href: "#agents" }, { label: "Integrations", href: "#integrations" }, { label: "Pricing", href: "#pricing" }, { label: "Mobile", href: "#mobile" }] },
     { title: "Markets", links: [{ label: "UAE", href: "#markets", onClick: market("AE") }, { label: "India", href: "#markets", onClick: market("IN") }, { label: "UK", href: "#markets", onClick: market("GB") }, { label: "Singapore", href: "#markets", onClick: market("SG") }, { label: "All six markets", href: "#markets" }] },
-    { title: "Company", links: [{ label: "Firms", href: "#firms" }, { label: "Security", href: "#security" }, { label: "Contact", onClick: () => access.open("enterprise") }, { label: "Request access", onClick: () => access.open() }] },
+    { title: "Company", links: [{ label: "Security", href: "#security" }, { label: "Contact", onClick: () => access.open("enterprise") }, { label: "Request access", onClick: () => access.open() }] },
     { title: "Resources", links: [{ label: "Live demo", href: "/demo" }, { label: "Plan comparison", href: "/pricing" }, { label: "MCP server", href: "#integrations" }, { label: "ROI calculator", href: "#roi" }] },
   ];
   return (

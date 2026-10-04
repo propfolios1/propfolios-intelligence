@@ -13,7 +13,7 @@ Nakhla is the AI-native operating system for real estate brokerages, built for s
 
 Forty-eight agents do the work. An event bus starts the right agents whenever something happens, and every agent remembers what it has learned about the firm. Anonymised learnings from completed deals across firms calibrate every model: the more firms use Nakhla, the sharper it becomes for each of them.
 
-Tenant number one is PropFolios.ae. Further firms sign up themselves at `/onboarding`, or you create them in the platform console at `/platform`. Anyone can try the analytical pipeline at `/demo` without an account.
+Firms start a fourteen-day trial at `/trial` or sign up at `/onboarding`, or you create them in the platform console at `/platform`. Anyone can try the analytical pipeline at `/demo` without an account.
 
 This guide assumes no technical background. Everything happens in a web browser, in GitHub, Supabase, Clerk, Anthropic and Vercel. Allow about an hour.
 
@@ -135,8 +135,8 @@ https://YOUR-SITE.vercel.app/api/setup?secret=YOUR_SETUP_SECRET
 ```
 
 You should see `"ok": true` and `"seeded": true`. This creates all 66 tables and the 246 row-level security policies, plus the storage buckets and their policies and the live-update channels. It also loads the starting data:
-- the PropFolios workspace;
-- two sample firms, Gulf Realty Advisors and Bombay Property Intelligence, each with its own data;
+- the demonstration workspace, Nakhla Demo Brokerage, with demonstration logins;
+- four further demonstration firms with their own data: Sample Realty Dubai, Demo Properties India, London Prime Brokers and Singapore Luxury Homes. None of them is a real company;
 - a trial firm and a former firm;
 - 55 properties across Dubai, Abu Dhabi, Mumbai and Goa;
 - deals at every stage, commissions and invoices, KYC files, reports and statements;
@@ -155,15 +155,13 @@ You should see `"ok": true` and `"seeded": true`. This creates all 66 tables and
 
 3. Sign out of your site and back in. You land on **/platform/dashboard**: revenue, firms, AI quality and the federation.
 
-### 13. The PropFolios workspace
+### 13. Create your own firm
 
-The PropFolios workspace already exists with its data, and Amol's administrator record (`amol@propfolios.ae`) is waiting for him. In **/platform → Tenants → PropFolios** check the plan and feature switches. To create a new firm instead: **Tenants → Create tenant**, complete the five steps; the administrator receives an invitation.
+The demonstration firms exist only to show the product. Create your real workspace in **/platform → Tenants → Create tenant** and complete the five steps; the administrator you name receives an invitation and, on registering with that address, is linked to the workspace automatically. A firm can also create its own workspace at `/trial`.
 
-### 14. Send Amol his login
+### 14. Hand over the login
 
-> Your PropFolios workspace on Nakhla is ready. Open https://YOUR-SITE.vercel.app/sign-up, register with amol@propfolios.ae and choose a password. You land on the analyst desk; Administration (users, branding, billing, intelligence settings) is in the left menu.
-
-When he registers with that address his account is linked to the PropFolios administrator record automatically.
+> Your workspace on Nakhla is ready. Open https://YOUR-SITE.vercel.app/sign-up, register with the address this message was sent to and choose a password. You land on the analyst desk; Administration (users, branding, billing, intelligence settings) is in the left menu.
 
 ## What each firm gets
 

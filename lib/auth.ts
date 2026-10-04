@@ -47,8 +47,8 @@ export const IMPERSONATE_COOKIE = "pf_impersonate";
 /** Demonstration personas, used only when Clerk is not configured. */
 export const PERSONAS: Record<string, { email: string; tenant: string; label: string; role: string }> = {
   platform: { email: "ops@nakhla.ai", tenant: PLATFORM_SLUG, label: "Nakhla Operations", role: "Platform administrator" },
-  admin: { email: "amol@propfolios.ae", tenant: DEFAULT_SLUG, label: "Amol Bandekar", role: "Tenant administrator, demonstration firm" },
-  analyst: { email: "aisha.rahman@propfolios.ae", tenant: DEFAULT_SLUG, label: "Aisha Rahman", role: "Senior analyst, demonstration firm" },
+  admin: { email: "karim.nasser@demo.nakhla.ai", tenant: DEFAULT_SLUG, label: "Karim Nasser", role: "Tenant administrator, demonstration firm" },
+  analyst: { email: "aisha.rahman@demo.nakhla.ai", tenant: DEFAULT_SLUG, label: "Aisha Rahman", role: "Senior analyst, demonstration firm" },
   client: { email: "ahmed@almansoori.ae", tenant: DEFAULT_SLUG, label: "Ahmed Al Mansoori", role: "Client, demonstration firm" },
 };
 

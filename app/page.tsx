@@ -3,7 +3,6 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
 import { Agents } from "@/components/home/agents";
-import { Customers } from "@/components/home/customers";
 import { DeepDive } from "@/components/home/deep-dive";
 import { FinalCta } from "@/components/home/final-cta";
 import { Hero } from "@/components/home/hero";
@@ -93,7 +92,6 @@ export default async function Landing() {
         <Mobile />
         <Integrations />
         <Security policies={policies} />
-        <Customers />
         <Roi />
         <Pricing />
         <PaletteDemo />

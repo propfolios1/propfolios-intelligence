@@ -11,7 +11,7 @@ const HOUR = 3_600_000;
 
 interface Target {
   tenantId: string;
-  slug: string;
+  key: string;
   staff: boolean;
   id: (key: string) => string;
   adminUserId?: string;
@@ -53,7 +53,7 @@ const LOST = ["Bought through another agency", "Budget below the market for the 
  * so it also upgrades workspaces seeded before these modules existed.
  */
 export async function seedBrokerage(db: DB, t: Target, now = Date.now()) {
-  const india = t.slug === "bombay";
+  const india = t.key === "bombay";
   const m = MARKETS[(india ? "IN" : "AE") as MarketCode];
   const staffKeys = t.staff ? ["aisha", "rohan", "amol"] : [];
   const staff = t.staff ? staffKeys.map((k) => t.id(`user:${k}`)) : t.adminUserId ? [t.adminUserId] : [];

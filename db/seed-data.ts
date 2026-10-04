@@ -147,12 +147,12 @@ export const PROPERTIES: PropertySeed[] = [
   { slug: "sun-anjuna-retreat", name: "Sun Estates Anjuna Retreat", developer: "sun-estates", market: "India", city: "Anjuna", region: "Goa", community: "Anjuna, Bardez", assetClass: "Villa", status: "ready", handover: "Completed 2020", currency: "INR", priceMin: cr(4.6), priceMax: cr(7.8), pricePerSqft: 19_600, units: 12, grossYield: 6.1, rera: "PRGO02200133", lat: 15.583, lng: 73.744, paymentPlan: null, description: "Twelve villas on Comunidade de Anjuna land granted on aforamento in 1971, converted to settlement use in 2016." },
 ];
 
-export const TENANT = { name: "PropFolios", slug: "propfolios" };
+export const TENANT = { name: "Nakhla Demo Brokerage", slug: "nakhla-demo" };
 
 export const STAFF = [
-  { key: "amol", name: "Amol Bandekar", email: "amol@propfolios.ae", role: "tenant_admin" as const, title: "Founder and Managing Partner" },
-  { key: "aisha", name: "Aisha Rahman", email: "aisha.rahman@propfolios.ae", role: "analyst" as const, title: "Senior Analyst, UAE" },
-  { key: "rohan", name: "Rohan Mehta", email: "rohan.mehta@propfolios.ae", role: "analyst" as const, title: "Analyst, India and Cross-border" },
+  { key: "amol", name: "Karim Nasser", email: "karim.nasser@demo.nakhla.ai", role: "tenant_admin" as const, title: "Managing Director" },
+  { key: "aisha", name: "Aisha Rahman", email: "aisha.rahman@demo.nakhla.ai", role: "analyst" as const, title: "Senior Analyst, UAE" },
+  { key: "rohan", name: "Rohan Mehta", email: "rohan.mehta@demo.nakhla.ai", role: "analyst" as const, title: "Analyst, India and Cross-border" },
 ];
 
 export type HoldingSeed = { property: string; unit: string; acquired: string; costLocal: number; valueLocal: number };

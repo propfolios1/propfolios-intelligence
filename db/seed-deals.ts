@@ -15,7 +15,7 @@ const cr = (x: number) => Math.round(x * 10_000_000);
  * negotiation in Goa, one out for signature in Abu Dhabi. Skipped when the
  * tenant already has its first deal (idempotent).
  */
-export async function seedDeals(db: DB, t: { tenantId: string; slug?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
+export async function seedDeals(db: DB, t: { tenantId: string; key?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
   const [exists] = await db.select({ id: s.deals.id }).from(s.deals).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.reference, "DL-0001"))).limit(1);
   if (exists) return { deals: 0 };
   const owner = (k: "aisha" | "rohan") => (t.staff ? t.id(`user:${k}`) : (t.adminUserId ?? null));
@@ -23,7 +23,7 @@ export async function seedDeals(db: DB, t: { tenantId: string; slug?: string; id
   const client = (k: string) => ({ id: t.id(`client:${k}`), ...CLIENTS.find((c) => c.key === k)! });
   const prop = (slug: string) => t.id(`prop:${slug}`);
   // Each firm's history runs at its own pace, so cross-firm benchmarks differ.
-  const pace = t.slug === "gulfrealty" ? 1.18 : t.slug === "bombay" ? 0.86 : 1;
+  const pace = t.key === "gulfrealty" ? 1.18 : t.key === "bombay" ? 0.86 : 1;
   const ago = (d: number) => new Date(Date.now() - d * pace * DAY);
   const doneAll = async (dealId: string, a: ReturnType<typeof actor>, keepOpen = 0) => {
     const items = await db.select().from(s.closingChecklists).where(and(eq(s.closingChecklists.tenantId, t.tenantId), eq(s.closingChecklists.dealId, dealId)));
@@ -107,7 +107,7 @@ export async function seedDeals(db: DB, t: { tenantId: string; slug?: string; id
  * recommended Burj Crown unit, which is negotiated, signed, closed,
  * commissioned, invoiced and paid. Skipped once the mandate has a deal.
  */
-export async function seedJourney(db: DB, t: { tenantId: string; slug?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
+export async function seedJourney(db: DB, t: { tenantId: string; key?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
   const [m] = await db.select().from(s.mandates).where(and(eq(s.mandates.tenantId, t.tenantId), eq(s.mandates.reference, "MND-0001")));
   if (!m || m.status !== "DELIVERED") return { journeys: 0 };
   const [linked] = await db.select({ id: s.deals.id }).from(s.deals).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.mandateId, m.id))).limit(1);

@@ -10,7 +10,7 @@ export const NOTIFICATION_ROUTER_SYSTEM = composePrompt({
     "Explain each recipient in one short reason.",
   ],
   output: "Return headline, points, confidence, priority and recipients.",
-  examples: [{ input: "invoice.paid INV-2026-0004; candidates: owner (analyst), Amol (owner), Layla (compliance).", output: '{ "headline": "Tell the firm owner and the deal owner; compliance does not need this.", "priority": "normal" }' }],
+  examples: [{ input: "invoice.paid INV-2026-0004; candidates: owner (analyst), Karim (owner), Layla (compliance).", output: '{ "headline": "Tell the firm owner and the deal owner; compliance does not need this.", "priority": "normal" }' }],
   edgeCases: ["If no candidate needs to act, return an empty list and priority low."],
   context: [],
 });

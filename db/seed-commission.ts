@@ -13,7 +13,7 @@ const cr = (x: number) => Math.round(x * 10_000_000);
  * so each tenant has four commissions, two invoices (one paid) and splits.
  * The seeded Dubai deal's commission comes from the close chain itself.
  */
-export async function seedCommissions(db: DB, t: { tenantId: string; slug?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
+export async function seedCommissions(db: DB, t: { tenantId: string; key?: string; id: (k: string) => string; staff: boolean; adminUserId?: string }) {
   await ensureDefaultStructures(db, t.tenantId);
   // Closed deals without a commission (workspaces seeded before the commission layer) get one now.
   const won = await db.select({ id: s.deals.id, closed: s.deals.actualCloseDate }).from(s.deals).leftJoin(s.commissions, eq(s.commissions.dealId, s.deals.id)).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.status, "won"), isNull(s.commissions.id)));
@@ -28,7 +28,7 @@ export async function seedCommissions(db: DB, t: { tenantId: string; slug?: stri
     { ref: "DL-H003", client: "khalid", prop: "palm-beach-towers", jurisdiction: "dubai" as const, dealType: "residential_resale" as const, value: 14_500_000, currency: "AED", counterparty: "Private vendor (UK resident)", owner: "aisha" as const, closed: 75, title: "Acquisition of a Palm Beach Towers penthouse for Khalid bin Rashid" },
   ];
   for (const h of hist) {
-    const pace = t.slug === "gulfrealty" ? 1.25 : t.slug === "bombay" ? 0.8 : 1;
+    const pace = t.key === "gulfrealty" ? 1.25 : t.key === "bombay" ? 0.8 : 1;
     const closedAt = new Date(Date.now() - h.closed * DAY);
     const created = new Date(closedAt.getTime() - 50 * pace * DAY);
     const [d] = await db

@@ -6,7 +6,7 @@ import { getDb } from "@/db";
 import { tenants, type TenantConfig } from "@/db/schema";
 
 export const PLATFORM_SLUG = "nakhla";
-export const DEFAULT_SLUG = "propfolios";
+export const DEFAULT_SLUG = "nakhla-demo";
 
 export function defaultTenantConfig(brandName: string, overrides: Partial<TenantConfig> = {}): TenantConfig {
   return {

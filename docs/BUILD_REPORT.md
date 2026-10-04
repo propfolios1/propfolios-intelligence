@@ -2,7 +2,7 @@
 
 Release v1.0 · branch `claude/adoring-brown-6qrqag` · 2 October 2026
 
-Nakhla is a multi-tenant, multi-agent AI operating system for real estate advisory firms, on Supabase (Postgres with pgvector, Storage, Realtime, row-level security) and Vercel. Tenant number one is PropFolios.ae.
+Nakhla is a multi-tenant, multi-agent AI operating system for real estate advisory firms, on Supabase (Postgres with pgvector, Storage, Realtime, row-level security) and Vercel.
 
 ## 1. Size
 
@@ -39,7 +39,7 @@ Policies resolve the caller from Clerk JWT claims via `auth.jwt()`: the user's o
 
 | Measure | Value |
 | --- | --- |
-| Learnings in the pool | 5 (three delivered mandates from PropFolios, Gulf Realty Advisors and Bombay Property Intelligence; two archived from a former tenant) |
+| Learnings in the pool | 5 (three delivered mandates from the three demonstration firms; two archived from a former tenant) |
 | Contributing advisories | 4 |
 | Published baselines | 3: Dubai Residential (5 deals, 4 firms), UAE market (5 deals, 4 firms), one developer signal (4 deals, 4 firms) |
 | Suppressed groups (below 3 deals or 2 firms) | 6 |
@@ -107,8 +107,8 @@ Full click-by-click instructions are in `README.md`.
 10. Deploy; add the Clerk webhook and redeploy.
 11. Visit `/api/setup?secret=YOUR_SETUP_SECRET`: tables, RLS, storage, Realtime and seed data.
 12. Clerk → your user → public metadata `{"role":"platform_admin"}`.
-13. `/platform/tenants`: review PropFolios (or create a firm).
-14. Send Amol the sign-up link for `amol@propfolios.ae`.
+13. `/platform/tenants`: create the firm's workspace.
+14. Send the firm administrator the sign-up link.
 
 ## 7. Screenshots
 
@@ -139,7 +139,7 @@ In `docs/screenshots`, production build, 1440 px wide (full page) unless noted, 
 
 ## 8. Brokerage repositioning (October 2026)
 
-Nakhla is now positioned as the operating system for real estate brokerages in six markets. Product-level copy no longer names PropFolios; it appears only as a customer on the public site.
+Nakhla is now positioned as the operating system for real estate brokerages in six markets. Neither the product nor the public site names any customer; the seeded firms are demonstration tenants.
 
 ### Modules added
 

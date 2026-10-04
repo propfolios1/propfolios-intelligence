@@ -18,7 +18,7 @@ const tables = (
 ).map((r) => r.name);
 const unprotected = await sql`select tablename from pg_tables where schemaname = 'public' and not rowsecurity`;
 const [{ n: policies }] = await sql`select count(*)::int as n from pg_policies where schemaname in ('public', 'storage')`;
-const [a, b] = await sql`select t.id, t.slug from tenants t where exists (select 1 from users u where u.tenant_id = t.id and u.role = 'tenant_admin') order by t.slug = 'propfolios' desc, t.slug = 'gulfrealty' desc, t.created_at limit 2`;
+const [a, b] = await sql`select t.id, t.slug from tenants t where exists (select 1 from users u where u.tenant_id = t.id and u.role = 'tenant_admin') order by t.slug = 'nakhla-demo' desc, t.slug = 'gulfrealty' desc, t.created_at limit 2`;
 if (!a || !b) throw new Error("Seed at least two tenants with administrators first (/api/setup).");
 const [admin] = await sql`select id from users where tenant_id = ${a.id} and role = 'tenant_admin' limit 1`;
 

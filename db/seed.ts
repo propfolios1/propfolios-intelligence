@@ -10,6 +10,7 @@ import { defaultTenantConfig } from "@/lib/tenant";
 import { planById, type PlanId } from "@/lib/plans";
 import { AVG_TICKET_AED, CLIENTS, DEVELOPERS, INR_PER_AED, MARKET_SERIES, PROPERTIES, scoreDeveloper, STAFF } from "./seed-data";
 import { DOWNTOWN, downtownMemoHtml, INDIA, PALM, palmMemoHtml } from "./seed-mandates";
+import { DEMO_ADMINS, DEMO_TENANTS, renameLegacyTenants, seedBrokerageOnlyTenants } from "./seed-tenants";
 
 /** Deterministic UUID from a key so re-seeding never duplicates. */
 export function uid(key: string) {
@@ -22,7 +23,7 @@ const daysAgo = (n: number, from = Date.now()) => new Date(from - n * DAY);
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 const toAed = (amount: number, currency: string) => (currency === "INR" ? amount / INR_PER_AED : amount);
 
-/** PropFolios, tenant #1. Its ids are stable across releases. */
+/** The demonstration brokerage. Its ids are stable across releases. */
 export const TENANT_ID = uid("tenant");
 export const PLATFORM_TENANT_ID = uid("tenant:nakhla");
 
@@ -64,7 +65,9 @@ function simulate(a: typeof DOWNTOWN.assumptions, seed: number) {
 export interface SeedTarget {
   tenantId: string;
   slug: string;
-  /** Seed the PropFolios staff and client logins. Other tenants use their own administrator. */
+  /** Stable seed key: namespaces deterministic ids, so renaming a tenant never changes them. */
+  key: string;
+  /** Seed the demonstration brokerage's staff and client logins. Other tenants use their own administrator. */
   staff: boolean;
   adminUserId?: string;
   adminName?: string;
@@ -201,7 +204,7 @@ async function seedCatalogue(db: DB, tenantId: string, id: (key: string) => stri
  */
 export async function seedTenantData(db: DB, target: SeedTarget) {
   const { tenantId } = target;
-  const ns = target.slug === "propfolios" ? "" : `${target.slug}:`;
+  const ns = target.key === "propfolios" ? "" : `${target.key}:`;
   const id = (key: string) => uid(`${ns}${key}`);
   const staffName = (name: string) => (target.staff ? name : (target.adminName ?? "Advisory team"));
   const now = Date.now();
@@ -498,7 +501,7 @@ export async function seedTenantData(db: DB, target: SeedTarget) {
         factCheck: { flags: [{ claim: `${dtS("P50").irr.toFixed(1)}%`, issue: "calculation", severity: "low", suggestion: "Matches the P50 simulation." }], verifiedClaims: 14 },
         version: 4,
         lastEditedBy: staffName("Aisha Rahman"),
-        approvedBy: staffName("Amol Bandekar"),
+        approvedBy: staffName("Karim Nasser"),
         approvedAt: daysAgo(15, now),
         createdAt: daysAgo(17, now),
       },
@@ -664,7 +667,7 @@ export async function seedTenantData(db: DB, target: SeedTarget) {
   pushTimeline("india", id("mandate:india"), inTimeline);
   const human: [string, string, string, string | null, number][] = [
     ["Aisha Rahman", "user", "created mandate MND-0001", id("mandate:downtown"), 26],
-    ["Amol Bandekar", "user", "approved allocation memo MND-0001", id("mandate:downtown"), 15],
+    ["Karim Nasser", "user", "approved allocation memo MND-0001", id("mandate:downtown"), 15],
     ["Aisha Rahman", "user", "delivered memo to Ahmed Al Mansoori", id("mandate:downtown"), 14],
     ["Aisha Rahman", "user", "created mandate MND-0003", id("mandate:palm"), 4],
     ["Aisha Rahman", "user", "edited exit memo MND-0003", id("mandate:palm"), 0.4],
@@ -690,7 +693,7 @@ export async function seedTenantData(db: DB, target: SeedTarget) {
   await db.insert(s.auditLogs).values(auditRows).onConflictDoNothing();
 
   await seedTenantIntelligence(db, tenantId);
-  await seedTenantOs(db, { tenantId, slug: target.slug, staff: target.staff, id, adminUserId: target.adminUserId });
+  await seedTenantOs(db, { tenantId, slug: target.slug, key: target.key, staff: target.staff, id, adminUserId: target.adminUserId });
 
   return { seeded: true, counts: { properties: PROPERTIES.length, developers: DEVELOPERS.length, clients: CLIENTS.length, holdings: holdingRows.length, mandates: 3, transactions: txRows.length, marketMonths: marketRows.length, documents: docRows.length } };
 }
@@ -701,7 +704,7 @@ const MONTH = 30 * DAY;
 
 async function addTenant(
   db: DB,
-  t: { id: string; name: string; slug: string; plan: PlanId; status: "trial" | "active" | "suspended" | "cancelled"; config: s.TenantConfig; startedMonthsAgo: number; cancelledMonthsAgo?: number },
+  t: { id: string; key?: string; name: string; slug: string; plan: PlanId; status: "trial" | "active" | "suspended" | "cancelled"; config: s.TenantConfig; startedMonthsAgo: number; cancelledMonthsAgo?: number },
 ) {
   const now = Date.now();
   await db
@@ -712,7 +715,7 @@ async function addTenant(
   await db
     .insert(s.subscriptions)
     .values({
-      id: uid(`sub:${t.slug}`),
+      id: uid(`sub:${t.key ?? t.slug}`),
       tenantId: t.id,
       plan: t.plan,
       status: t.status === "cancelled" ? "cancelled" : t.status === "trial" ? "trialing" : "active",
@@ -735,10 +738,11 @@ async function addAdmin(db: DB, tenantId: string, key: string, u: { name: string
 }
 
 /**
- * Seeds the whole platform: the Nakhla operator tenant, PropFolios (tenant #1,
- * full dataset and logins), and three further tenants that give the platform
- * console real figures: Gulf Realty Advisors and Bombay Property Intelligence
- * (Professional, demonstration data),
+ * Seeds the whole platform: the Nakhla operator tenant, Nakhla Demo Brokerage
+ * (full dataset and logins), and further tenants that give the platform
+ * console real figures: Sample Realty Dubai and Demo Properties India
+ * (Professional, demonstration data), London Prime Brokers and Singapore
+ * Luxury Homes (brokerage data in their markets),
  * Meridian Family Office (Starter, on trial) and Al Noor Realty Advisors
  * (cancelled). Idempotent; `force` wipes and reloads.
  */
@@ -752,67 +756,30 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
     .values({ id: uid("user:nakhla-ops"), tenantId: PLATFORM_TENANT_ID, name: "Nakhla Operations", email: "ops@nakhla.ai", title: "Platform administrator", role: "platform_admin", lastActiveAt: new Date() })
     .onConflictDoNothing();
 
-  await addTenant(db, {
-    id: TENANT_ID,
-    name: "PropFolios",
-    slug: "propfolios",
-    plan: "professional",
-    status: "active",
-    config: defaultTenantConfig("PropFolios Intelligence", {
-      custom_domain: null,
-      memo_style: {
-        tone: "Formal, precise and evidence-led. Lead with the recommendation; quantify every claim; cite UAE and India regulators by name.",
-        signoff: "The PropFolios investment committee",
-        disclaimer: "This memo is advisory and is prepared for the named client only. Projected returns are simulations, not forecasts or guarantees. Tax and legal matters should be confirmed with qualified advisers in the relevant jurisdiction.",
-      },
-    }),
-    startedMonthsAgo: 9,
-  });
-  const result = await seedTenantData(db, { tenantId: TENANT_ID, slug: "propfolios", staff: true });
+  await addTenant(db, { id: TENANT_ID, key: "propfolios", ...DEMO_TENANTS.main, plan: "professional", status: "active", startedMonthsAgo: 9 });
+  const result = await seedTenantData(db, { tenantId: TENANT_ID, slug: DEMO_TENANTS.main.slug, key: "propfolios", staff: true });
 
   const gulfId = uid("tenant:gulfrealty");
-  await addTenant(db, {
-    id: gulfId,
-    name: "Gulf Realty Advisors",
-    slug: "gulfrealty",
-    plan: "professional",
-    status: "active",
-    config: defaultTenantConfig("Gulf Realty Intelligence", {
-      primary_color: "#13392F",
-      accent_color: "#B08D57",
-      memo_style: { tone: "Concise and direct. Recommendation first, then the three numbers that matter.", signoff: "Gulf Realty Advisors, Investment Committee", disclaimer: "Prepared for the addressee only. Not an offer or solicitation." },
-    }),
-    startedMonthsAgo: 5,
-  });
-  const gulfAdmin = await addAdmin(db, gulfId, "gulfrealty-admin", { name: "Omar Haddad", email: "omar@gulfrealty.ae", title: "Managing Director" });
-  await seedTenantData(db, { tenantId: gulfId, slug: "gulfrealty", staff: false, adminUserId: gulfAdmin, adminName: "Omar Haddad" });
+  await addTenant(db, { id: gulfId, key: "gulfrealty", ...DEMO_TENANTS.gulf, plan: "professional", status: "active", startedMonthsAgo: 5 });
+  const gulfAdmin = await addAdmin(db, gulfId, "gulfrealty-admin", DEMO_ADMINS.gulf);
+  await seedTenantData(db, { tenantId: gulfId, slug: DEMO_TENANTS.gulf.slug, key: "gulfrealty", staff: false, adminUserId: gulfAdmin, adminName: DEMO_ADMINS.gulf.name });
 
   const bombayId = uid("tenant:bombay");
-  await addTenant(db, {
-    id: bombayId,
-    name: "Bombay Property Intelligence",
-    slug: "bombay",
-    plan: "professional",
-    status: "active",
-    config: defaultTenantConfig("Bombay Property Intelligence", {
-      primary_color: "#3B1F2B",
-      accent_color: "#C7944B",
-      memo_style: { tone: "Measured and thorough. Lead with the cross-border case for NRI families: FEMA, repatriation and currency before returns.", signoff: "Bombay Property Intelligence, Advisory Board", disclaimer: "For the named client only. Indian tax and FEMA positions are general and must be confirmed with a chartered accountant." },
-    }),
-    startedMonthsAgo: 3,
-  });
-  const bombayAdmin = await addAdmin(db, bombayId, "bombay-admin", { name: "Priya Desai", email: "priya@bombaypi.in", title: "Founding Partner" });
-  await seedTenantData(db, { tenantId: bombayId, slug: "bombay", staff: false, adminUserId: bombayAdmin, adminName: "Priya Desai" });
+  await addTenant(db, { id: bombayId, key: "bombay", ...DEMO_TENANTS.india, plan: "professional", status: "active", startedMonthsAgo: 3 });
+  const bombayAdmin = await addAdmin(db, bombayId, "bombay-admin", DEMO_ADMINS.india);
+  await seedTenantData(db, { tenantId: bombayId, slug: DEMO_TENANTS.india.slug, key: "bombay", staff: false, adminUserId: bombayAdmin, adminName: DEMO_ADMINS.india.name });
+
+  await seedBrokerageOnlyTenants(db);
 
   const meridianId = uid("tenant:meridian");
   await addTenant(db, { id: meridianId, name: "Meridian Family Office", slug: "meridian", plan: "starter", status: "trial", config: defaultTenantConfig("Meridian Family Office", { primary_color: "#2B2A4C", accent_color: "#C2A15A" }), startedMonthsAgo: 0.3 });
-  await addAdmin(db, meridianId, "meridian-admin", { name: "Leena Kapoor", email: "leena@meridianfo.com", title: "Chief Investment Officer" });
+  await addAdmin(db, meridianId, "meridian-admin", { name: "Leena Kapoor", email: "leena@meridian.example.com", title: "Chief Investment Officer" });
 
   const alnoorId = uid("tenant:alnoor");
   await addTenant(db, { id: alnoorId, name: "Al Noor Realty Advisors", slug: "alnoor", plan: "starter", status: "cancelled", config: defaultTenantConfig("Al Noor Realty Advisors"), startedMonthsAgo: 7, cancelledMonthsAgo: 2 });
-  await addAdmin(db, alnoorId, "alnoor-admin", { name: "Yousef Al Hashimi", email: "yousef@alnoor.ae", title: "Partner" });
+  await addAdmin(db, alnoorId, "alnoor-admin", { name: "Yousef Al Hashimi", email: "yousef@alnoor.example.com", title: "Partner" });
 
-  // Layer 6: PropFolios, Gulf Realty and Bombay contribute; Al Noor contributed before leaving.
+  // Layer 6: the three demonstration firms contribute; Al Noor contributed before leaving.
   const federation = await seedFederation(db, [TENANT_ID, gulfId, bombayId], alnoorId);
   await seedPlatformOs(db, PLATFORM_SUBSCRIPTIONS(gulfId, bombayId));
 
@@ -825,9 +792,9 @@ const PLATFORM_SUBSCRIPTIONS = (gulfId: string, bombayId: string) => [
 ];
 
 const NAMED_TENANTS = [
-  { tenantId: TENANT_ID, slug: "propfolios", staff: true, admin: null },
-  { tenantId: uid("tenant:gulfrealty"), slug: "gulfrealty", staff: false, admin: "gulfrealty-admin" },
-  { tenantId: uid("tenant:bombay"), slug: "bombay", staff: false, admin: "bombay-admin" },
+  { tenantId: TENANT_ID, key: "propfolios", slug: DEMO_TENANTS.main.slug, staff: true, admin: null },
+  { tenantId: uid("tenant:gulfrealty"), key: "gulfrealty", slug: DEMO_TENANTS.gulf.slug, staff: false, admin: "gulfrealty-admin" },
+  { tenantId: uid("tenant:bombay"), key: "bombay", slug: DEMO_TENANTS.india.slug, staff: false, admin: "bombay-admin" },
 ] as const;
 
 /**
@@ -836,14 +803,16 @@ const NAMED_TENANTS = [
  * including anything users changed, are left untouched.
  */
 async function upgrade(db: DB) {
+  await renameLegacyTenants(db);
+  await seedBrokerageOnlyTenants(db);
   const done: string[] = [];
   for (const t of NAMED_TENANTS) {
     const [exists] = await db.select({ id: s.tenants.id }).from(s.tenants).where(eq(s.tenants.id, t.tenantId));
     if (!exists) continue;
-    const ns = t.slug === "propfolios" ? "" : `${t.slug}:`;
+    const ns = t.key === "propfolios" ? "" : `${t.key}:`;
     const id = (key: string) => uid(`${ns}${key}`);
     await seedCatalogue(db, t.tenantId, id, Date.now());
-    await seedTenantOs(db, { tenantId: t.tenantId, slug: t.slug, staff: t.staff, id, adminUserId: t.admin ? uid(`user:${t.admin}`) : undefined });
+    await seedTenantOs(db, { tenantId: t.tenantId, slug: t.slug, key: t.key, staff: t.staff, id, adminUserId: t.admin ? uid(`user:${t.admin}`) : undefined });
     done.push(t.slug);
   }
   if (done.length) await seedPlatformOs(db, PLATFORM_SUBSCRIPTIONS(uid("tenant:gulfrealty"), uid("tenant:bombay")));

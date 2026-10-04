@@ -79,7 +79,7 @@ export const notificationRouter = defineAgent({
   input: z.object({ event: z.object({ type: z.string(), label: z.string() }), ownerUserId: z.string().nullable(), candidates: z.array(z.object({ userId: z.string(), name: z.string(), accessRole: z.string(), emailOn: z.boolean(), inAppOn: z.boolean() })) }),
   output: agentCore.extend({ priority: z.enum(["high", "normal", "low"]), recipients: z.array(z.object({ userId: z.string(), channel: z.enum(["in_app", "email", "both"]), reason: z.string() })) }),
   memory: { types: ["analyst_patterns"] },
-  sample: { event: { type: "invoice.paid", label: "INV-2026-0004 paid" }, ownerUserId: "u2", candidates: [{ userId: "u1", name: "Amol Bandekar", accessRole: "tenant_owner", emailOn: true, inAppOn: true }, { userId: "u2", name: "Aisha Rahman", accessRole: "senior_analyst", emailOn: false, inAppOn: true }, { userId: "u3", name: "Layla Haddad", accessRole: "compliance_officer", emailOn: true, inAppOn: true }] },
+  sample: { event: { type: "invoice.paid", label: "INV-2026-0004 paid" }, ownerUserId: "u2", candidates: [{ userId: "u1", name: "Karim Nasser", accessRole: "tenant_owner", emailOn: true, inAppOn: true }, { userId: "u2", name: "Aisha Rahman", accessRole: "senior_analyst", emailOn: false, inAppOn: true }, { userId: "u3", name: "Layla Haddad", accessRole: "compliance_officer", emailOn: true, inAppOn: true }] },
   replay: (i) => {
     const money = /invoice|commission/.test(i.event.type);
     const compliance = /kyc|aml/.test(i.event.type);

@@ -291,7 +291,7 @@ export function downtownMemoHtml(s: { p10: number; p50: number; p90: number; mul
 <li>Re-underwrite if Downtown ready-unit volumes fall 20% over two quarters.</li>
 </ol>
 <h2>Next steps</h2>
-<p>On approval, PropFolios will submit the offer, instruct the RICS valuation and coordinate the DLD transfer through a registered trustee office, targeting completion within 30 days.</p>`;
+<p>On approval, Nakhla Demo Brokerage will submit the offer, instruct the RICS valuation and coordinate the DLD transfer through a registered trustee office, targeting completion within 30 days.</p>`;
 }
 
 export function palmMemoHtml(s: { p10: number; p50: number; p90: number; exit: number }) {
