@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeft,
   Activity,
   BarChart3,
   Bell,
@@ -163,6 +164,10 @@ export const NAV: Record<Area, NavSection[]> = {
       ],
     },
     {
+      title: "Operations",
+      items: [{ href: "/admin/migrate", label: "Data migration", key: "g" }],
+    },
+    {
       title: "Revenue",
       items: [
         { href: "/admin/commissions", label: "Commissions", key: "c" },
@@ -286,6 +291,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/analyst/rentals": KeyRound,
   "/analyst/referrals": GitBranch,
   "/admin/team": UserCog,
+  "/admin/migrate": ArrowRightLeft,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,
   "/analyst/market": LineChart,
