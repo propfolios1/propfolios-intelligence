@@ -840,3 +840,66 @@ export const contractVariables = pgTable(
   },
   (t) => [uniqueIndex("contract_vars_path_idx").on(t.tenantId, t.path)],
 );
+
+/* ======================================================= F11 TEAM ANALYTICS */
+
+export type AgentMetricSet = {
+  leadsAssigned: number;
+  leadsContacted: number;
+  leadsWon: number;
+  leadsLost: number;
+  conversionPct: number | null;
+  medianResponseHours: number | null;
+  activities: number;
+  calls: number;
+  messages: number;
+  viewings: number;
+  listingsTaken: number;
+  activeListings: number;
+  avgDaysOnMarket: number | null;
+  dealsClosed: number;
+  dealValue: number;
+  gci: number;
+  pipelineValue: number;
+  overdueFollowUps: number;
+  staleLeads: number;
+};
+export type CoachingFlag = { key: string; kind: "concern" | "recognition"; severity: "high" | "medium" | "low"; title: string; detail: string; value: number | null; benchmark: number | null; action: string };
+export type CoachingNote = { at: string; by: string; text: string; flag: string | null };
+
+/** One row per person per period (YYYY-MM): metrics computed from the records, the coaching flags and any notes. */
+export const agentMetrics = pgTable(
+  "agent_metrics",
+  {
+    id,
+    tenantId: tenantRef(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    period: text("period").notNull(),
+    metrics: jsonb("metrics_json").$type<AgentMetricSet>().notNull(),
+    flags: jsonb("flags").$type<CoachingFlag[]>().notNull().default(sql`'[]'::jsonb`),
+    notes: jsonb("notes").$type<CoachingNote[]>().notNull().default(sql`'[]'::jsonb`),
+    computedAt: at("computed_at").notNull().defaultNow(),
+    ...ts,
+  },
+  (t) => [uniqueIndex("agent_metrics_user_period_idx").on(t.userId, t.period), index("agent_metrics_tenant_idx").on(t.tenantId, t.period)],
+);
+
+/** The firm's totals, medians and leaderboards for a period, kept for trend lines and month-on-month comparison. */
+export const teamPerformanceSnapshots = pgTable(
+  "team_performance_snapshots",
+  {
+    id,
+    tenantId: tenantRef(),
+    period: text("period").notNull(),
+    totals: jsonb("totals").$type<AgentMetricSet>().notNull(),
+    medians: jsonb("medians").$type<Partial<Record<keyof AgentMetricSet, number | null>>>().notNull(),
+    leaderboards: jsonb("leaderboards").$type<Record<string, { userId: string; name: string; value: number; rank: number }[]>>().notNull(),
+    headcount: integer("headcount").notNull(),
+    flagged: integer("flagged").notNull().default(0),
+    computedAt: at("computed_at").notNull().defaultNow(),
+    ...ts,
+  },
+  (t) => [uniqueIndex("team_snap_period_idx").on(t.tenantId, t.period)],
+);

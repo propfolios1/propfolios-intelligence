@@ -24,3 +24,6 @@ verify_jwt = true
 
 [functions.compliance-monitoring]
 verify_jwt = true
+
+[functions.team-snapshots]
+verify_jwt = true
