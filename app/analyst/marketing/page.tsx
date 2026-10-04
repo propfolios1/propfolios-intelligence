@@ -16,7 +16,7 @@ import { formatDate } from "@/lib/utils";
 export const metadata = { title: "Marketing" };
 export const dynamic = "force-dynamic";
 
-const TONE = { draft: "neutral", scheduled: "progress", sent: "complete", completed: "complete" } as const;
+const TONE = { draft: "neutral", scheduled: "progress", sent: "complete", completed: "complete", active: "progress", paused: "neutral" } as const;
 const CHANNEL: Record<string, string> = { email: "Email", social: "Social", portal_boost: "Portal boost", print: "Print" };
 const rate = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "None");
 

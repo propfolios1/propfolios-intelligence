@@ -903,3 +903,118 @@ export const teamPerformanceSnapshots = pgTable(
   },
   (t) => [uniqueIndex("team_snap_period_idx").on(t.tenantId, t.period)],
 );
+
+/* ===================================================== F12 MARKETING AUTOMATION */
+
+export type AudienceFilter = {
+  intents?: ("buy" | "rent" | "sell" | "let" | "invest")[];
+  stages?: string[];
+  sources?: string[];
+  markets?: string[];
+  locations?: string[];
+  scoreMin?: number | null;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  createdWithinDays?: number | null;
+  noContactForDays?: number | null;
+  require?: ("email" | "phone")[];
+};
+
+/** Saved, reusable audiences. Every audience is limited to leads who consented to marketing. */
+export const audiences = pgTable(
+  "audiences",
+  {
+    id,
+    tenantId: tenantRef(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    filter: jsonb("filter_json").$type<AudienceFilter>().notNull(),
+    lastCount: integer("last_count"),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [index("audiences_tenant_idx").on(t.tenantId)],
+);
+
+export const campaignSteps = pgTable(
+  "campaign_steps",
+  {
+    id,
+    tenantId: tenantRef(),
+    campaignId: uuid("campaign_id").notNull(),
+    position: integer("position").notNull(),
+    channel: text("channel").$type<"email" | "whatsapp">().notNull(),
+    /** Hours after enrolment (first step) or after the previous step was sent. */
+    delayHours: integer("delay_hours").notNull().default(0),
+    subject: text("subject"),
+    body: text("body").notNull().default(""),
+    whatsappTemplateId: uuid("whatsapp_template_id"),
+    whatsappVariables: jsonb("whatsapp_variables").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    stopOnReply: boolean("stop_on_reply").notNull().default(true),
+    ...ts,
+  },
+  (t) => [uniqueIndex("campaign_steps_pos_idx").on(t.campaignId, t.position), index("campaign_steps_tenant_idx").on(t.tenantId)],
+);
+
+export const campaignSends = pgTable(
+  "campaign_sends",
+  {
+    id,
+    tenantId: tenantRef(),
+    campaignId: uuid("campaign_id").notNull(),
+    stepId: uuid("step_id").notNull(),
+    leadId: uuid("lead_id").notNull(),
+    channel: text("channel").$type<"email" | "whatsapp">().notNull(),
+    status: text("status").$type<"scheduled" | "sent" | "skipped" | "failed">().notNull().default("scheduled"),
+    reason: text("reason"),
+    dueAt: at("due_at").notNull(),
+    sentAt: at("sent_at"),
+    enrolledAt: at("enrolled_at").notNull(),
+    providerRef: text("provider_ref"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("campaign_sends_unique_idx").on(t.stepId, t.leadId), index("campaign_sends_due_idx").on(t.status, t.dueAt), index("campaign_sends_campaign_idx").on(t.campaignId, t.status), index("campaign_sends_tenant_idx").on(t.tenantId)],
+);
+
+export const SOCIAL_NETWORKS = ["instagram", "facebook", "linkedin", "x", "tiktok"] as const;
+export type SocialNetwork = (typeof SOCIAL_NETWORKS)[number];
+
+/** A connected social account. Tokens are sealed with the workspace encryption key; the sandbox records posts without publishing. */
+export const socialAccounts = pgTable(
+  "social_accounts",
+  {
+    id,
+    tenantId: tenantRef(),
+    network: text("network").$type<SocialNetwork>().notNull(),
+    mode: text("mode").$type<"live" | "sandbox">().notNull().default("sandbox"),
+    accountRef: text("account_ref"),
+    displayName: text("display_name").notNull(),
+    credentialsEncrypted: text("credentials_encrypted"),
+    status: text("status").$type<"connected" | "error" | "disabled">().notNull().default("connected"),
+    lastError: text("last_error"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("social_accounts_network_idx").on(t.tenantId, t.network)],
+);
+
+export type SocialResult = { status: "published" | "failed" | "skipped"; url: string | null; ref: string | null; error: string | null; at: string };
+
+export const socialPosts = pgTable(
+  "social_posts",
+  {
+    id,
+    tenantId: tenantRef(),
+    campaignId: uuid("campaign_id"),
+    listingId: uuid("listing_id"),
+    networks: jsonb("networks").$type<SocialNetwork[]>().notNull(),
+    caption: text("caption").notNull(),
+    link: text("link"),
+    mediaUrls: jsonb("media_urls").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    scheduledAt: at("scheduled_at").notNull(),
+    status: text("status").$type<"draft" | "scheduled" | "publishing" | "published" | "partial" | "failed" | "cancelled">().notNull().default("scheduled"),
+    results: jsonb("results").$type<Partial<Record<SocialNetwork, SocialResult>>>().notNull().default(sql`'{}'::jsonb`),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [index("social_posts_due_idx").on(t.status, t.scheduledAt), index("social_posts_tenant_idx").on(t.tenantId, t.scheduledAt)],
+);

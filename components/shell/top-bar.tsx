@@ -40,7 +40,15 @@ export function TopBar({ area, notifications, viewerName }: { area: Area; notifi
   const tr = useNavLabel();
   const skip = segments.length > 1 ? 1 : 0;
   const crumbs = segments.slice(skip).map((seg, i) => ({
-    label: named[seg] ?? (SEGMENT_LABEL[seg] ? tr(SEGMENT_LABEL[seg]) : /^[0-9a-f-]{36}$/.test(seg) ? tr("Detail") : decodeURIComponent(seg).replace(/-/g, " ")),
+    label:
+      named[seg] ??
+      (seg === "new" && segments[i + skip - 1] !== "mandates"
+        ? tr("New")
+        : SEGMENT_LABEL[seg]
+          ? tr(SEGMENT_LABEL[seg])
+          : /^[0-9a-f-]{36}$/.test(seg)
+            ? tr("Detail")
+            : ((x) => x.charAt(0).toUpperCase() + x.slice(1))(decodeURIComponent(seg).replace(/-/g, " "))),
     href: "/" + segments.slice(0, i + skip + 1).join("/"),
   }));
 

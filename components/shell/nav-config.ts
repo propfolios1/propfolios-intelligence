@@ -178,6 +178,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/admin/website", label: "Website", key: "w" },
         { href: "/admin/whatsapp", label: "WhatsApp", key: "j" },
         { href: "/admin/lead-response", label: "Lead response", key: "q" },
+        { href: "/admin/marketing", label: "Marketing" },
       ],
     },
     {
@@ -314,6 +315,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/website": Globe,
   "/admin/whatsapp": MessageCircle,
   "/admin/lead-response": Zap,
+  "/admin/marketing": Megaphone,
   "/admin/commission-structures": Calculator,
   "/client/kyc": ShieldCheck,
   "/client/contracts": FileSignature,

@@ -27,3 +27,6 @@ verify_jwt = true
 
 [functions.team-snapshots]
 verify_jwt = true
+
+[functions.marketing-dispatch]
+verify_jwt = true
