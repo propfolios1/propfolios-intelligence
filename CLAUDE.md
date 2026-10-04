@@ -23,7 +23,8 @@ is advanced, and every decision compounds into a data moat.
   access throws), RLS (`nakhla.current_tenant_id()` etc.), Storage `{tenant_id}/`.
 - Without Clerk keys: demonstration mode (persona switching). Without
   `ANTHROPIC_API_KEY`: deterministic replay agents (same schemas, real engines).
-- Scheduling uses Vercel Cron (`vercel.json`, `/api/cron/*`), not Edge Functions.
+- Scheduling uses Supabase Cron (pg_cron → Edge Function relay → `/api/jobs/<job>`, registry in
+  `lib/jobs/registry.ts`). Vercel Cron is not used.
 - Layers live in: `lib/ai/*` (agents, prompts `_vN`, orchestrator,
   cross-validation), `lib/insights.ts`, `lib/actions.ts`, `lib/federation.ts`,
   `lib/mcp/tools.ts`, `components/realtime/*`.

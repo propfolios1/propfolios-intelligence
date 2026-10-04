@@ -110,7 +110,7 @@ Files are stored under each firm's own folder; the database policies allow a fir
 | `CLERK_SECRET_KEY` | step 5 |
 | `ANTHROPIC_API_KEY` | step 8 |
 | `SETUP_SECRET` | any long random phrase, for example `river-cedar-falcon-7193-harbour` (write it down) |
-| `CRON_SECRET` | another long random phrase |
+| `NAKHLA_JOBS_SECRET` | another long random phrase; Supabase Cron uses it to run scheduled jobs |
 | `NEXT_PUBLIC_APP_URL` | your site address, for example `https://nakhla.vercel.app` (you can update it after the first deploy) |
 
 Optional, for email: `RESEND_API_KEY` and `RESEND_FROM` (resend.com → API Keys; verify your domain under Domains first). Optional, for Dropbox Sign: `DROPBOX_SIGN_API_KEY` and `DROPBOX_SIGN_TEST_MODE` (`true` while testing). Without them emails wait in the outbox and contracts use Nakhla's native signature, so nothing stops working.
@@ -188,14 +188,23 @@ Enforced in code (`lib/plans.ts`). Seats count administrators and analysts; clie
 
 | Plan | Monthly, AED | Seats | Notes |
 | --- | --- | --- | --- |
-| Starter | 3,000 | 5 | Nakhla styling |
-| Professional | 8,000 | 20 | Own logo, colours and memo house style |
-| Enterprise | 25,000 | Unlimited | Priority capacity |
-| White-label | 50,000 | Unlimited | Own domain |
+| Starter | 1,500 | 10 agents | CRM, portals, AI lead response, commission, compliance, client portal |
+| Professional | 8,000 | 50 agents | Marketing automation, team analytics, developer inventory sync |
+| Enterprise | 25,000 | Unlimited | Single sign-on, SCIM, custom roles, data region, signed audit export |
+| White-label | 50,000 | Unlimited | Own domain, agent app and client portal in the firm's brand |
 
 ## Scheduled jobs
 
-Set in `vercel.json` and run by Vercel automatically: portfolio monitor (daily 04:00 UTC; weekly digest on Mondays), insight agent (daily 06:00 UTC), federation aggregation (nightly 22:00 UTC, 02:00 Gulf time) and developer risk (Mondays), client servicing (daily 03:00 UTC: overdue invoices, KYC expiry reminders at 30, 14, 7 and 1 days, AI budget alerts; statements on the 1st, quarterly reports and wallet share each quarter, tax documents on 1 April) and business intelligence (nightly 23:00 UTC: firm metrics, benchmarks and the data products). The insight agent also re-runs for a firm whenever new market data arrives (a database trigger marks it stale; the next page load refreshes it). On Vercel Pro you can run the insight agent every six hours: change its schedule to `0 */6 * * *`.
+All scheduled work runs on **Supabase Cron**; Vercel Cron is not used and `vercel.json` holds no schedules. `/api/setup` installs seventeen pg_cron schedules (see `lib/jobs/registry.ts`). Two are SQL jobs inside the database (a keep-alive and history clean-up). The other fifteen call a Supabase Edge Function of the same name through pg_net, which relays to `/api/jobs/<job>` on the application with `NAKHLA_JOBS_SECRET` and an idempotency key.
+
+To finish the set-up once, without a terminal:
+
+1. GitHub → the repository → **Settings → Secrets and variables → Actions**: add `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access tokens) and `SUPABASE_PROJECT_REF` (the id in your project's URL).
+2. GitHub → **Actions → Deploy Supabase edge functions → Run workflow**. It deploys every function in `supabase/functions/` and redeploys whenever one changes.
+3. Supabase → **Edge Functions → Secrets**: add `NAKHLA_APP_URL` (your site's address) and `NAKHLA_JOBS_SECRET` (the same value as in Vercel).
+4. Administration → **System health** shows each schedule and its last runs.
+
+The jobs: WhatsApp dispatch and webhook delivery every minute, and marketing every five minutes; portal publishing every fifteen minutes; trial lifecycle, proactive insights and client market briefs hourly; developer inventory every six hours; and nightly compliance monitoring, team snapshots, client servicing, portfolio monitoring, federation aggregation and business intelligence, with developer risk weekly on Mondays.
 
 ## Troubleshooting
 

@@ -26,13 +26,13 @@ Nakhla is now a multi-tenant operating system for real estate brokerages in six 
 
 | Item | Count |
 | --- | --- |
-| TypeScript and TSX files | 995 |
-| Lines of TypeScript | 78,769 |
+| TypeScript and TSX files | 991 |
+| Lines of TypeScript | 78,819 |
 | SQL migrations | 24 files (0000 to 0023), 3,607 lines |
-| API route handlers | 199 |
+| API route handlers | 193 |
 | Pages | 164 |
 | React components | 211 |
-| Library modules | 311 |
+| Library modules | 310 |
 | Supabase Edge Functions (job relays) | 15 |
 | Scheduled jobs (Supabase Cron) | 17 |
 | Tables in `public` | 131, all with RLS |
@@ -97,7 +97,7 @@ The RLS figures are not hard-coded anywhere public. `/api/stats` and `/security`
 
 ## 5. Scheduled jobs (Supabase Cron)
 
-Vercel Cron is not used; the last Vercel Cron routes and the `vercel.json` schedule are removed in the commit that follows this one. Each HTTP job is scheduled by pg_cron and calls a Supabase Edge Function of the same name through pg_net. That function relays to `/api/jobs/<job>` with `NAKHLA_JOBS_SECRET` and an idempotency key.
+Vercel Cron is not used: the former `/api/cron/*` routes, `lib/cron.ts` and the `vercel.json` schedules have been removed. Each HTTP job is scheduled by pg_cron and calls a Supabase Edge Function of the same name through pg_net. That function relays to `/api/jobs/<job>` with `NAKHLA_JOBS_SECRET` and an idempotency key.
 
 | Job | Schedule (UTC) | Purpose |
 | --- | --- | --- |

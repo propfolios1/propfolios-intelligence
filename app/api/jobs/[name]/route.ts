@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Called by the Supabase Edge Function of the same job, which pg_cron invokes
- * on schedule. Authorised by NAKHLA_JOBS_SECRET (or CRON_SECRET) as a bearer
+ * on schedule. Authorised by NAKHLA_JOBS_SECRET (or, on deployments configured before Supabase Cron, CRON_SECRET) as a bearer
  * token; the Idempotency-Key header makes retries safe.
  */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ name: string }> }) => {
