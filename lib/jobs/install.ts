@@ -6,6 +6,7 @@ import { syncAll } from "@/lib/developers/sync";
 import { pollPortals } from "@/lib/portals/service";
 import { runTeamSnapshots } from "@/lib/team/metrics";
 import { advanceTrials } from "@/lib/trial/service";
+import { dispatchWebhooks } from "@/lib/webhooks/service";
 import { dispatchQueued } from "@/lib/whatsapp/service";
 import { registerJob } from "./handlers";
 
@@ -25,4 +26,5 @@ export function installFeatureJobs() {
   registerJob("marketing-dispatch", (db) => runMarketing(db));
   registerJob("developer-sync", (db) => syncAll(db));
   registerJob("client-market-briefs", (db) => runMarketBriefs(db));
+  registerJob("webhook-dispatch", (db) => dispatchWebhooks(db));
 }

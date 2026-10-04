@@ -54,6 +54,8 @@ export async function publish(db: DB, ev: OsEventInput, opts: { inline?: boolean
     .insert(s.osEvents)
     .values({ tenantId: ev.tenantId, type: ev.type, entityType: ev.entityType, entityId: ev.entityId, mandateId: ev.mandateId ?? null, dealId: ev.dealId ?? null, clientId: ev.clientId ?? null, actor: ev.actor, payload: ev.payload ?? {}, ...(ev.at ? { createdAt: ev.at } : {}) })
     .returning();
+  const { enqueue } = await import("@/lib/webhooks/service");
+  await enqueue(db, ev.tenantId, ev.type, { entity_type: ev.entityType, entity_id: ev.entityId, mandate_id: ev.mandateId ?? null, deal_id: ev.dealId ?? null, client_id: ev.clientId ?? null, actor: ev.actor, summary: (ev.payload?.label as string | undefined) ?? null }, ev.at ?? new Date()).catch(() => 0);
   const work = () => dispatch(db, row!).then(() => undefined, (e: Error) => console.error(`event ${ev.type} dispatch failed`, e));
   if (opts.inline) await work();
   else await later(work);

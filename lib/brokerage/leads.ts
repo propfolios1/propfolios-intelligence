@@ -7,6 +7,7 @@ import { HttpError } from "@/lib/auth";
 import { marketOf, PORTAL_INDEX, SOURCE_NAME } from "@/lib/markets";
 import { scope } from "@/lib/tenant-db";
 import { scoreLead } from "./scoring";
+import { enqueue } from "@/lib/webhooks/service";
 
 const DAY = 86_400_000;
 
@@ -143,6 +144,7 @@ export async function createLead(db: DB, tenantId: string, n: NewLead, actor: { 
     .returning();
   await db.insert(s.leadActivities).values({ tenantId, leadId: lead!.id, type: "inbound", summary: `Enquiry via ${SOURCE_NAME[n.source] ?? n.source}${n.message ? `: "${n.message.slice(0, 160)}"` : ""}`, userId: actor.id ?? null });
   await rescore(db, tenantId, lead!.id);
+  await enqueue(db, tenantId, "lead.created", { lead_id: lead!.id, reference: lead!.reference, name: lead!.name, email: lead!.email, phone: lead!.phone, source: lead!.source, market: lead!.market, intent: lead!.intent, budget_max: lead!.budgetMax, currency: lead!.currency, listing_id: lead!.listingId, owner_user_id: lead!.ownerUserId }).catch(() => 0);
   return lead!;
 }
 

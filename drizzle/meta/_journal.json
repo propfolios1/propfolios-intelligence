@@ -162,6 +162,13 @@
       "when": 1791131262240,
       "tag": "0022_enterprise_controls",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791134651083,
+      "tag": "0023_outbound_webhooks",
+      "breakpoints": true
     }
   ]
 }

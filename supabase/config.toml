@@ -33,3 +33,6 @@ verify_jwt = true
 
 [functions.client-market-briefs]
 verify_jwt = true
+
+[functions.webhook-dispatch]
+verify_jwt = true

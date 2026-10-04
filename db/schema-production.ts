@@ -1220,3 +1220,48 @@ export const dataResidencyConfigs = pgTable(
   },
   (t) => [uniqueIndex("residency_tenant_idx").on(t.tenantId)],
 );
+
+/* ===================================================== OUTBOUND WEBHOOKS */
+
+/** HTTPS endpoints the firm registers to receive signed event notifications. The signing secret is sealed. */
+export const webhookEndpoints = pgTable(
+  "webhook_endpoints",
+  {
+    id,
+    tenantId: tenantRef(),
+    url: text("url").notNull(),
+    description: text("description").notNull().default(""),
+    events: jsonb("events").$type<string[]>().notNull(),
+    secretEncrypted: text("secret_encrypted").notNull(),
+    active: boolean("active").notNull().default(true),
+    consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+    lastDeliveryAt: at("last_delivery_at"),
+    disabledReason: text("disabled_reason"),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [index("webhook_endpoints_tenant_idx").on(t.tenantId)],
+);
+
+/** One delivery of one event to one endpoint, retried with backoff until it succeeds or attempts run out. */
+export const webhookDeliveries = pgTable(
+  "webhook_deliveries",
+  {
+    id,
+    tenantId: tenantRef(),
+    endpointId: uuid("endpoint_id")
+      .notNull()
+      .references(() => webhookEndpoints.id, { onDelete: "cascade" }),
+    event: text("event").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    status: text("status").$type<"pending" | "delivered" | "failed">().notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    nextAttemptAt: at("next_attempt_at").notNull().defaultNow(),
+    responseStatus: integer("response_status"),
+    responseMs: integer("response_ms"),
+    error: text("error"),
+    deliveredAt: at("delivered_at"),
+    ...ts,
+  },
+  (t) => [index("webhook_deliveries_due_idx").on(t.status, t.nextAttemptAt), index("webhook_deliveries_endpoint_idx").on(t.endpointId, t.createdAt)],
+);
