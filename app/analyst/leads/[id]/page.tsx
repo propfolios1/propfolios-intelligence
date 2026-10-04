@@ -6,15 +6,20 @@ import { RunAgent } from "@/components/os/run-agent";
 import { Section } from "@/components/os/simple-table";
 import { PageContainer } from "@/components/shell/page-container";
 import { Button } from "@/components/ui/button";
+import { Thread } from "@/components/whatsapp/whatsapp";
 import { RelativeTime } from "@/components/ui/relative-time";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
+import * as s from "@/db/schema";
 import { lastOutput } from "@/lib/ai/agents/define";
 import { requireRole } from "@/lib/auth";
 import { getLead, STAGE_LABEL, whatsappLink } from "@/lib/brokerage/leads";
 import { scoreBand } from "@/lib/brokerage/scoring";
 import { formatLocal } from "@/lib/format";
 import { marketOf, SOURCE_NAME } from "@/lib/markets";
+import { scope } from "@/lib/tenant-db";
 import { cn, formatDate } from "@/lib/utils";
+import { convDto, tplDto } from "@/lib/whatsapp/view";
 
 export const metadata = { title: "Lead" };
 export const dynamic = "force-dynamic";
@@ -25,8 +30,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   const user = await requireRole(["tenant_admin", "analyst"]);
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const d = await getLead(await getDb(), user.tenantId, id);
+  const db = await getDb();
+  const d = await getLead(db, user.tenantId, id);
   if (!d) notFound();
+  const [[conversation], templates] = await Promise.all([
+    db.select().from(s.whatsappConversations).where(scope(s.whatsappConversations, user.tenantId, eq(s.whatsappConversations.leadId, id))).limit(1),
+    db.select().from(s.whatsappTemplates).where(scope(s.whatsappTemplates, user.tenantId, eq(s.whatsappTemplates.status, "approved"))),
+  ]);
   const l = d.lead;
   const m = marketOf(l.market);
   const prev = await lastOutput(user.tenantId, "lead-qualifier", id);
@@ -91,6 +101,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           </Section>
           <Section title="Qualification" description="The lead qualifier reads the score, the listing and the activity, and writes the next action and an opening line.">
             <RunAgent endpoint={`/api/leads/${l.id}/qualify`} body={{}} agentLabel="Lead qualifier" action="Qualify lead" initial={prev ? { output: prev.output as never, model: prev.model, costUsd: prev.costUsd, at: prev.at } : null} />
+          </Section>
+          <Section title="WhatsApp" description="Messages through the firm's WhatsApp Business number. Free text is allowed for 24 hours after the client last wrote; outside that window only approved templates can be sent.">
+            {conversation ? (
+              <Thread conversation={convDto(conversation)} templates={templates.map(tplDto)} />
+            ) : (
+              <p className="text-ui text-ink-500">No WhatsApp conversation with this lead yet. A conversation opens when the lead writes to the firm&apos;s number or receives an approved template from the inbox.</p>
+            )}
           </Section>
           <Section title="Log activity" description="Calls, WhatsApp messages, emails and viewings update the last contact and the score.">
             <LogActivity leadId={l.id} />

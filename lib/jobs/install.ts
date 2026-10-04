@@ -1,6 +1,7 @@
 import "server-only";
 import { pollPortals } from "@/lib/portals/service";
 import { advanceTrials } from "@/lib/trial/service";
+import { dispatchQueued } from "@/lib/whatsapp/service";
 import { registerJob } from "./handlers";
 
 /**
@@ -13,4 +14,5 @@ export function installFeatureJobs() {
   installed = true;
   registerJob("trial-lifecycle", (db) => advanceTrials(db));
   registerJob("portal-publish-poll", (db) => pollPortals(db));
+  registerJob("whatsapp-dispatch", (db) => dispatchQueued(db));
 }

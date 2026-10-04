@@ -19,3 +19,5 @@ verify_jwt = true
 verify_jwt = true
 [functions.bi-nightly]
 verify_jwt = true
+[functions.whatsapp-dispatch]
+verify_jwt = true

@@ -1,4 +1,5 @@
 import {
+  MessageCircle,
   Globe,
   HeartPulse,
   ArrowRightLeft,
@@ -171,6 +172,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/admin/migrate", label: "Data migration", key: "g" },
         { href: "/admin/portals", label: "Portals", key: "e" },
         { href: "/admin/website", label: "Website", key: "w" },
+        { href: "/admin/whatsapp", label: "WhatsApp", key: "j" },
       ],
     },
     {
@@ -303,6 +305,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/health": HeartPulse,
   "/admin/portals": Megaphone,
   "/admin/website": Globe,
+  "/admin/whatsapp": MessageCircle,
   "/platform/health": HeartPulse,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,

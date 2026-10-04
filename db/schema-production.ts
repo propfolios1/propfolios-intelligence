@@ -371,3 +371,116 @@ export const mobileSessions = pgTable(
   },
   (t) => [uniqueIndex("mobile_sessions_device_idx").on(t.userId, t.device), index("mobile_sessions_tenant_idx").on(t.tenantId)],
 );
+
+/* ============================================================== F6 WHATSAPP */
+
+export type WhatsappProvider = "twilio" | "360dialog" | "sandbox";
+export type WhatsappSettings = { welcome: string | null; awayMessage: string | null; hours: { start: string; end: string; days: number[]; timezone: string } | null; throttlePerMinute: number; autoQualify: boolean };
+
+export const whatsappAccounts = pgTable(
+  "whatsapp_accounts",
+  {
+    id,
+    tenantId: tenantRef(),
+    provider: text("provider").$type<WhatsappProvider>().notNull(),
+    /** E.164 business number. */
+    phoneNumber: text("phone_number").notNull(),
+    displayName: text("display_name"),
+    /** Twilio account SID, or the 360dialog channel ID; never secret. */
+    accountRef: text("account_ref"),
+    credentialsEncrypted: text("credentials_encrypted"),
+    /** Random path token for the inbound webhook URL (360dialog does not sign webhooks). */
+    webhookToken: text("webhook_token").notNull(),
+    status: text("status").$type<"connected" | "error" | "disabled">().notNull().default("connected"),
+    settings: jsonb("settings").$type<WhatsappSettings>().notNull(),
+    verifiedAt: at("verified_at"),
+    lastError: text("last_error"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("whatsapp_accounts_tenant_idx").on(t.tenantId), uniqueIndex("whatsapp_accounts_hook_idx").on(t.webhookToken)],
+);
+
+export const whatsappTemplates = pgTable(
+  "whatsapp_templates",
+  {
+    id,
+    tenantId: tenantRef(),
+    name: text("name").notNull(),
+    category: text("category").$type<"MARKETING" | "UTILITY" | "AUTHENTICATION">().notNull(),
+    language: text("language").notNull().default("en"),
+    body: text("body").notNull(),
+    /** Example values for {{1}}, {{2}} ..., required by Meta for review. */
+    variables: jsonb("variables_json").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    status: text("status").$type<"draft" | "submitted" | "approved" | "rejected" | "paused">().notNull().default("draft"),
+    providerRef: text("provider_ref"),
+    rejectionReason: text("rejection_reason"),
+    approvedAt: at("approved_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("whatsapp_templates_name_idx").on(t.tenantId, t.name, t.language), index("whatsapp_templates_tenant_idx").on(t.tenantId)],
+);
+
+export const whatsappConversations = pgTable(
+  "whatsapp_conversations",
+  {
+    id,
+    tenantId: tenantRef(),
+    leadId: uuid("lead_id"),
+    contactPhone: text("contact_phone").notNull(),
+    contactName: text("contact_name"),
+    assignedTo: userRef("assigned_to"),
+    /** "assistant": automations and the lead response assistant may reply; "human": an agent has taken over. */
+    mode: text("mode").$type<"assistant" | "human">().notNull().default("assistant"),
+    lastMessageAt: at("last_message_at"),
+    lastInboundAt: at("last_inbound_at"),
+    unread: integer("unread").notNull().default(0),
+    optedOutAt: at("opted_out_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("whatsapp_conv_phone_idx").on(t.tenantId, t.contactPhone), index("whatsapp_conv_lead_idx").on(t.leadId), index("whatsapp_conv_recent_idx").on(t.tenantId, t.lastMessageAt)],
+);
+
+export const whatsappBroadcasts = pgTable(
+  "whatsapp_broadcasts",
+  {
+    id,
+    tenantId: tenantRef(),
+    name: text("name").notNull(),
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => whatsappTemplates.id, { onDelete: "restrict" }),
+    variables: jsonb("variables").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    audience: jsonb("audience").$type<{ segment: string; market?: string | null; stage?: string | null }>().notNull(),
+    status: text("status").$type<"sending" | "completed" | "cancelled">().notNull().default("sending"),
+    totals: jsonb("totals").$type<{ audience: number; excluded: number; queued: number; sent: number; delivered: number; read: number; failed: number }>().notNull(),
+    createdBy: userRef("created_by"),
+    completedAt: at("completed_at"),
+    ...ts,
+  },
+  (t) => [index("whatsapp_broadcasts_tenant_idx").on(t.tenantId, t.createdAt)],
+);
+
+export const whatsappMessages = pgTable(
+  "whatsapp_messages",
+  {
+    id,
+    tenantId: tenantRef(),
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => whatsappConversations.id, { onDelete: "cascade" }),
+    direction: text("direction").$type<"inbound" | "outbound">().notNull(),
+    type: text("type").$type<"text" | "template" | "image" | "document" | "audio" | "video" | "location" | "interactive">().notNull(),
+    content: jsonb("content_json").$type<{ text?: string; template?: string; variables?: string[]; caption?: string; filename?: string; mime?: string }>().notNull(),
+    mediaUrl: text("media_url"),
+    status: text("status").$type<"queued" | "sent" | "delivered" | "read" | "failed" | "received">().notNull(),
+    providerMessageId: text("provider_message_id"),
+    error: text("error"),
+    sentBy: text("sent_by"),
+    broadcastId: uuid("broadcast_id").references(() => whatsappBroadcasts.id, { onDelete: "set null" }),
+    sentAt: at("sent_at"),
+    deliveredAt: at("delivered_at"),
+    readAt: at("read_at"),
+    ...ts,
+  },
+  (t) => [index("whatsapp_msg_conv_idx").on(t.conversationId, t.createdAt), uniqueIndex("whatsapp_msg_provider_idx").on(t.providerMessageId), index("whatsapp_msg_queue_idx").on(t.status, t.createdAt), index("whatsapp_msg_tenant_idx").on(t.tenantId)],
+);
