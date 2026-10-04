@@ -141,6 +141,13 @@
       "when": 1791127913403,
       "tag": "0019_marketing_automation",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791129038481,
+      "tag": "0020_developer_inventory",
+      "breakpoints": true
     }
   ]
 }

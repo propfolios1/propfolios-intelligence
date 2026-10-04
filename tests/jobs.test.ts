@@ -33,6 +33,8 @@ describe("job runner", () => {
   it("records runs, replays an idempotency key, skips overlaps and records failures", async () => {
     const { db } = await testDb();
     let calls = 0;
+    // Install the real handlers first so the stub below is not replaced when the runner installs them.
+    (await import("@/lib/jobs/install")).installFeatureJobs();
     registerJob("developer-sync", async () => ({ synced: ++calls }));
     const first = await runJob(db, "developer-sync", { trigger: "cron", idempotencyKey: "developer-sync:2026-10-04T12:00" });
     expect(first.run).toMatchObject({ status: "succeeded", result: { synced: 1 } });

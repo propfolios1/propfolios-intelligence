@@ -1018,3 +1018,67 @@ export const socialPosts = pgTable(
   },
   (t) => [index("social_posts_due_idx").on(t.status, t.scheduledAt), index("social_posts_tenant_idx").on(t.tenantId, t.scheduledAt)],
 );
+
+/* ===================================================== F13 DEVELOPER INVENTORY */
+
+export type InventoryMapping = Partial<Record<"unitRef" | "project" | "building" | "unitType" | "bedrooms" | "areaSqft" | "price" | "currency" | "status" | "floor" | "view" | "handover" | "paymentPlan", string>>;
+export type SyncRun = { at: string; ok: boolean; units: number; added: number; priceChanges: number; statusChanges: number; removed: number; ms: number; error: string | null };
+
+/** How the firm receives a developer's inventory: a feed URL, a JSON API, an uploaded price list, or the sandbox. */
+export const developerConnections = pgTable(
+  "developer_connections",
+  {
+    id,
+    tenantId: tenantRef(),
+    developerKey: text("developer_key").notNull(),
+    name: text("name").notNull(),
+    market: text("market").notNull(),
+    mode: text("mode").$type<"feed_url" | "json_api" | "upload" | "sandbox">().notNull(),
+    url: text("url"),
+    format: text("format").$type<"csv" | "json" | "xml">(),
+    mapping: jsonb("mapping").$type<InventoryMapping>().notNull().default(sql`'{}'::jsonb`),
+    credentialsEncrypted: text("credentials_encrypted"),
+    status: text("status").$type<"connected" | "error" | "paused">().notNull().default("connected"),
+    lastSyncAt: at("last_sync_at"),
+    lastError: text("last_error"),
+    units: integer("units").notNull().default(0),
+    history: jsonb("history").$type<SyncRun[]>().notNull().default(sql`'[]'::jsonb`),
+    ...ts,
+  },
+  (t) => [uniqueIndex("dev_conn_key_idx").on(t.tenantId, t.developerKey)],
+);
+
+/** One row per unit the developer has published; price and status changes are kept against the unit. */
+export const developerInventory = pgTable(
+  "developer_inventory",
+  {
+    id,
+    tenantId: tenantRef(),
+    connectionId: uuid("connection_id")
+      .notNull()
+      .references(() => developerConnections.id, { onDelete: "cascade" }),
+    developerKey: text("developer_key").notNull(),
+    unitRef: text("unit_ref").notNull(),
+    project: text("project").notNull(),
+    building: text("building"),
+    unitType: text("unit_type"),
+    bedrooms: integer("bedrooms"),
+    areaSqft: numeric("area_sqft", { precision: 12, scale: 2, mode: "number" }),
+    price: numeric("price", { precision: 16, scale: 2, mode: "number" }),
+    currency: text("currency").notNull(),
+    status: text("status").$type<"available" | "reserved" | "sold" | "withdrawn">().notNull(),
+    floor: text("floor"),
+    view: text("view"),
+    handover: text("handover"),
+    paymentPlan: text("payment_plan"),
+    previousPrice: numeric("previous_price", { precision: 16, scale: 2, mode: "number" }),
+    priceChangedAt: at("price_changed_at"),
+    statusChangedAt: at("status_changed_at"),
+    firstSeenAt: at("first_seen_at").notNull(),
+    lastSeenAt: at("last_seen_at").notNull(),
+    removedAt: at("removed_at"),
+    raw: jsonb("raw").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    ...ts,
+  },
+  (t) => [uniqueIndex("dev_inv_unit_idx").on(t.connectionId, t.unitRef), index("dev_inv_tenant_idx").on(t.tenantId, t.status), index("dev_inv_price_idx").on(t.tenantId, t.price)],
+);
