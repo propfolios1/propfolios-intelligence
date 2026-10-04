@@ -30,8 +30,12 @@ export const DEFAULT_SETTINGS: WhatsappSettings = { welcome: "Thank you for your
 type Actor = { id: string | null; name: string };
 type Account = typeof s.whatsappAccounts.$inferSelect;
 
-/** Hooks run after an inbound message is stored (the lead response assistant registers one). */
-type InboundHook = (db: DB, ctx: { account: Account; conversation: typeof s.whatsappConversations.$inferSelect; message: typeof s.whatsappMessages.$inferSelect; isNewLead: boolean }) => Promise<void>;
+/**
+ * Hooks run after an inbound message is stored (the lead response assistant
+ * registers one). A hook that returns true has replied, and the generic
+ * welcome and out-of-hours messages are not sent.
+ */
+type InboundHook = (db: DB, ctx: { account: Account; conversation: typeof s.whatsappConversations.$inferSelect; message: typeof s.whatsappMessages.$inferSelect; isNewLead: boolean }) => Promise<boolean | void>;
 const hooks: InboundHook[] = [];
 export const onInbound = (h: InboundHook) => {
   if (!hooks.includes(h)) hooks.push(h);
@@ -195,11 +199,12 @@ export async function receiveInbound(db: DB, account: Account, m: Inbound) {
     return { duplicate: false as const, conversationId: c!.id, optOut, optIn };
   }
   const settings = account.settings;
-  if (c!.mode === "assistant") {
+  let handled = false;
+  if (c!.mode === "assistant" && settings.autoQualify) for (const h of hooks) handled = (await h(db, { account, conversation: c!, message: msg!, isNewLead }).catch(() => false)) === true || handled;
+  if (c!.mode === "assistant" && !handled) {
     if (!inHours(settings, at) && settings.awayMessage) await sendMessage(db, account.tenantId, c!.id, { kind: "text", text: settings.awayMessage }, { id: null, name: "Automation" }, { now: at.getTime() + 1 });
     else if (first && settings.welcome) await sendMessage(db, account.tenantId, c!.id, { kind: "text", text: settings.welcome }, { id: null, name: "Automation" }, { now: at.getTime() + 1 });
   }
-  for (const h of hooks) await h(db, { account, conversation: c!, message: msg!, isNewLead }).catch(() => undefined);
   if (c!.assignedTo) await notify(db, { tenantId: account.tenantId, userIds: [c!.assignedTo], category: "messages", title: `WhatsApp from ${c!.contactName ?? c!.contactPhone}`, body: (m.text ?? m.caption ?? `Sent a ${m.type}`).slice(0, 200), href: c!.leadId ? `/analyst/leads/${c!.leadId}` : "/admin/whatsapp", priority: "high" }).catch(() => undefined);
   return { duplicate: false as const, conversationId: c!.id, isNewLead };
 }

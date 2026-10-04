@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { leads } from "./schema-brokerage";
 import { tenants, users } from "./schema-core";
 
 /*
@@ -483,4 +484,127 @@ export const whatsappMessages = pgTable(
     ...ts,
   },
   (t) => [index("whatsapp_msg_conv_idx").on(t.conversationId, t.createdAt), uniqueIndex("whatsapp_msg_provider_idx").on(t.providerMessageId), index("whatsapp_msg_queue_idx").on(t.status, t.createdAt), index("whatsapp_msg_tenant_idx").on(t.tenantId)],
+);
+
+/* ======================================================= F7 LEAD RESPONSE */
+
+export const LR_CHANNELS = ["whatsapp", "email", "website", "portal"] as const;
+export type LrChannel = (typeof LR_CHANNELS)[number];
+export const QUAL_FIELDS = ["budget", "timeline", "area", "motivation", "financing"] as const;
+export type QualField = (typeof QUAL_FIELDS)[number];
+export type LrTurn = { role: "lead" | "assistant" | "agent"; text: string; at: string; channel: LrChannel; latencyMs?: number; asked?: QualField | "viewing" | null; model?: string; extracted?: QualField[] };
+export type LrSettings = {
+  enabled: boolean;
+  channels: LrChannel[];
+  /** Budgets at or above this, in the lead's currency converted to AED, go straight to an agent. */
+  highValueAed: number;
+  viewingMinutes: number;
+  /** Agent availability for viewing slots. */
+  hours: { start: string; end: string; days: number[]; timezone: string };
+  handoffSlaMinutes: number;
+  signature: string;
+};
+export type LrLearning = { answers: Partial<Record<QualField, { asked: number; answered: number }>>; examples: { text: string; by: string; at: string }[]; conversions: { qualified: number; booked: number; handedOff: number; total: number } };
+
+export const leadResponseSettings = pgTable(
+  "lead_response_settings",
+  {
+    id,
+    tenantId: tenantRef(),
+    settings: jsonb("settings_json").$type<LrSettings>().notNull(),
+    learning: jsonb("learning_json").$type<LrLearning>().notNull(),
+    ...ts,
+  },
+  (t) => [uniqueIndex("lead_response_settings_tenant_idx").on(t.tenantId)],
+);
+
+export const leadConversations = pgTable(
+  "lead_conversations",
+  {
+    id,
+    tenantId: tenantRef(),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    channel: text("channel").$type<LrChannel>().notNull(),
+    /** The channel's own thread (a WhatsApp conversation, an email address). */
+    externalRef: text("external_ref"),
+    status: text("status").$type<"active" | "handed_off" | "booked" | "closed">().notNull().default("active"),
+    turns: jsonb("turns").$type<LrTurn[]>().notNull().default(sql`'[]'::jsonb`),
+    pendingSlots: jsonb("pending_slots").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    firstResponseMs: integer("first_response_ms"),
+    lastInboundAt: at("last_inbound_at"),
+    lastReplyAt: at("last_reply_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("lead_conv_lead_channel_idx").on(t.leadId, t.channel), index("lead_conv_tenant_idx").on(t.tenantId, t.updatedAt)],
+);
+
+export const leadQualifications = pgTable(
+  "lead_qualifications",
+  {
+    id,
+    tenantId: tenantRef(),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    budgetMin: numeric("budget_min", { precision: 16, scale: 2, mode: "number" }),
+    budgetMax: numeric("budget_max", { precision: 16, scale: 2, mode: "number" }),
+    currency: text("currency"),
+    timeline: text("timeline").$type<"immediate" | "3_months" | "6_months" | "12_months" | "exploring">(),
+    areas: jsonb("areas").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    bedrooms: integer("bedrooms"),
+    motivation: text("motivation").$type<"end_use" | "investment" | "relocation" | "upsizing" | "residency_visa" | "other">(),
+    financing: text("financing").$type<"cash" | "mortgage_approved" | "mortgage_needed" | "undecided">(),
+    /** The lead's own words behind each field. */
+    evidence: jsonb("evidence").$type<Partial<Record<QualField | "bedrooms", string>>>().notNull().default(sql`'{}'::jsonb`),
+    completeness: integer("completeness").notNull().default(0),
+    confirmedBy: userRef("confirmed_by"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("lead_qual_lead_idx").on(t.leadId), index("lead_qual_tenant_idx").on(t.tenantId)],
+);
+
+export const HANDOFF_REASONS = ["requested_agent", "high_value", "complaint", "complex_question", "qualified", "viewing_booked", "unresponsive"] as const;
+export type HandoffReason = (typeof HANDOFF_REASONS)[number];
+
+export const leadHandoffs = pgTable(
+  "lead_handoffs",
+  {
+    id,
+    tenantId: tenantRef(),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    conversationId: uuid("conversation_id").references(() => leadConversations.id, { onDelete: "set null" }),
+    reason: text("reason").$type<HandoffReason>().notNull(),
+    detail: text("detail").notNull(),
+    toUserId: userRef("to_user_id"),
+    status: text("status").$type<"open" | "accepted" | "resolved">().notNull().default("open"),
+    slaDueAt: at("sla_due_at").notNull(),
+    acceptedAt: at("accepted_at"),
+    resolvedAt: at("resolved_at"),
+    ...ts,
+  },
+  (t) => [index("lead_handoffs_tenant_idx").on(t.tenantId, t.status), index("lead_handoffs_lead_idx").on(t.leadId)],
+);
+
+export const viewingBookings = pgTable(
+  "viewing_bookings",
+  {
+    id,
+    tenantId: tenantRef(),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    listingId: uuid("listing_id"),
+    agentUserId: userRef("agent_user_id"),
+    startsAt: at("starts_at").notNull(),
+    endsAt: at("ends_at").notNull(),
+    location: text("location"),
+    status: text("status").$type<"confirmed" | "cancelled" | "completed">().notNull().default("confirmed"),
+    bookedBy: text("booked_by").notNull(),
+    ...ts,
+  },
+  (t) => [index("viewing_bookings_agent_idx").on(t.agentUserId, t.startsAt), index("viewing_bookings_tenant_idx").on(t.tenantId, t.startsAt)],
 );

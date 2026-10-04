@@ -1,4 +1,5 @@
 import {
+  Zap,
   MessageCircle,
   Globe,
   HeartPulse,
@@ -173,6 +174,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/admin/portals", label: "Portals", key: "e" },
         { href: "/admin/website", label: "Website", key: "w" },
         { href: "/admin/whatsapp", label: "WhatsApp", key: "j" },
+        { href: "/admin/lead-response", label: "Lead response", key: "q" },
       ],
     },
     {
@@ -306,6 +308,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/portals": Megaphone,
   "/admin/website": Globe,
   "/admin/whatsapp": MessageCircle,
+  "/admin/lead-response": Zap,
   "/platform/health": HeartPulse,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,

@@ -61,6 +61,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         subtitle={l.message ? `"${l.message}"` : undefined}
         actions={
           <>
+            <Button asChild variant="secondary">
+              <Link href={`/analyst/leads/${l.id}/conversation`}>Conversation</Link>
+            </Button>
             {wa && (
               <Button asChild variant="secondary">
                 <a href={wa} target="_blank" rel="noopener noreferrer">
@@ -102,7 +105,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           <Section title="Qualification" description="The lead qualifier reads the score, the listing and the activity, and writes the next action and an opening line.">
             <RunAgent endpoint={`/api/leads/${l.id}/qualify`} body={{}} agentLabel="Lead qualifier" action="Qualify lead" initial={prev ? { output: prev.output as never, model: prev.model, costUsd: prev.costUsd, at: prev.at } : null} />
           </Section>
-          <Section title="WhatsApp" description="Messages through the firm's WhatsApp Business number. Free text is allowed for 24 hours after the client last wrote; outside that window only approved templates can be sent.">
+          <Section id="whatsapp" title="WhatsApp" description="Messages through the firm's WhatsApp Business number. Free text is allowed for 24 hours after the client last wrote; outside that window only approved templates can be sent.">
             {conversation ? (
               <Thread conversation={convDto(conversation)} templates={templates.map(tplDto)} />
             ) : (

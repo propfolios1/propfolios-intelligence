@@ -73,6 +73,13 @@ export function formatDate(iso: string | Date, style: "short" | "long" | "time" 
 
 export function relativeTime(iso: string, now = Date.now()) {
   const diff = (now - new Date(iso).getTime()) / 1000;
+  if (diff <= -60) {
+    const ahead = -diff;
+    if (ahead < 3600) return `in ${Math.round(ahead / 60)}m`;
+    if (ahead < 86400) return `in ${Math.round(ahead / 3600)}h`;
+    if (ahead < 86400 * 7) return `in ${Math.round(ahead / 86400)}d`;
+    return formatDate(iso);
+  }
   if (diff < 60) return "just now";
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;

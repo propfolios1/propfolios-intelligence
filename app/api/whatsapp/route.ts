@@ -1,3 +1,4 @@
+import "@/lib/lead-response/install";
 import { randomUUID } from "node:crypto";
 import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";

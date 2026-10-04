@@ -25,6 +25,7 @@ const isPublic = createRouteMatcher([
   "/api/locale",
   "/api/cron(.*)",
   "/api/jobs/(.*)",
+  "/api/calendar/(.*)",
   "/api/portal-sandbox/(.*)",
   "/sites(.*)",
   "/api/sites/(.*)",

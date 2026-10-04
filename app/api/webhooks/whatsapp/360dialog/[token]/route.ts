@@ -1,3 +1,4 @@
+import "@/lib/lead-response/install";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";

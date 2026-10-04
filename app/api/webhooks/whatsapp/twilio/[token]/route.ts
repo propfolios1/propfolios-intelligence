@@ -1,3 +1,4 @@
+import "@/lib/lead-response/install";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";

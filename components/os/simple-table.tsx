@@ -51,9 +51,9 @@ export function SimpleTable<T>({ rows, columns, empty = "No records yet.", minWi
   );
 }
 
-export function Section({ title, eyebrow, description, actions, children, className }: { title: string; eyebrow?: string; description?: React.ReactNode; actions?: React.ReactNode; children: React.ReactNode; className?: string }) {
+export function Section({ id, title, eyebrow, description, actions, children, className }: { id?: string; title: string; eyebrow?: string; description?: React.ReactNode; actions?: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <section className={cn("mt-10", className)}>
+    <section id={id} className={cn("mt-10 scroll-mt-20", className)}>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           {eyebrow && <div className="eyebrow mb-2">{eyebrow}</div>}

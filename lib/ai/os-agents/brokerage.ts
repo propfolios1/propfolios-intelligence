@@ -3,6 +3,7 @@ import { z } from "zod";
 import { agentCore, defineAgent } from "../agents/define";
 import { CAMPAIGN_WRITER_SYSTEM, CAMPAIGN_WRITER_VERSION } from "../prompts/campaign-writer_v1";
 import { LEAD_QUALIFIER_SYSTEM, LEAD_QUALIFIER_VERSION } from "../prompts/lead-qualifier_v1";
+import { LEAD_RESPONDER_SYSTEM, LEAD_RESPONDER_VERSION } from "../prompts/lead-responder_v1";
 import { LISTING_WRITER_SYSTEM, LISTING_WRITER_VERSION } from "../prompts/listing-writer_v1";
 
 const num = (v: number, currency: string) => (currency === "INR" ? `₹${Math.round(v).toLocaleString("en-IN")}` : `${currency} ${Math.round(v).toLocaleString("en-US")}`);
@@ -209,4 +210,51 @@ export const campaignWriter = defineAgent({
   },
 });
 
-export const BROKERAGE_AGENTS = [leadQualifier, listingWriter, campaignWriter] as const;
+/* ---------------------------------------------------------- Lead responder */
+
+const responderInput = z.object({
+  firm: z.string(),
+  channel: z.enum(["whatsapp", "email", "website", "portal"]),
+  lead: z.object({ firstName: z.string(), intent: z.string(), listing: z.string().nullable() }),
+  decision: z.string(),
+  draft: z.string(),
+  message: z.string(),
+  history: z.array(z.object({ role: z.enum(["lead", "assistant", "agent"]), text: z.string() })).max(12),
+  examples: z.array(z.string()).max(8),
+});
+
+export const leadResponder = defineAgent({
+  name: "lead-responder",
+  label: "Lead responder",
+  description: "Replies to new enquiries within seconds on WhatsApp and email: qualifies budget, timeline, area, motivation and financing, offers viewing slots, and hands over to an agent.",
+  module: "brokerage",
+  promptVersion: LEAD_RESPONDER_VERSION,
+  system: LEAD_RESPONDER_SYSTEM,
+  model: "fast",
+  instruction: "Rewrite the draft reply in the firm's voice without changing what it does.",
+  toolDescription: "Submit the reply to send.",
+  input: responderInput,
+  output: agentCore.extend({ reply: z.string().min(1).max(1500) }),
+  maxTokens: 900,
+  sample: {
+    firm: "Nakhla Demo Brokerage",
+    channel: "whatsapp",
+    lead: { firstName: "Rania", intent: "buy", listing: "Two-bedroom apartment, Marina Gate" },
+    decision: "ask:timeline",
+    draft: "Noted: Dubai Marina and a budget of up to AED 2,500,000. When are you hoping to complete the purchase?",
+    message: "Looking in the Marina, up to 2.5m.",
+    history: [],
+    examples: ["Good afternoon, thank you for your patience. I can show you the unit on Saturday morning if that suits."],
+  },
+  replay: (i) => ({
+    headline: `Reply to ${i.lead.firstName} on ${i.channel === "whatsapp" ? "WhatsApp" : "email"}: ${i.decision.startsWith("ask:") ? `asks about ${i.decision.slice(4)}` : i.decision.replace(/_/g, " ")}`,
+    points: [
+      { label: "Decision", detail: i.decision.replace(/_/g, " ") },
+      { label: "Channel", detail: i.channel },
+    ],
+    confidence: 0.9,
+    reply: i.draft,
+  }),
+});
+
+export const BROKERAGE_AGENTS = [leadQualifier, listingWriter, campaignWriter, leadResponder] as const;
