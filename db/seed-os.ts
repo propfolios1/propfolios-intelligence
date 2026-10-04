@@ -4,6 +4,7 @@ import * as s from "@/db/schema";
 import { seedPlatformBi, seedTenantBi } from "./seed-bi";
 import { seedBrokerage } from "./seed-brokerage";
 import { seedClientLayer } from "./seed-client";
+import { seedMarketBriefs } from "./seed-market-intel";
 import { seedCommissions } from "./seed-commission";
 import { seedDeals, seedJourney } from "./seed-deals";
 import { seedAutomations, seedFabricRecords } from "./seed-fabric";
@@ -51,7 +52,8 @@ export async function seedTenantOs(db: DB, t: OsSeedTarget) {
     const bi = await seedTenantBi(db, t.tenantId);
     const fabric = await seedFabricRecords(db, t);
     const brokerage = await seedBrokerage(db, t);
-    return { india: true, ...automations, ...fabric, ...deals, ...journey, ...commissions, ...client, ...bi, brokerage };
+    const briefs = await seedMarketBriefs(db, t);
+    return { india: true, ...automations, ...fabric, ...deals, ...journey, ...commissions, ...client, ...bi, ...briefs, brokerage };
   });
 }
 

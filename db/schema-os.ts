@@ -496,6 +496,19 @@ export const amlChecks = pgTable(
 
 export type ReportContent = { headline: string; sections: { heading: string; body: string }[]; metrics: { label: string; value: string }[] };
 
+export type MarketBrief = {
+  markets: string[];
+  areas: string[];
+  currency: string;
+  window: { from: string; to: string };
+  series: { month: string; [region: string]: number | string }[];
+  seriesLabel: string;
+  areaStats: { area: string; market: string; listings: number; medianPrice: number | null; medianPpsf: number | null; changePct: number | null }[];
+  listings: { id: string; reference: string; title: string; community: string; city: string; bedrooms: number | null; price: number; currency: string; listedAt: string | null; isNew: boolean }[];
+  inventory: { developer: string; project: string; unitRef: string; bedrooms: number | null; price: number | null; previousPrice: number | null; currency: string; change: "new" | "price_cut" | "price_rise" | "available" }[];
+  signals: { tone: "positive" | "neutral" | "caution"; text: string }[];
+};
+
 export const clientReports = pgTable(
   "client_reports",
   {
@@ -505,16 +518,19 @@ export const clientReports = pgTable(
       .notNull()
       .references(() => clients.id, { onDelete: "cascade" }),
     period: text("period").notNull(),
-    type: text("type").$type<"quarterly" | "annual" | "ad_hoc">().notNull(),
+    type: text("type").$type<"quarterly" | "annual" | "ad_hoc" | "market_brief">().notNull(),
     title: text("title").notNull(),
     content: jsonb("content").$type<ReportContent>().notNull(),
+    /** Market briefs: the subscription that produced the brief and the data behind it. */
+    subscriptionId: uuid("subscription_id"),
+    brief: jsonb("brief").$type<MarketBrief>(),
     url: text("url"),
     generatedAt: at("generated_at").notNull().defaultNow(),
     deliveredAt: at("delivered_at"),
     viewedAt: at("viewed_at"),
     ...ts,
   },
-  (t) => [uniqueIndex("client_reports_unique_idx").on(t.clientId, t.period, t.type), index("client_reports_tenant_idx").on(t.tenantId), index("client_reports_created_idx").on(t.createdAt)],
+  (t) => [uniqueIndex("client_reports_unique_idx").on(t.clientId, t.period, t.type), index("client_reports_subscription_idx").on(t.subscriptionId), index("client_reports_tenant_idx").on(t.tenantId), index("client_reports_created_idx").on(t.createdAt)],
 );
 
 export type StatementData = { openingValueAed: number; closingValueAed: number; rentReceivedAed: number; costsAed: number; holdings: { property: string; valueAed: number; rentAed: number; changePct: number }[]; flows: { date: string; description: string; amountAed: number }[] };

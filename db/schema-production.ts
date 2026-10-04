@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { leads } from "./schema-brokerage";
-import { tenants, users } from "./schema-core";
+import { clients, tenants, users } from "./schema-core";
 
 /*
  * Production brokerage modules: CRM migration, trials, portal publishing,
@@ -1081,4 +1081,31 @@ export const developerInventory = pgTable(
     ...ts,
   },
   (t) => [uniqueIndex("dev_inv_unit_idx").on(t.connectionId, t.unitRef), index("dev_inv_tenant_idx").on(t.tenantId, t.status), index("dev_inv_price_idx").on(t.tenantId, t.price)],
+);
+
+/* ============================================ F14 CLIENT MARKET INTELLIGENCE */
+
+export type SubscriptionFilters = { markets: string[]; areas: string[]; propertyTypes: string[]; bedrooms: number[]; budgetMin: number | null; budgetMax: number | null; currency: string; purpose: "sale" | "rent" };
+
+/** A client's standing request for a market brief on the areas and homes they follow. */
+export const clientMarketSubscriptions = pgTable(
+  "client_market_subscriptions",
+  {
+    id,
+    tenantId: tenantRef(),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    filters: jsonb("filters").$type<SubscriptionFilters>().notNull(),
+    frequency: text("frequency").$type<"weekly" | "fortnightly" | "monthly">().notNull().default("weekly"),
+    channels: jsonb("channels").$type<("portal" | "email")[]>().notNull().default(sql`'["portal"]'::jsonb`),
+    includeInventory: boolean("include_inventory").notNull().default(true),
+    active: boolean("active").notNull().default(true),
+    lastSentAt: at("last_sent_at"),
+    nextDueAt: at("next_due_at").notNull().defaultNow(),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [index("cms_tenant_idx").on(t.tenantId, t.active, t.nextDueAt), index("cms_client_idx").on(t.clientId)],
 );

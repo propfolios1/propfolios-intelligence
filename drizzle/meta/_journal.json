@@ -148,6 +148,13 @@
       "when": 1791129038481,
       "tag": "0020_developer_inventory",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791130141997,
+      "tag": "0021_client_market_intelligence",
+      "breakpoints": true
     }
   ]
 }

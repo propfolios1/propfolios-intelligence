@@ -1,5 +1,6 @@
 import "server-only";
 import { runMonitoring } from "@/lib/compliance/service";
+import { runMarketBriefs } from "@/lib/market-intel/service";
 import { runMarketing } from "@/lib/marketing/service";
 import { syncAll } from "@/lib/developers/sync";
 import { pollPortals } from "@/lib/portals/service";
@@ -23,4 +24,5 @@ export function installFeatureJobs() {
   registerJob("team-snapshots", (db) => runTeamSnapshots(db));
   registerJob("marketing-dispatch", (db) => runMarketing(db));
   registerJob("developer-sync", (db) => syncAll(db));
+  registerJob("client-market-briefs", (db) => runMarketBriefs(db));
 }

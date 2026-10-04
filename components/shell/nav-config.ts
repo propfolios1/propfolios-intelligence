@@ -1,4 +1,5 @@
 import {
+  BellRing,
   Zap,
   FileSignature,
   MessageCircle,
@@ -138,6 +139,7 @@ export const NAV: Record<Area, NavSection[]> = {
       title: "Reporting",
       items: [
         { href: "/client/reports", label: "Reports" },
+        { href: "/client/subscriptions", label: "Market subscriptions" },
         { href: "/client/statements", label: "Statements" },
         { href: "/client/goals", label: "Goals", key: "g" },
         { href: "/client/private-banking", label: "Private banking" },
@@ -343,6 +345,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/client/opportunities": Target,
   "/client/recommendations": ListChecks,
   "/client/reports": BookOpen,
+  "/client/subscriptions": BellRing,
   "/client/statements": FileSpreadsheet,
   "/client/goals": Flag,
   "/client/private-banking": Landmark,
