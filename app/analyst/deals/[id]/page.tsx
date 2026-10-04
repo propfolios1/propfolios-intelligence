@@ -19,6 +19,8 @@ import { calculationHistory, dealCalculator } from "@/lib/commission/calc-servic
 import { formatMinor } from "@/lib/commission/calculator";
 import { CommissionCalculator, ScenarioList } from "@/components/commission/calculator";
 import { DealCompliance } from "@/components/compliance/compliance";
+import { DraftFromTemplate } from "@/components/contracts/contracts";
+import { listTemplates } from "@/lib/contracts/service";
 import { formatLocal } from "@/lib/format";
 import { cn, formatDate, formatUsdCost } from "@/lib/utils";
 
@@ -60,6 +62,7 @@ export default async function DealPage({ params, searchParams }: { params: Promi
   const closeBlock = deal.status !== "active" ? "The deal is not active." : !signed ? "A signed contract is required." : openCritical.length ? `${openCritical.length} critical checklist items are open.` : undefined;
   const lastSubmitted = [...d.offers].reverse().find((o) => o.status === "submitted");
   const [predictor, strategist, coach, coordinator, reviewer, reminder] = await Promise.all(["deal-predictor", "offer-strategist", "negotiation-coach", "closing-coordinator", "contract-reviewer", "payment-reminder"].map((a) => initial(user.tenantId, a, a === "contract-reviewer" ? (d.contracts[0]?.id ?? id) : id)));
+  const templates = tab === "contracts" ? await listTemplates(db, user.tenantId) : null;
   const amlChecks = tab === "checklist" ? await db.select().from(s.complianceChecks).where(and(eq(s.complianceChecks.tenantId, user.tenantId), eq(s.complianceChecks.dealId, id))) : [];
   const calc = tab === "commission" ? await dealCalculator(db, user.tenantId, id) : null;
   const calcHistory = tab === "commission" ? await calculationHistory(db, user.tenantId, id) : [];
@@ -200,6 +203,11 @@ export default async function DealPage({ params, searchParams }: { params: Promi
               <GenerateContract dealId={id} types={CONTRACT_TYPES[deal.jurisdiction]} />
             </Section>
           )}
+          {deal.status === "active" && templates && (
+            <Section title="Draft from a template" description="The firm's published templates, filled from the deal, the firm's variables and anything entered here. Conditional clauses, such as the FEMA clause for a non-resident purchaser, are added automatically.">
+              <DraftFromTemplate dealId={id} templates={templates.filter((t) => t.current.jurisdiction === "ANY" || t.current.jurisdiction === (deal.jurisdiction === "mumbai" || deal.jurisdiction === "goa" ? "IN" : deal.jurisdiction === "dubai" || deal.jurisdiction === "abu_dhabi" ? "AE" : t.current.jurisdiction)).map((t) => ({ id: t.current.id, publishedId: t.published?.id ?? null, name: t.published?.name ?? t.current.name, jurisdiction: t.current.jurisdiction, inputs: t.published?.inputs ?? [], body: t.published?.body ?? "" }))} />
+            </Section>
+          )}
           {d.contracts.map((c) => {
             const sigs = d.signatures.filter((x) => x.contractId === c.id);
             return (
@@ -210,6 +218,9 @@ export default async function DealPage({ params, searchParams }: { params: Promi
                     <div className="rounded-md border border-hairline bg-surface p-4 text-small shadow-card">
                       <div className="eyebrow mb-2">Integrity</div>
                       <div className="num break-all text-axis text-ink-700">SHA-256 {c.contentHash}</div>
+                      <a href={`/api/contracts/${c.id}/pdf`} className="mt-3 inline-block text-ink-900 underline underline-offset-4">
+                        Download PDF
+                      </a>
                     </div>
                     {sigs.map((x) => (
                       <div key={x.id} className="rounded-md border border-hairline bg-surface p-4 text-small shadow-card">

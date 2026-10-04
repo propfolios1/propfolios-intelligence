@@ -772,3 +772,71 @@ export const regulatoryReports = pgTable(
   },
   (t) => [index("reg_reports_tenant_idx").on(t.tenantId, t.status), index("reg_reports_due_idx").on(t.dueAt)],
 );
+
+/* ================================================= F10 CONTRACT TEMPLATES */
+
+export type TemplateInput = { path: string; label: string; type: "text" | "number" | "date" | "boolean"; default?: string | number | boolean };
+
+/** Versioned templates: each publish creates a new row in the family; drafts are edited in place. */
+export const contractTemplates = pgTable(
+  "contract_templates",
+  {
+    id,
+    tenantId: tenantRef(),
+    family: text("family").notNull(),
+    builtIn: text("built_in"),
+    name: text("name").notNull(),
+    jurisdiction: text("jurisdiction").$type<"AE" | "IN" | "GB" | "SG" | "ANY">().notNull(),
+    kind: text("kind").notNull(),
+    parties: jsonb("parties").$type<("buyer" | "seller" | "advisor")[]>().notNull(),
+    description: text("description").notNull(),
+    officialNote: text("official_note").notNull(),
+    body: text("body").notNull(),
+    inputs: jsonb("inputs").$type<TemplateInput[]>().notNull().default(sql`'[]'::jsonb`),
+    version: integer("version").notNull(),
+    status: text("status").$type<"draft" | "published" | "archived">().notNull().default("draft"),
+    publishedAt: at("published_at"),
+    publishedBy: userRef("published_by"),
+    changeNote: text("change_note"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("contract_tpl_family_ver_idx").on(t.tenantId, t.family, t.version), index("contract_tpl_tenant_idx").on(t.tenantId, t.status)],
+);
+
+/** A contract drafted from a template version: the values used, what was missing, and the deal contract it produced. */
+export const contractInstances = pgTable(
+  "contract_instances",
+  {
+    id,
+    tenantId: tenantRef(),
+    templateId: uuid("template_id")
+      .notNull()
+      .references(() => contractTemplates.id, { onDelete: "restrict" }),
+    templateVersion: integer("template_version").notNull(),
+    dealId: uuid("deal_id"),
+    contractId: uuid("contract_id"),
+    clientId: uuid("client_id"),
+    title: text("title").notNull(),
+    values: jsonb("values_json").$type<Record<string, unknown>>().notNull(),
+    missing: jsonb("missing").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    renderedHtml: text("rendered_html").notNull(),
+    contentHash: text("content_hash").notNull(),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [index("contract_inst_deal_idx").on(t.dealId), index("contract_inst_client_idx").on(t.clientId), index("contract_inst_tenant_idx").on(t.tenantId, t.createdAt)],
+);
+
+/** Firm-wide values every template can use: licence numbers, registered address, default rates. */
+export const contractVariables = pgTable(
+  "contract_variables",
+  {
+    id,
+    tenantId: tenantRef(),
+    path: text("path").notNull(),
+    label: text("label").notNull(),
+    value: text("value").notNull(),
+    ...ts,
+  },
+  (t) => [uniqueIndex("contract_vars_path_idx").on(t.tenantId, t.path)],
+);

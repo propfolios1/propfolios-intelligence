@@ -228,7 +228,7 @@ export const contracts = pgTable(
     id,
     tenantId: tenantRef(),
     dealId: dealRef(),
-    type: text("type").$type<"mou" | "agreement_for_sale" | "deed_of_sale" | "spa" | "form_f" | "brokerage_agreement">().notNull(),
+    type: text("type").$type<"mou" | "agreement_for_sale" | "deed_of_sale" | "spa" | "form_f" | "brokerage_agreement" | "template">().notNull(),
     title: text("title").notNull(),
     contentHtml: text("content_html").notNull(),
     url: text("url"),

@@ -1,5 +1,6 @@
 import {
   Zap,
+  FileSignature,
   MessageCircle,
   Globe,
   HeartPulse,
@@ -147,6 +148,7 @@ export const NAV: Record<Area, NavSection[]> = {
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
         { href: "/client/kyc", label: "Identity verification" },
+        { href: "/client/contracts", label: "Contracts" },
         { href: "/client/invoices", label: "Invoices" },
         { href: "/client/tax-documents", label: "Tax documents" },
         { href: "/client/india", label: "India" },
@@ -183,6 +185,7 @@ export const NAV: Record<Area, NavSection[]> = {
       items: [
         { href: "/admin/commissions", label: "Commissions", key: "c" },
         { href: "/admin/commission-structures", label: "Commission structures", key: "z" },
+        { href: "/admin/contracts/templates", label: "Contract templates" },
         { href: "/admin/invoices", label: "Invoices", key: "v" },
       ],
     },
@@ -313,6 +316,8 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/lead-response": Zap,
   "/admin/commission-structures": Calculator,
   "/client/kyc": ShieldCheck,
+  "/client/contracts": FileSignature,
+  "/admin/contracts/templates": FileSignature,
   "/platform/health": HeartPulse,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,

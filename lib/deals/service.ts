@@ -165,6 +165,8 @@ export async function sendForSignature(db: DB, actor: Actor, contractId: string,
   const [c] = await db.select().from(s.contracts).where(scope(s.contracts, actor.tenantId, eq(s.contracts.id, contractId)));
   if (!c) throw new DomainError("Contract not found.", 404);
   if (c.status !== "draft") throw new DomainError("Only a draft contract can be sent for signature.");
+  const unfilled = [...c.contentHtml.matchAll(/<mark class="missing">\[([^\]]+)\]<\/mark>/g)].map((m) => m[1]);
+  if (unfilled.length) throw new DomainError(`Complete ${unfilled.join(", ")} and redraft before sending for signature.`);
   if (!signers.length) throw new DomainError("Add at least one signer.");
   const d = await dealOr404(db, actor.tenantId, c.dealId);
   const at = opts.at ?? new Date();
