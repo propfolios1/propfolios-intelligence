@@ -207,3 +207,70 @@ export const trialLifecycle = pgTable(
   },
   (t) => [uniqueIndex("trial_lifecycle_tenant_idx").on(t.tenantId), index("trial_lifecycle_next_idx").on(t.state, t.nextTransitionAt)],
 );
+
+/* ======================================================= F3 PORTAL PUBLISHING */
+
+export type PortalConnectionStatus = "connected" | "error" | "disabled";
+export type PortalListingStatus = "queued" | "publishing" | "live" | "rejected" | "removed" | "error";
+export type PortalFieldRule = { target: string; source: string; value?: string | number | boolean; map?: Record<string, string | number | boolean>; required?: boolean };
+
+export const portalConnections = pgTable(
+  "portal_connections",
+  {
+    id,
+    tenantId: tenantRef(),
+    portal: text("portal").notNull(),
+    /** Non-secret settings: base URL, account, branch and network IDs, sandbox flag. */
+    config: jsonb("config").$type<Record<string, string>>().notNull().default(sql`'{}'::jsonb`),
+    /** AES-256-GCM sealed secrets: API keys, client secrets, certificates and private keys. */
+    credentialsEncrypted: text("credentials_encrypted"),
+    /** The firm's field map; null means the portal default. */
+    fieldMap: jsonb("field_map").$type<PortalFieldRule[] | null>(),
+    status: text("status").$type<PortalConnectionStatus>().notNull().default("connected"),
+    lastSyncAt: at("last_sync_at"),
+    lastError: text("last_error"),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("portal_connections_unique_idx").on(t.tenantId, t.portal), index("portal_connections_tenant_idx").on(t.tenantId)],
+);
+
+export const portalListings = pgTable(
+  "portal_listings",
+  {
+    id,
+    tenantId: tenantRef(),
+    listingId: uuid("listing_id").notNull(),
+    portal: text("portal").notNull(),
+    externalId: text("external_id"),
+    externalUrl: text("external_url"),
+    status: text("status").$type<PortalListingStatus>().notNull().default("queued"),
+    lastError: text("last_error"),
+    /** Hash of the last payload sent, so unchanged listings are not re-sent. */
+    payloadHash: text("payload_hash"),
+    publishedAt: at("published_at"),
+    lastPolledAt: at("last_polled_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("portal_listings_unique_idx").on(t.listingId, t.portal), index("portal_listings_tenant_idx").on(t.tenantId, t.status)],
+);
+
+export const portalPublishJobs = pgTable(
+  "portal_publish_jobs",
+  {
+    id,
+    tenantId: tenantRef(),
+    portalListingId: uuid("portal_listing_id")
+      .notNull()
+      .references(() => portalListings.id, { onDelete: "cascade" }),
+    action: text("action").$type<"publish" | "update" | "unpublish">().notNull(),
+    status: text("status").$type<"queued" | "running" | "succeeded" | "failed">().notNull().default("queued"),
+    attempts: integer("attempts").notNull().default(0),
+    nextAttemptAt: at("next_attempt_at").notNull().defaultNow(),
+    errors: jsonb("errors_json").$type<{ at: string; message: string; status?: number }[]>().notNull().default(sql`'[]'::jsonb`),
+    requestedBy: text("requested_by"),
+    finishedAt: at("finished_at"),
+    ...ts,
+  },
+  (t) => [index("portal_jobs_due_idx").on(t.status, t.nextAttemptAt), index("portal_jobs_tenant_idx").on(t.tenantId, t.createdAt)],
+);

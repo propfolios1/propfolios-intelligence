@@ -25,6 +25,7 @@ const isPublic = createRouteMatcher([
   "/api/locale",
   "/api/cron(.*)",
   "/api/jobs/(.*)",
+  "/api/portal-sandbox/(.*)",
   "/opengraph-image(.*)",
   "/icon(.*)",
 ]);

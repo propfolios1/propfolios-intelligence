@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingStatusControl, ListingWriter, Syndicate } from "@/components/brokerage/actions";
 import { PageHeader } from "@/components/composites/page-header";
+import { PublishPanel } from "@/components/portals/portals";
 import { Flag } from "@/components/os/badges";
 import { Section, SimpleTable } from "@/components/os/simple-table";
 import { PageContainer } from "@/components/shell/page-container";
@@ -17,6 +18,8 @@ import { STAGE_LABEL } from "@/lib/brokerage/leads";
 import { getListing, LISTING_STATUS_LABEL, listingIssues } from "@/lib/brokerage/listings";
 import { formatLocal } from "@/lib/format";
 import { marketOf, permitLabel, PORTAL_INDEX, SOURCE_NAME } from "@/lib/markets";
+import { PORTAL_SPECS } from "@/lib/portals/specs";
+import { scope } from "@/lib/tenant-db";
 
 export const metadata = { title: "Listing" };
 export const dynamic = "force-dynamic";
@@ -37,6 +40,12 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const base = process.env.NEXT_PUBLIC_APP_URL || `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
   const [t] = await db.select({ slug: s.tenants.slug }).from(s.tenants).where(eq(s.tenants.id, user.tenantId));
   const feedPortals = m.portals.filter((p) => p.feed);
+  const [conns, published] = await Promise.all([db.select({ portal: s.portalConnections.portal, status: s.portalConnections.status }).from(s.portalConnections).where(scope(s.portalConnections, user.tenantId)), db.select().from(s.portalListings).where(scope(s.portalListings, user.tenantId, eq(s.portalListings.listingId, l.id)))]);
+  const apiPortals = Object.values(PORTAL_SPECS).filter((p) => p.market === m.code);
+  const publishRows = apiPortals.map((p) => {
+    const pl = published.find((x) => x.portal === p.key);
+    return { portal: p.key, name: p.name, connected: conns.some((c) => c.portal === p.key && c.status !== "disabled"), status: pl?.status ?? null, externalId: pl?.externalId ?? null, externalUrl: pl?.externalUrl ?? null, lastError: pl?.lastError ?? null, publishedAt: pl?.publishedAt?.toISOString() ?? null };
+  });
   const facts: [string, string][] = [
     ["Purpose", l.purpose === "sale" ? "Sale" : "Rent"],
     ["Type", l.propertyType],
@@ -94,7 +103,12 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               <ListingWriter id={l.id} />
             </div>
           </Section>
-          <Section title="Syndication" description={`Portals that take listings in ${m.name}. Each pulls its own signed feed; a listing goes out when it is active and meets the portal's requirements.`}>
+          {publishRows.length > 0 && (
+            <Section title="Publish to portals" description="One click sends the listing to each selected portal through its API. Moderation results arrive within minutes and are polled every fifteen.">
+              <PublishPanel listingId={l.id} rows={publishRows} issues={issues} />
+            </Section>
+          )}
+          <Section title="Feed syndication" description={`Portals that pull a listing feed in ${m.name}. Each pulls its own signed feed; a listing goes out when it is active and meets the portal's requirements.`}>
             <Syndicate id={l.id} portals={feedPortals.map((p) => ({ key: p.key, name: p.name }))} current={d.portals.map((p) => p.portal)} />
             <SimpleTable
               className="mt-6"

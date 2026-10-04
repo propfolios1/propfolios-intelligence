@@ -1,4 +1,5 @@
 import "server-only";
+import { pollPortals } from "@/lib/portals/service";
 import { advanceTrials } from "@/lib/trial/service";
 import { registerJob } from "./handlers";
 
@@ -11,4 +12,5 @@ export function installFeatureJobs() {
   if (installed) return;
   installed = true;
   registerJob("trial-lifecycle", (db) => advanceTrials(db));
+  registerJob("portal-publish-poll", (db) => pollPortals(db));
 }

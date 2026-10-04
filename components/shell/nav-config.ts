@@ -166,7 +166,10 @@ export const NAV: Record<Area, NavSection[]> = {
     },
     {
       title: "Operations",
-      items: [{ href: "/admin/migrate", label: "Data migration", key: "g" }],
+      items: [
+        { href: "/admin/migrate", label: "Data migration", key: "g" },
+        { href: "/admin/portals", label: "Portals", key: "e" },
+      ],
     },
     {
       title: "Revenue",
@@ -296,6 +299,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/team": UserCog,
   "/admin/migrate": ArrowRightLeft,
   "/admin/health": HeartPulse,
+  "/admin/portals": Megaphone,
   "/platform/health": HeartPulse,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,

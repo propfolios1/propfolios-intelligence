@@ -19,12 +19,16 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
   timeoutMs?: number;
   retries?: number;
   form?: Record<string, string>;
+  /** An undici dispatcher, for mutual TLS. */
+  dispatcher?: unknown;
+  /** Fetch implementation; undici's own fetch is used with a dispatcher. */
+  fetcher?: typeof fetch;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function request<T = unknown>(provider: string, url: string, opts: RequestOptions = {}): Promise<T> {
-  const { timeoutMs = 15_000, retries = 2, form, body, headers, ...rest } = opts;
+  const { timeoutMs = 15_000, retries = 2, form, body, headers, dispatcher, fetcher, ...rest } = opts;
   const h = new Headers(headers);
   let payload: BodyInit | undefined;
   if (form) {
@@ -34,7 +38,7 @@ export async function request<T = unknown>(provider: string, url: string, opts: 
     payload = body as BodyInit;
   } else if (body !== undefined) {
     payload = JSON.stringify(body);
-    h.set("content-type", "application/json");
+    if (!h.has("content-type")) h.set("content-type", "application/json");
   }
   if (!h.has("accept")) h.set("accept", "application/json");
   for (let attempt = 0; ; attempt++) {
@@ -42,7 +46,7 @@ export async function request<T = unknown>(provider: string, url: string, opts: 
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     let res: Response;
     try {
-      res = await fetch(url, { ...rest, headers: h, body: payload, signal: ctrl.signal });
+      res = await (fetcher ?? fetch)(url, { ...rest, headers: h, body: payload, signal: ctrl.signal, ...(dispatcher ? { dispatcher } : {}) } as RequestInit);
     } catch (e) {
       clearTimeout(timer);
       if (attempt < retries) {
