@@ -23,14 +23,14 @@ export function TrustBar() {
       <div className="relative mx-auto w-full max-w-[1280px] px-4 py-10 md:px-8">
         <Reveal className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <p className="max-w-[46ch] text-[14px] text-ink-700">
-            In production at one advisory firm in Abu Dhabi. <span className="text-ink-500">Five founding places are open to brokerages in 2026.</span>
+            In production at one advisory firm in Abu Dhabi. <span className="text-ink-500">Three founding places are open to brokerages in 2026.</span>
           </p>
-          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6 md:w-[640px]" aria-label="Firms">
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:w-[520px]" aria-label="Firms">
             <li className="flex h-16 items-center justify-center rounded-md border border-hairline px-2 text-[12px] font-semibold tracking-[0.06em] text-navy-900 uppercase">PropFolios</li>
-            {Array.from({ length: 5 }, (_, i) => (
+            {Array.from({ length: 3 }, (_, i) => (
               <li key={i} className="flex h-16 flex-col items-center justify-center rounded-md border border-dashed border-ink-200 px-2 text-center text-[10px] leading-tight tracking-[0.08em] text-ink-400 uppercase">
                 Founding place
-                <span className="num mt-0.5 normal-case tracking-normal">0{i + 2}</span>
+                <span className="num mt-0.5 normal-case tracking-normal">{i + 1} of 3</span>
               </li>
             ))}
           </ul>
