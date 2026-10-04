@@ -8,11 +8,11 @@ import { Hero } from "@/components/home/hero";
 import { Nav } from "@/components/home/nav";
 import { Markets } from "@/components/home/markets";
 import { Modules } from "@/components/home/modules";
-import { Numbers } from "@/components/home/numbers";
 import { PaletteDemo } from "@/components/home/palette-demo";
 import { Pricing } from "@/components/home/pricing";
 import { Problem } from "@/components/home/problem";
 import { Screenshots } from "@/components/home/screenshots";
+import { TrustBar } from "@/components/home/trust";
 import "@/components/home/home.css";
 import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export default async function Landing() {
       <Nav signInHref={signInHref} />
       <main className="overflow-x-clip bg-canvas">
         <Hero agents={agents.length} />
-        <Numbers />
+        <TrustBar />
         <Problem />
         <Modules />
         <Agents />
