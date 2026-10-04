@@ -19,10 +19,20 @@ export function FormField({
 }) {
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <label htmlFor={htmlFor} className="text-ui font-medium text-ink-900">
-        {label}
-      </label>
-      {children}
+      {htmlFor ? (
+        <>
+          <label htmlFor={htmlFor} className="text-ui font-medium text-ink-900">
+            {label}
+          </label>
+          {children}
+        </>
+      ) : (
+        // Without an explicit id the control sits inside the label, so the two are associated for screen readers and clicks.
+        <label className="flex flex-col gap-2">
+          <span className="text-ui font-medium text-ink-900">{label}</span>
+          {children}
+        </label>
+      )}
       {error ? (
         <p role="alert" className="text-ui text-danger">
           {error}

@@ -15,6 +15,9 @@ import { lastOutput } from "@/lib/ai/agents/define";
 import { requireRole } from "@/lib/auth";
 import { CONTRACT_TYPES, DEAL_TYPE_LABEL, JURISDICTION_LABEL, STAGE_LABEL } from "@/lib/deals/domain";
 import { getDeal } from "@/lib/deals/service";
+import { calculationHistory, dealCalculator } from "@/lib/commission/calc-service";
+import { formatMinor } from "@/lib/commission/calculator";
+import { CommissionCalculator, ScenarioList } from "@/components/commission/calculator";
 import { formatLocal } from "@/lib/format";
 import { cn, formatDate, formatUsdCost } from "@/lib/utils";
 
@@ -27,6 +30,7 @@ const TABS = [
   ["negotiations", "Negotiations"],
   ["contracts", "Contracts"],
   ["checklist", "Checklist"],
+  ["commission", "Commission"],
   ["payments", "Payments"],
   ["audit", "Audit"],
 ] as const;
@@ -55,6 +59,8 @@ export default async function DealPage({ params, searchParams }: { params: Promi
   const closeBlock = deal.status !== "active" ? "The deal is not active." : !signed ? "A signed contract is required." : openCritical.length ? `${openCritical.length} critical checklist items are open.` : undefined;
   const lastSubmitted = [...d.offers].reverse().find((o) => o.status === "submitted");
   const [predictor, strategist, coach, coordinator, reviewer, reminder] = await Promise.all(["deal-predictor", "offer-strategist", "negotiation-coach", "closing-coordinator", "contract-reviewer", "payment-reminder"].map((a) => initial(user.tenantId, a, a === "contract-reviewer" ? (d.contracts[0]?.id ?? id) : id)));
+  const calc = tab === "commission" ? await dealCalculator(db, user.tenantId, id) : null;
+  const calcHistory = tab === "commission" ? await calculationHistory(db, user.tenantId, id) : [];
   const audit =
     tab === "audit"
       ? await db
@@ -242,6 +248,40 @@ export default async function DealPage({ params, searchParams }: { params: Promi
             ]}
           />
         </Section>
+      )}
+
+      {tab === "commission" && calc && (
+        <>
+          <Section title="Commission calculator" description={calc.structure ? `Starts from "${calc.structure.name}", the firm structure that applies to this deal. Change anything; every figure is recomputed to the cent as you type.` : "No firm structure applies to this deal; start from a preset."}>
+            <CommissionCalculator
+              mode="deal"
+              dealId={id}
+              currency={cur}
+              initialPrice={calc.scenarios.find((x) => x.selected)?.price ?? String(deal.value)}
+              initialConfig={calc.scenarios.find((x) => x.selected)?.config ?? calc.base ?? { currency: cur, fees: [{ label: "Seller's fee", payer: "seller", method: "percentage", ratePct: 2 }], agentSplitPct: 50, tax: { name: "Tax", ratePct: 0 } }}
+              structureId={calc.structure?.id ?? null}
+              structures={calc.structures}
+              people={calc.people}
+              scenarios={calc.scenarios.map((x) => ({ id: x.id, name: x.name, price: x.price, selected: x.selected, gross: x.result.gross, config: x.config, structureId: x.structureId }))}
+            />
+          </Section>
+          <Section title="Scenarios" description="The scenario used for closing sets the commission, its splits and the invoice when the deal closes.">
+            <ScenarioList dealId={id} currency={cur} scenarios={calc.scenarios.map((x) => ({ id: x.id, name: x.name, price: x.price, selected: x.selected, gross: x.result.gross, config: x.config, structureId: x.structureId }))} />
+          </Section>
+          <Section title="Calculation record" description="Every saved, selected and closing calculation, with the engine version and a hash of its inputs.">
+            <SimpleTable
+              rows={calcHistory}
+              empty="No calculations recorded yet."
+              columns={[
+                { key: "w", header: "When", cell: (h) => <RelativeTime iso={h.c.createdAt.toISOString()} /> },
+                { key: "p", header: "Purpose", cell: (h) => h.c.purpose.replace(/_/g, " ") },
+                { key: "g", header: "Gross", numeric: true, cell: (h) => formatMinor(h.c.grossMinor, h.c.currency) },
+                { key: "b", header: "By", cell: (h) => h.by ?? "System" },
+                { key: "h", header: "Input hash", cell: (h) => <span className="num text-axis">{h.c.inputHash.slice(0, 12)}</span> },
+              ]}
+            />
+          </Section>
+        </>
       )}
 
       {tab === "payments" && (

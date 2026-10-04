@@ -181,6 +181,7 @@ export const NAV: Record<Area, NavSection[]> = {
       title: "Revenue",
       items: [
         { href: "/admin/commissions", label: "Commissions", key: "c" },
+        { href: "/admin/commission-structures", label: "Commission structures", key: "z" },
         { href: "/admin/invoices", label: "Invoices", key: "v" },
       ],
     },
@@ -309,6 +310,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/admin/website": Globe,
   "/admin/whatsapp": MessageCircle,
   "/admin/lead-response": Zap,
+  "/admin/commission-structures": Calculator,
   "/platform/health": HeartPulse,
   "/analyst/properties": Building2,
   "/analyst/developers": Building,

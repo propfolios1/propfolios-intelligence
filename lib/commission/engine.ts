@@ -4,6 +4,7 @@
  * commission computer agent explains and checks the result, never computes it.
  */
 import type { CommissionTier, DealType, Jurisdiction, SplitRule } from "@/db/schema";
+import { applyRate, toMinor } from "./calculator";
 
 export interface StructureLike {
   id: string;
@@ -97,15 +98,19 @@ export interface InvoiceTax {
   receivable: number;
 }
 
+/** A rate applied to an amount, exact to the cent (half-up), through the calculator's fixed-point arithmetic. */
+const cents = (amount: number, ratePct: number) => Number(applyRate(toMinor(amount), ratePct)) / 100;
+const add = (a: number, b: number) => Math.round((a + b) * 100) / 100;
+
 export function invoiceTax(jurisdiction: Jurisdiction, amount: number, payer: "developer" | "seller" | "buyer"): InvoiceTax {
   if (jurisdiction === "mumbai" || jurisdiction === "goa") {
-    const gst = Math.round(amount * 0.18);
-    const tds = payer === "developer" ? Math.round(amount * 0.02) : 0;
-    return { type: "India GST" as const, ratePct: 18, amount: gst, ...(tds ? { tdsPct: 2, tdsAmount: tds } : {}), total: amount + gst, receivable: amount + gst - tds };
+    const gst = cents(amount, 18);
+    const tds = payer === "developer" ? cents(amount, 2) : 0;
+    return { type: "India GST" as const, ratePct: 18, amount: gst, ...(tds ? { tdsPct: 2, tdsAmount: tds } : {}), total: add(amount, gst), receivable: add(add(amount, gst), -tds) };
   }
   if (jurisdiction === "dubai" || jurisdiction === "abu_dhabi") {
-    const vat = Math.round(amount * 0.05);
-    return { type: "UAE VAT" as const, ratePct: 5, amount: vat, total: amount + vat, receivable: amount + vat };
+    const vat = cents(amount, 5);
+    return { type: "UAE VAT" as const, ratePct: 5, amount: vat, total: add(amount, vat), receivable: add(amount, vat) };
   }
   return { type: "None" as const, ratePct: 0, amount: 0, total: amount, receivable: amount };
 }

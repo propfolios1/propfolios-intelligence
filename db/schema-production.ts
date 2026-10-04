@@ -608,3 +608,50 @@ export const viewingBookings = pgTable(
   },
   (t) => [index("viewing_bookings_agent_idx").on(t.agentUserId, t.startsAt), index("viewing_bookings_tenant_idx").on(t.tenantId, t.startsAt)],
 );
+
+/* ================================================ F8 COMMISSION CALCULATOR */
+
+type CalcConfigInput = import("../lib/commission/calculator").CalcConfigInput;
+type CalcResult = import("../lib/commission/calculator").CalcResult;
+
+/** Named what-if scenarios on a deal; the selected one is used when the deal closes. */
+export const commissionScenarios = pgTable(
+  "commission_scenarios",
+  {
+    id,
+    tenantId: tenantRef(),
+    dealId: uuid("deal_id").notNull(),
+    name: text("name").notNull(),
+    structureId: uuid("structure_id"),
+    price: numeric("price", { precision: 16, scale: 2, mode: "string" }).notNull(),
+    config: jsonb("config_json").$type<CalcConfigInput>().notNull(),
+    result: jsonb("result_json").$type<CalcResult>().notNull(),
+    selected: boolean("selected").notNull().default(false),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [index("comm_scen_deal_idx").on(t.dealId), index("comm_scen_tenant_idx").on(t.tenantId)],
+);
+
+/** Append-only record of every calculation that was saved, selected or invoiced, with a hash of its inputs. */
+export const commissionCalculations = pgTable(
+  "commission_calculations",
+  {
+    id,
+    tenantId: tenantRef(),
+    dealId: uuid("deal_id"),
+    scenarioId: uuid("scenario_id"),
+    structureId: uuid("structure_id"),
+    purpose: text("purpose").$type<"scenario_saved" | "scenario_selected" | "deal_closed" | "structure_test">().notNull(),
+    engine: text("engine").notNull(),
+    inputHash: text("input_hash").notNull(),
+    price: numeric("price", { precision: 16, scale: 2, mode: "string" }).notNull(),
+    config: jsonb("config_json").$type<CalcConfigInput>().notNull(),
+    result: jsonb("result_json").$type<CalcResult>().notNull(),
+    grossMinor: text("gross_minor").notNull(),
+    currency: text("currency").notNull(),
+    createdBy: userRef("created_by"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("comm_calc_deal_idx").on(t.dealId, t.createdAt), index("comm_calc_tenant_idx").on(t.tenantId)],
+);

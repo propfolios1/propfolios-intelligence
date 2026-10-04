@@ -328,6 +328,8 @@ export const commissionStructures = pgTable(
     tiers: jsonb("tiers").$type<CommissionTier[]>().notNull().default(sql`'[]'::jsonb`),
     appliesTo: jsonb("applies_to").$type<{ jurisdictions?: Jurisdiction[]; dealTypes?: DealType[]; minValue?: number }>().notNull().default(sql`'{}'::jsonb`),
     payer: text("payer").$type<"developer" | "seller" | "buyer">().notNull().default("developer"),
+    /** The full calculator definition (fees, deductions, firm split, team, tax, milestones); when null it is derived from the fields above. */
+    calc: jsonb("calc_json").$type<import("../lib/commission/calculator").CalcConfigInput>(),
     isDefault: boolean("is_default").notNull().default(false),
     active: boolean("active").notNull().default(true),
     ...ts,

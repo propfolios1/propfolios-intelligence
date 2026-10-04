@@ -53,14 +53,24 @@ export async function computeForDeal(db: DB, actor: Actor, dealId: string, opts:
   const st = selectStructure(structures, deal);
   if (!st) throw new DomainError("No commission structure applies. Create a default structure in Administration → Commissions.");
   const at = opts.at ?? new Date();
-  const c = computeCommission(st, deal);
+  // A scenario selected in the deal's live calculator takes precedence: amounts to the cent, splits as modelled.
+  const { closingCalculation } = await import("./calc-service");
+  const closing = await closingCalculation(db, actor.tenantId, dealId, actor.id ?? null);
+  const minor = (x: string) => Number(BigInt(x)) / 100;
+  const c = closing
+    ? { amount: minor(closing.result.gross), percentage: closing.result.effectivePct, method: `calculator (${closing.scenario.name})`, steps: closing.result.steps }
+    : computeCommission(st, deal);
+  const payer = closing ? ((p) => (p === "landlord" ? "seller" : p === "tenant" ? "buyer" : p))(closing.result.fees[0]!.payer) as "developer" | "seller" | "buyer" : st.payer;
   const [commission] = await db
     .insert(s.commissions)
-    .values({ tenantId: actor.tenantId, dealId, structureId: st.id, recipientUserId: deal.ownerUserId, payer: st.payer, grossDealValue: deal.value, amount: c.amount, currency: deal.currency, percentage: c.percentage, status: "expected", expectedDate: isoDay(new Date(at.getTime() + 30 * DAY)), computation: { method: c.method, steps: c.steps }, createdAt: at })
+    .values({ tenantId: actor.tenantId, dealId, structureId: closing?.scenario.structureId ?? st.id, recipientUserId: deal.ownerUserId, payer, grossDealValue: closing ? Number(closing.scenario.price) : deal.value, amount: c.amount, currency: deal.currency, percentage: c.percentage, status: "expected", expectedDate: isoDay(new Date(at.getTime() + 30 * DAY)), computation: { method: c.method, steps: c.steps }, createdAt: at })
     .returning();
   const staff = await db.select({ id: s.users.id, role: s.users.role, accessRole: s.users.accessRole }).from(s.users).where(scope(s.users, actor.tenantId, inArray(s.users.role, ["tenant_admin", "analyst"])));
   const senior = staff.find((u) => u.accessRole === "senior_analyst" || u.accessRole === "tenant_owner") ?? staff.find((u) => u.role === "tenant_admin");
-  const rows = computeSplits(st.splits, c.amount, (r) => (r.role === "analyst" || r.role === "junior_analyst" ? deal.ownerUserId : r.role === "senior_analyst" ? (senior?.id ?? null) : null));
+  const gross = closing ? BigInt(closing.result.gross) : 0n;
+  const rows = closing
+    ? closing.result.distribution.map((l) => ({ label: l.kind === "deduction" ? `${l.label} (${l.party})` : l.label, userId: l.kind === "agent" ? (l.userId ?? deal.ownerUserId) : null, percentage: gross ? Number((BigInt(l.amount) * 10_000n) / gross) / 100 : 0, amount: minor(l.amount) }))
+    : computeSplits(st.splits, c.amount, (r) => (r.role === "analyst" || r.role === "junior_analyst" ? deal.ownerUserId : r.role === "senior_analyst" ? (senior?.id ?? null) : null));
   if (rows.length) await db.insert(s.splits).values(rows.map((r) => ({ tenantId: actor.tenantId, commissionId: commission!.id, userId: r.userId, label: r.label, percentage: r.percentage, amount: r.amount, createdAt: at })));
   await systemAudit(db, { tenantId: actor.tenantId, actor: actor.name, action: "computed commission", entityType: "commission", entityId: commission!.id, after: { structure: st.name, amount: c.amount, currency: deal.currency, splits: rows } });
   if (opts.issue) await issueInvoice(db, actor, commission!.id, { at });
