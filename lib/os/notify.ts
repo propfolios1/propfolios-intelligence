@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, inArray } from "drizzle-orm";
 import type { DB } from "@/db";
 import * as s from "@/db/schema";
+import { PUSH_CATEGORIES, sendPush } from "@/lib/pwa/push";
 
 export type NotificationCategory = (typeof s.notifications.$inferInsert)["category"];
 
@@ -55,6 +56,10 @@ export async function notify(
   const pref = new Map(prefs.map((p) => [p.userId, p]));
   const inApp = recipients.filter((r) => pref.get(r.id)?.inApp ?? true);
   if (inApp.length) await db.insert(s.notifications).values(inApp.map((r) => ({ tenantId: n.tenantId, userId: r.id, category: n.category, priority: n.priority ?? "normal", title: n.title, body: n.body, href: n.href ?? null })));
+  if (inApp.length && (n.priority === "high" || PUSH_CATEGORIES.has(n.category))) {
+    // Phones get the same notification; a push failure never blocks the in-app one.
+    await sendPush(db, inApp.map((r) => r.id), { title: n.title, body: n.body, href: n.href, category: n.category, tag: n.category }).catch(() => undefined);
+  }
   for (const r of recipients) {
     const p = pref.get(r.id);
     const email = p ? p.email && p.digest === "off" : DEFAULT_EMAIL[n.category] && !r.invitedAt;

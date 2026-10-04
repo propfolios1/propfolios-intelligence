@@ -732,7 +732,7 @@ export const notifications = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    category: text("category").$type<"deals" | "commissions" | "kyc" | "insights" | "mentions" | "system" | "reports">().notNull(),
+    category: text("category").$type<"deals" | "commissions" | "kyc" | "insights" | "mentions" | "system" | "reports" | "leads" | "messages">().notNull(),
     priority: text("priority").$type<"high" | "normal" | "low">().notNull().default("normal"),
     title: text("title").notNull(),
     body: text("body").notNull(),

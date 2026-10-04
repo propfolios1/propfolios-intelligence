@@ -1,0 +1,16 @@
+{
+  "appId": "ai.nakhla.agent",
+  "appName": "Nakhla",
+  "webDir": "public",
+  "server": {
+    "url": "https://app.nakhla.ai/m/dashboard",
+    "cleartext": false,
+    "allowNavigation": ["*.nakhla.ai"]
+  },
+  "ios": { "contentInset": "always", "limitsNavigationsToAppBoundDomains": true },
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "PushNotifications": { "presentationOptions": ["badge", "sound", "alert"] },
+    "SplashScreen": { "backgroundColor": "#0A1F44", "launchShowDuration": 600 }
+  }
+}

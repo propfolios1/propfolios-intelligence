@@ -28,6 +28,8 @@ const isPublic = createRouteMatcher([
   "/api/portal-sandbox/(.*)",
   "/sites(.*)",
   "/api/sites/(.*)",
+  "/manifest.webmanifest",
+  "/pwa/(.*)",
   "/opengraph-image(.*)",
   "/icon(.*)",
 ]);
@@ -51,7 +53,7 @@ const withClerk = clerkMiddleware(async (auth, req) => {
  * hosts and app paths are never rewritten.
  */
 const SITE_CACHE = new Map<string, { slug: string | null; until: number }>();
-const APP_PATHS = /^\/(api|_next|analyst|admin|client|platform|sign-in|sign-up|onboarding|trial|sites|notifications|share|sign|home|demo|pricing)(\/|$)/;
+const APP_PATHS = /^\/(api|_next|analyst|admin|client|platform|sign-in|sign-up|onboarding|trial|sites|notifications|share|sign|home|demo|pricing|m|pwa|manifest.webmanifest)(\/|$)/;
 
 async function siteRewrite(req: NextRequest): Promise<NextResponse | null> {
   const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").toLowerCase().split(":")[0]!;

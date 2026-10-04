@@ -28,6 +28,8 @@ const CATEGORY: Record<Pref["category"], { label: string; note: string; staff: b
   insights: { label: "Insights", note: "Proactive intelligence on your portfolio and pipeline", staff: false, email: false },
   mentions: { label: "Mentions", note: "A colleague wrote @your name in a note or message", staff: true, email: true },
   reports: { label: "Reports", note: "Quarterly reports and statements ready to read", staff: false, email: true },
+  leads: { label: "Leads", note: "New leads assigned to you and handoffs from the lead response assistant", staff: true, email: false },
+  messages: { label: "Messages", note: "WhatsApp and portal messages waiting for a reply", staff: true, email: false },
   system: { label: "System", note: "Automations, data requests and workspace changes", staff: true, email: false },
 };
 

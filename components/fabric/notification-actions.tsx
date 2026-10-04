@@ -6,7 +6,7 @@ import { post } from "@/components/commission/post";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/form";
 
-export type Pref = { category: "deals" | "commissions" | "kyc" | "insights" | "mentions" | "system" | "reports"; label: string; note: string; inApp: boolean; email: boolean; digest: "off" | "daily" | "weekly" };
+export type Pref = { category: "deals" | "commissions" | "kyc" | "insights" | "mentions" | "system" | "reports" | "leads" | "messages"; label: string; note: string; inApp: boolean; email: boolean; digest: "off" | "daily" | "weekly" };
 
 export function MarkRead({ ids, label = "Mark as read", variant = "ghost" }: { ids: string[] | "all"; label?: string; variant?: "ghost" | "secondary" }) {
   const router = useRouter();

@@ -334,3 +334,40 @@ export const websiteBlocks = pgTable(
   },
   (t) => [index("website_blocks_page_idx").on(t.websitePageId, t.order), index("website_blocks_tenant_idx").on(t.tenantId)],
 );
+
+/* ========================================================= F5 MOBILE AND PUSH */
+
+export const pushTokens = pgTable(
+  "push_tokens",
+  {
+    id,
+    tenantId: tenantRef(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Web Push endpoint, or the native token when wrapped with Capacitor. */
+    token: text("token").notNull(),
+    keys: jsonb("keys").$type<{ p256dh: string; auth: string } | null>(),
+    platform: text("platform").$type<"web" | "ios" | "android">().notNull().default("web"),
+    lastSuccessAt: at("last_success_at"),
+    failures: integer("failures").notNull().default(0),
+    ...ts,
+  },
+  (t) => [uniqueIndex("push_tokens_token_idx").on(t.token), index("push_tokens_user_idx").on(t.userId)],
+);
+
+export const mobileSessions = pgTable(
+  "mobile_sessions",
+  {
+    id,
+    tenantId: tenantRef(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    device: text("device").notNull(),
+    lastSeen: at("last_seen").notNull().defaultNow(),
+    cacheVersion: text("cache_version"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("mobile_sessions_device_idx").on(t.userId, t.device), index("mobile_sessions_tenant_idx").on(t.tenantId)],
+);

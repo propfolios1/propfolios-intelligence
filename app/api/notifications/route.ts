@@ -13,7 +13,7 @@ export const GET = handle(async () => {
   return NextResponse.json({ unread: rows.filter((r) => !r.readAt).length, notifications: rows });
 });
 
-const CATEGORIES = ["deals", "commissions", "kyc", "insights", "mentions", "system", "reports"] as const;
+const CATEGORIES = ["deals", "commissions", "kyc", "insights", "mentions", "system", "reports", "leads", "messages"] as const;
 
 /** Mark read (ids, or all) and set preferences. */
 export const POST = handle(async (req: Request) => {
