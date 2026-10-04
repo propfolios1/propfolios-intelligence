@@ -12,6 +12,7 @@ import { PaletteDemo } from "@/components/home/palette-demo";
 import { Pricing } from "@/components/home/pricing";
 import { Problem } from "@/components/home/problem";
 import { Screenshots } from "@/components/home/screenshots";
+import { Solution } from "@/components/home/solution";
 import { TrustBar } from "@/components/home/trust";
 import "@/components/home/home.css";
 import { LivePreview } from "@/components/landing/live-preview";
@@ -64,6 +65,7 @@ export default async function Landing() {
         <Hero agents={agents.length} />
         <TrustBar />
         <Problem />
+        <Solution agents={agents.length} />
         <Modules />
         <Agents />
         <Markets />
