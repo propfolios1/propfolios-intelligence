@@ -54,11 +54,13 @@ export function Integrations() {
               custom={k}
               variants={{ hidden: { opacity: 0, y: 12 }, show: (d: number) => ({ opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE, delay: d * 0.02 } }) }}
               title={`${it.name}: ${it.detail ?? it.kind}`}
-              className="group flex aspect-square flex-col items-center justify-center rounded-md border border-hairline bg-surface p-2 text-center opacity-60 grayscale transition-[opacity,border-color] duration-150 hover:border-navy-300 hover:opacity-100"
+              className="group aspect-square rounded-md border border-hairline bg-surface transition-[border-color] duration-150 hover:border-navy-300"
             >
-              <span className="num flex size-9 items-center justify-center rounded-sm border border-hairline text-[12px] font-medium text-navy-900">{mono(it.name)}</span>
-              <span className="mt-2 line-clamp-1 text-[11px] font-medium text-ink-900">{it.name}</span>
-              <span className="line-clamp-1 text-[10px] text-ink-500">{it.kind}</span>
+              <span className="flex h-full flex-col items-center justify-center p-2 text-center opacity-60 grayscale transition-opacity duration-150 group-hover:opacity-100">
+                <span className="num flex size-9 items-center justify-center rounded-sm border border-hairline text-[12px] font-medium text-navy-900">{mono(it.name)}</span>
+                <span className="mt-2 line-clamp-1 text-[11px] font-medium text-ink-900">{it.name}</span>
+                <span className="line-clamp-1 text-[10px] text-ink-500">{it.kind}</span>
+              </span>
             </motion.li>
           ))}
         </motion.ul>

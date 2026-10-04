@@ -16,6 +16,7 @@ import { PaletteDemo } from "@/components/home/palette-demo";
 import { Pricing } from "@/components/home/pricing";
 import { Problem } from "@/components/home/problem";
 import { Screenshots } from "@/components/home/screenshots";
+import { Security } from "@/components/home/security";
 import { Solution } from "@/components/home/solution";
 import { TrustBar } from "@/components/home/trust";
 import "@/components/home/home.css";
@@ -91,6 +92,7 @@ export default async function Landing() {
         <Screenshots />
         <Mobile />
         <Integrations />
+        <Security policies={policies} />
         <Customers />
         <Pricing />
         <PaletteDemo />
