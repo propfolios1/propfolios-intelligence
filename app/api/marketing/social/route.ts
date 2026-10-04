@@ -5,6 +5,7 @@ import { SOCIAL_NETWORKS } from "@/db/schema-production";
 import { audit, handle, parseBody } from "@/lib/api";
 import { requireApiUser, requirePermission } from "@/lib/auth";
 import { connectSocial, schedulePost } from "@/lib/marketing/service";
+import { requirePlan } from "@/lib/plan-gate";
 
 const body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("connect"), network: z.enum(SOCIAL_NETWORKS), mode: z.enum(["live", "sandbox"]), displayName: z.string().trim().min(2).max(80), accountRef: z.string().trim().max(120).nullable().optional(), creds: z.object({ accessToken: z.string().max(4000).optional(), pageId: z.string().max(60).optional(), igUserId: z.string().max(60).optional(), orgUrn: z.string().max(120).optional() }).optional() }),
@@ -13,6 +14,7 @@ const body = z.discriminatedUnion("action", [
 
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin", "analyst"]);
+  await requirePlan(user, "marketing");
   const b = await parseBody(req, body);
   const db = await getDb();
   if (b.action === "connect") {

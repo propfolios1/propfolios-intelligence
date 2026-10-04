@@ -6,6 +6,8 @@ import { PageContainer } from "@/components/shell/page-container";
 import { getDb } from "@/db";
 import { requireRole } from "@/lib/auth";
 import { previewExport } from "@/lib/enterprise/audit-export";
+import { PlanNotice } from "@/components/billing/plan-notice";
+import { tenantPlan } from "@/lib/plan-gate";
 
 export const metadata = { title: "Audit export" };
 export const dynamic = "force-dynamic";
@@ -14,6 +16,7 @@ const FIELDS = ["id", "timestamp", "tenant_id", "actor_type", "actor_id", "actor
 
 export default async function AuditExportPage() {
   const user = await requireRole(["tenant_admin"]);
+  const plan = await tenantPlan(user.tenantId);
   const to = new Date();
   const from = new Date(to.getTime() - 30 * 86_400_000);
   const { entityTypes } = await previewExport(await getDb(), user.tenantId, { from, to });
@@ -21,6 +24,7 @@ export default async function AuditExportPage() {
     <PageContainer>
       <PageHeader eyebrow="Enterprise" title="Audit export" subtitle="Every action by a person, an AI agent or the system, with before and after values, for review, regulators or the firm's SIEM." />
       <EnterpriseTabs active="/admin/audit/export" />
+      <PlanNotice plan={plan} module="audit_export" />
       <Section title="Export">
         <AuditExportForm entityTypes={entityTypes} defaults={{ from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }} />
       </Section>

@@ -4,9 +4,11 @@ import { audit, handle, parseBody } from "@/lib/api";
 import { requireApiUser } from "@/lib/auth";
 import { campaignSchema } from "@/lib/marketing/schemas";
 import { activate, createCampaign } from "@/lib/marketing/service";
+import { requirePlan } from "@/lib/plan-gate";
 
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin", "analyst"]);
+  await requirePlan(user, "marketing");
   const b = await parseBody(req, campaignSchema);
   const db = await getDb();
   const c = await createCampaign(db, user.tenantId, { ...b, userId: user.id });

@@ -11,6 +11,8 @@ import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { requireRole } from "@/lib/auth";
 import { scope } from "@/lib/tenant-db";
+import { PlanNotice } from "@/components/billing/plan-notice";
+import { tenantPlan } from "@/lib/plan-gate";
 
 export const metadata = { title: "Marketing" };
 export const dynamic = "force-dynamic";
@@ -20,6 +22,7 @@ const TONE = { draft: "neutral", scheduled: "progress", sent: "complete", comple
 
 export default async function Marketing() {
   const user = await requireRole(["tenant_admin"]);
+  const plan = await tenantPlan(user.tenantId);
   const db = await getDb();
   const since = new Date(Date.now() - 30 * 86_400_000);
   const [campaigns, sends, posts] = await Promise.all([
@@ -33,6 +36,7 @@ export default async function Marketing() {
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration" title="Marketing" subtitle="Email and WhatsApp sequences, one-off sends to saved audiences, automatic promotion of every new and reduced listing, and scheduled posts on the firm's social accounts. Only leads who consented to marketing are ever contacted." />
+      <PlanNotice plan={plan} module="marketing" />
       <MarketingTabs active="/admin/marketing" />
       <section className="my-8 stat-row">
         <StatCard label="Running" value={String(live.length)} note={`${live.filter((c) => c.kind === "auto_promote").length} auto-promotion ${live.filter((c) => c.kind === "auto_promote").length === 1 ? "rule" : "rules"}`} />

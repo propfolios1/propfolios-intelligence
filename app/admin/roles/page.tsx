@@ -10,6 +10,8 @@ import { requireRole } from "@/lib/auth";
 import { GRANTABLE, listRoles, PERMISSION_GROUPS } from "@/lib/enterprise/roles";
 import { BASE_ROLE, MATRIX, PERMISSIONS, ROLE_LABEL, type AccessRole } from "@/lib/rbac/permissions";
 import { scope } from "@/lib/tenant-db";
+import { PlanNotice } from "@/components/billing/plan-notice";
+import { tenantPlan } from "@/lib/plan-gate";
 
 export const metadata = { title: "Roles" };
 export const dynamic = "force-dynamic";
@@ -18,6 +20,7 @@ const TEMPLATES: AccessRole[] = ["tenant_admin", "compliance_officer", "senior_a
 
 export default async function RolesPage() {
   const user = await requireRole(["tenant_admin"]);
+  const plan = await tenantPlan(user.tenantId);
   const db = await getDb();
   const [roles, people] = await Promise.all([listRoles(db, user.tenantId), db.select({ id: s.users.id, name: s.users.name, email: s.users.email, role: s.users.role, customRoleId: s.users.customRoleId, deactivatedAt: s.users.deactivatedAt }).from(s.users).where(scope(s.users, user.tenantId, ne(s.users.role, "platform_admin"))).orderBy(asc(s.users.role), asc(s.users.name))]);
   const catalogue = {
@@ -29,6 +32,7 @@ export default async function RolesPage() {
     <PageContainer>
       <PageHeader eyebrow="Enterprise" title="Roles" subtitle="Compose roles from the permission catalogue when the built-in roles do not match how the firm works: a leasing desk lead, an external auditor, a family office's delegate." />
       <EnterpriseTabs active="/admin/roles" />
+      <PlanNotice plan={plan} module="custom_roles" />
       <Section title="Custom roles" description="A custom role replaces the permissions of the person's access role. Their base role still decides which workspace they use and what row-level security lets them read.">
         <RolesPanel roles={roles.map((r) => ({ ...r, permissions: r.permissions }))} catalogue={catalogue} />
       </Section>

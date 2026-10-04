@@ -10,6 +10,8 @@ import * as s from "@/db/schema";
 import { requireRole } from "@/lib/auth";
 import { DEVELOPERS } from "@/lib/developers/catalogue";
 import { scope } from "@/lib/tenant-db";
+import { PlanNotice } from "@/components/billing/plan-notice";
+import { tenantPlan } from "@/lib/plan-gate";
 
 export const metadata = { title: "Developer inventory" };
 export const dynamic = "force-dynamic";
@@ -18,6 +20,7 @@ const MODE = { feed_url: "Feed", json_api: "API", upload: "Uploads", sandbox: "S
 
 export default async function Developers() {
   const user = await requireRole(["tenant_admin"]);
+  const plan = await tenantPlan(user.tenantId);
   const conns = await (await getDb()).select().from(s.developerConnections).where(scope(s.developerConnections, user.tenantId));
   const groups = [
     ["AE", "United Arab Emirates"],
@@ -35,6 +38,7 @@ export default async function Developers() {
           </Button>
         }
       />
+      <PlanNotice plan={plan} module="developer_sync" />
       {groups.map(([m, label]) => (
         <Section key={m} title={label}>
           <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

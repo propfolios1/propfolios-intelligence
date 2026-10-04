@@ -20,6 +20,8 @@ import { formatLocal } from "@/lib/format";
 import { marketOf } from "@/lib/markets";
 import { scope } from "@/lib/tenant-db";
 import { cn, formatDate } from "@/lib/utils";
+import { PlanNotice } from "@/components/billing/plan-notice";
+import { tenantPlan } from "@/lib/plan-gate";
 
 export const metadata = { title: "Team and offices" };
 export const dynamic = "force-dynamic";
@@ -28,6 +30,7 @@ const METRICS: TargetMetric[] = ["leads_converted", "listings_won", "deals_close
 
 export default async function TeamPage({ searchParams }: { searchParams: Promise<{ period?: string }> }) {
   const user = await requireRole(["tenant_admin"]);
+  const plan = await tenantPlan(user.tenantId);
   const db = await getDb();
   const q = quarter();
   await ensureHistory(db, user.tenantId, 6);
@@ -60,6 +63,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
   return (
     <PageContainer>
       <PageHeader eyebrow="Administration" title="Team and offices" subtitle={`Performance and coaching, offices, licences and onboarding, targets against what the records show for ${q.label}, and the recruiting pipeline.`} actions={<AddRecruit offices={offices.map((o) => ({ id: o.o.id, name: o.o.name }))} />} />
+      <PlanNotice plan={plan} module="team_analytics" />
       <section className="my-8 stat-row">
         <StatCard label="Offices" value={String(offices.length)} note={`${members.length} licensed members`} />
         <StatCard label="Gross commission, quarter" value={formatLocal(gciA, cur)} note={gciT ? `${Math.round((gciA / gciT) * 100)}% of target` : "No target set"} />

@@ -5,12 +5,14 @@ import { audit, handle, parseBody } from "@/lib/api";
 import { requireApiUser, requirePermission } from "@/lib/auth";
 import { exportAudit, previewExport, verifyExport } from "@/lib/enterprise/audit-export";
 import { auditExportQuery } from "@/lib/enterprise/schemas";
+import { requirePlan } from "@/lib/plan-gate";
 
 const range = (q: z.infer<typeof auditExportQuery>) => ({ from: new Date(`${q.from}T00:00:00Z`), to: new Date(new Date(`${q.to}T00:00:00Z`).getTime() + 86_400_000), actorType: q.actorType ?? null, entityType: q.entityType || null });
 
 /** Downloads the export. The digest and signature travel in the response headers. */
 export const GET = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin"]);
+  await requirePlan(user, "audit_export");
   requirePermission(user, "audit:read");
   const q = auditExportQuery.parse(Object.fromEntries(new URL(req.url).searchParams));
   const out = await exportAudit(await getDb(), user.tenantId, range(q), q.format);

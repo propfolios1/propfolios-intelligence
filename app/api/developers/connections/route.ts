@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { audit, handle, parseBody } from "@/lib/api";
 import { requireApiUser, requirePermission } from "@/lib/auth";
 import { connectDeveloper, syncConnection } from "@/lib/developers/sync";
+import { requirePlan } from "@/lib/plan-gate";
 
 const field = z.string().trim().max(80).optional();
 const body = z.object({
@@ -17,6 +18,7 @@ const body = z.object({
 
 export const POST = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin"]);
+  await requirePlan(user, "developer_sync");
   requirePermission(user, "firm:settings");
   const b = await parseBody(req, body);
   const db = await getDb();

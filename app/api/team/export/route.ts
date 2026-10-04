@@ -2,9 +2,11 @@ import { getDb } from "@/db";
 import { audit, handle } from "@/lib/api";
 import { HttpError, requireApiUser } from "@/lib/auth";
 import { ensureHistory, exportCsv, periodOf } from "@/lib/team/metrics";
+import { requirePlan } from "@/lib/plan-gate";
 
 export const GET = handle(async (req: Request) => {
   const user = await requireApiUser(["tenant_admin"]);
+  await requirePlan(user, "team_analytics");
   const period = new URL(req.url).searchParams.get("period") ?? periodOf();
   if (!/^\d{4}-\d{2}$/.test(period)) throw new HttpError(422, "Period must be YYYY-MM.");
   const db = await getDb();

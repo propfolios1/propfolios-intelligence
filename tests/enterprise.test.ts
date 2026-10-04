@@ -103,8 +103,8 @@ describe("SCIM provisioning", () => {
     const admin = await scim.replaceUser(env.db, env.a.id, "enterprise", base, u.id, { userName: "rana@alpha-realty.ae", roles: [{ value: "tenant_admin" }] });
     expect(admin.roles[0]!.value).toBe("tenant_admin");
     await expect(scim.createUser(env.db, env.a.id, "starter", base, { userName: "one@alpha-realty.ae" })).resolves.toBeTruthy();
-    // Starter has five seats; the test tenant already holds staff plus the users above.
-    for (let i = 0; i < 5; i++) await scim.createUser(env.db, env.a.id, "starter", base, { userName: `extra${i}@alpha-realty.ae` }).catch(() => undefined);
+    // Starter has ten seats; fill them, then one more is refused.
+    for (let i = 0; i < 12; i++) await scim.createUser(env.db, env.a.id, "starter", base, { userName: `extra${i}@alpha-realty.ae` }).catch(() => undefined);
     await expect(scim.createUser(env.db, env.a.id, "starter", base, { userName: "over@alpha-realty.ae" })).rejects.toMatchObject({ status: 403 });
     expect(scim.serviceProviderConfig(base)).toMatchObject({ patch: { supported: true }, filter: { supported: true } });
   });
