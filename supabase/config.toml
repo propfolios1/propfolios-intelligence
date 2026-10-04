@@ -1,0 +1,21 @@
+# Supabase project configuration for the scheduled-job edge functions.
+# verify_jwt keeps the gateway's JWT check; each function also compares the
+# bearer token with the service role key before relaying.
+[functions.trial-lifecycle]
+verify_jwt = true
+[functions.developer-sync]
+verify_jwt = true
+[functions.portal-publish-poll]
+verify_jwt = true
+[functions.insight-agent]
+verify_jwt = true
+[functions.federation-aggregate]
+verify_jwt = true
+[functions.portfolio-monitor]
+verify_jwt = true
+[functions.client-servicing]
+verify_jwt = true
+[functions.developer-risk]
+verify_jwt = true
+[functions.bi-nightly]
+verify_jwt = true

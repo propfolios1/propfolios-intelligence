@@ -22,6 +22,7 @@ const isPublic = createRouteMatcher([
   "/api/migrate/rename-demo-tenants",
   "/api/locale",
   "/api/cron(.*)",
+  "/api/jobs/(.*)",
   "/opengraph-image(.*)",
   "/icon(.*)",
 ]);

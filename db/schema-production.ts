@@ -124,4 +124,30 @@ export const migrationLogs = pgTable(
   (t) => [index("migration_logs_job_idx").on(t.jobId, t.occurredAt), index("migration_logs_tenant_idx").on(t.tenantId)],
 );
 
-export const PRODUCTION_TABLES = ["migration_jobs", "migration_field_maps", "migration_rows", "migration_logs"] as const;
+
+/* ================================================== SCHEDULED JOB RUNS */
+
+/**
+ * Every scheduled or manual job execution. Platform-level (no tenant): jobs
+ * span firms. RLS is enabled with no policies, so only the service role and
+ * the application's own connection can read it.
+ */
+export const jobRuns = pgTable(
+  "job_runs",
+  {
+    id,
+    job: text("job").notNull(),
+    trigger: text("trigger").$type<"cron" | "manual">().notNull().default("cron"),
+    status: text("status").$type<"running" | "succeeded" | "failed" | "skipped">().notNull().default("running"),
+    /** Caller-supplied key; a second request with the same key returns the first run instead of running again. */
+    idempotencyKey: text("idempotency_key"),
+    startedAt: at("started_at").notNull().defaultNow(),
+    finishedAt: at("finished_at"),
+    durationMs: integer("duration_ms"),
+    result: jsonb("result").$type<Record<string, unknown>>(),
+    error: text("error"),
+    actor: text("actor"),
+    ...ts,
+  },
+  (t) => [index("job_runs_job_idx").on(t.job, t.startedAt), uniqueIndex("job_runs_idem_idx").on(t.job, t.idempotencyKey)],
+);
