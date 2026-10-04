@@ -136,3 +136,29 @@ export function agentExamples(): AgentExample[] {
     return { number: a.number, name: a.name, label: a.label, group: a.module, description: a.description, model: a.model, promptVersion: a.promptVersion, input: input === null ? null : show(input), output: output === null ? null : show(output) };
   });
 }
+
+/** The research agent's dossier on the sample mandate, for the live replay on the public site. */
+export function researchReplay() {
+  const ctx = sampleMandate();
+  const dubai = MARKET_SERIES.Dubai!;
+  const last = dubai.psf.length - 1;
+  const growth = ((dubai.psf[last]! - dubai.psf[0]!) / dubai.psf[0]!) * 100;
+  const peers = PROPERTIES.filter((x) => x.community === ctx.property.community && x.name !== ctx.property.name);
+  const marketSummary = `Dubai recorded ${dubai.tx[last]!.toLocaleString("en-US")} registered transactions in the latest month at a median of AED ${dubai.psf[last]!.toLocaleString("en-US")} per sq ft, ${growth.toFixed(1)}% higher than twelve months earlier.`;
+  const comparablesSummary = peers.length ? `${peers.map((x) => `${x.name} at AED ${x.pricePerSqft.toLocaleString("en-US")} per sq ft`).join("; ")}.` : "";
+  const r = replayResearch(ctx, comparablesSummary, marketSummary);
+  const steps = [
+    `Reading ${dubai.tx.length} months of registered transactions for Dubai`,
+    `Comparing ${ctx.property.name} with ${peers.length} ${peers.length === 1 ? "project" : "projects"} in ${ctx.property.community}`,
+    `Scoring the developer: ${ctx.developer.name}, risk ${ctx.developer.riskScore.toFixed(1)}`,
+    `Weighing ${r.risks.length} risks against the client's objective`,
+    `Writing ${r.sections.length} sections with ${r.citations.length} citations`,
+  ];
+  return {
+    asset: `${ctx.property.name}, ${ctx.property.community}`,
+    steps,
+    summary: r.summary,
+    sections: r.sections.slice(0, 3).map((x) => ({ heading: x.heading, body: x.body })),
+    citations: r.citations.map((c) => ({ id: c.id, source: c.source, title: c.title })),
+  };
+}

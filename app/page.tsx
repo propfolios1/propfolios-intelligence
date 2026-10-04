@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/brand/brand-mark";
 import { AccessProvider } from "@/components/home/access";
 import { Agents } from "@/components/home/agents";
 import { Customers } from "@/components/home/customers";
+import { DeepDive } from "@/components/home/deep-dive";
 import { FinalCta } from "@/components/home/final-cta";
 import { Hero } from "@/components/home/hero";
 import { Nav } from "@/components/home/nav";
@@ -20,7 +21,7 @@ import { LivePreview } from "@/components/landing/live-preview";
 import { Button } from "@/components/ui/button";
 import { getDb } from "@/db";
 import { agentCatalogue } from "@/lib/ai/usage";
-import { agentExamples } from "@/lib/home-examples";
+import { agentExamples, researchReplay } from "@/lib/home-examples";
 import { clerkEnabled } from "@/lib/auth";
 import { tenantForHost } from "@/lib/tenant";
 
@@ -84,6 +85,7 @@ export default async function Landing() {
         <Modules />
         <Agents agents={examples} stats={stats} />
         <Markets />
+        <DeepDive replay={researchReplay()} />
         <Screenshots />
         <Customers />
         <Pricing />
