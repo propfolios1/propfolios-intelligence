@@ -11,6 +11,7 @@ import { planById, type PlanId } from "@/lib/plans";
 import { AVG_TICKET_AED, CLIENTS, DEVELOPERS, INR_PER_AED, MARKET_SERIES, PROPERTIES, scoreDeveloper, STAFF } from "./seed-data";
 import { DOWNTOWN, downtownMemoHtml, INDIA, PALM, palmMemoHtml } from "./seed-mandates";
 import { DEMO_ADMINS, DEMO_TENANTS, seedBrokerageOnlyTenants } from "./seed-tenants";
+import { seedWorkspaces } from "./seed-workspaces";
 
 /** Deterministic UUID from a key so re-seeding never duplicates. */
 export function uid(key: string) {
@@ -770,6 +771,7 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   await seedTenantData(db, { tenantId: bombayId, slug: DEMO_TENANTS.india.slug, key: "bombay", staff: false, adminUserId: bombayAdmin, adminName: DEMO_ADMINS.india.name });
 
   await seedBrokerageOnlyTenants(db);
+  const workspaces = await seedWorkspaces(db);
 
   const meridianId = uid("tenant:meridian");
   await addTenant(db, { id: meridianId, name: "Meridian Family Office", slug: "meridian", plan: "starter", status: "trial", config: defaultTenantConfig("Meridian Family Office", { primary_color: "#2B2A4C", accent_color: "#C2A15A" }), startedMonthsAgo: 0.3 });
@@ -783,7 +785,7 @@ export async function seed(db: DB, opts: { force?: boolean } = {}) {
   const federation = await seedFederation(db, [TENANT_ID, gulfId, bombayId], alnoorId);
   await seedPlatformOs(db, PLATFORM_SUBSCRIPTIONS(gulfId, bombayId));
 
-  return { ...result, tenants: 6, federation: { learnings: federation.learnings, baselines: federation.baselines } };
+  return { ...result, tenants: 9, workspaces: Object.keys(workspaces).length, federation: { learnings: federation.learnings, baselines: federation.baselines } };
 }
 const PLATFORM_SUBSCRIPTIONS = (gulfId: string, bombayId: string) => [
   { tenantId: TENANT_ID, slugs: ["market-pulse", "quarterly-benchmarks"] },
@@ -815,5 +817,7 @@ async function upgrade(db: DB) {
     done.push(t.slug);
   }
   if (done.length) await seedPlatformOs(db, PLATFORM_SUBSCRIPTIONS(uid("tenant:gulfrealty"), uid("tenant:bombay")));
+  // The seven demonstration brokerages, each a full market workspace.
+  for (const key of Object.keys(await seedWorkspaces(db))) done.push(`workspace:${key}`);
   return done;
 }

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { DB } from "@/db";
 import * as s from "@/db/schema";
 import type { CatalogueMarket } from "@/db/schema-core";
@@ -35,7 +35,11 @@ export interface MarketSeedTarget {
   /** Email domain for seeded agents; reserved example domains only. */
   domain?: string;
   now?: number;
+  /** Added to every generated reference (LS-, LD-, DL-, MND-), so a workspace that already has records keeps its own numbering. */
+  refBase?: number;
 }
+
+const refOf = (t: Pick<MarketSeedTarget, "refBase">, prefix: string, n: number) => `${prefix}-${String((t.refBase ?? 0) + n).padStart(4, "0")}`;
 
 export type MarketSeedCounts = { agents: number; developers: number; projects: number; listings: number; leads: number; clients: number; deals: number; commissions: number; automations: number; marketMonths: number; journeys: number };
 
@@ -65,7 +69,10 @@ export async function seedMarketWorkspace(db: DB, t: MarketSeedTarget): Promise<
 async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
   const p = profileFor(t.market);
   const m = MARKETS[p.code];
-  const id = idFor(t.key);
+  // Agents, developers and clients that already exist in the workspace under the same name are reused, not duplicated.
+  const alias = new Map<string, string>();
+  const baseId = idFor(t.key);
+  const id = (k: string) => alias.get(k) ?? baseId(k);
   const r = rng(t.key);
   const now = t.now ?? Date.now();
   const domain = t.domain ?? "demo.nakhla.ai";
@@ -73,6 +80,21 @@ async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
   const pick = <T,>(arr: readonly T[], i: number) => arr[i % arr.length]!;
 
   /* agents with three months of activity history */
+  const existingUsers = await db.select({ id: s.users.id, name: s.users.name }).from(s.users).where(and(eq(s.users.tenantId, t.tenantId), inArray(s.users.name, p.agents.map((a) => a.name))));
+  for (const a of p.agents) {
+    const hit = existingUsers.find((u) => u.name === a.name);
+    if (hit) alias.set(`user:${a.key}`, hit.id);
+  }
+  const existingDevs = await db.select({ id: s.developers.id, name: s.developers.name }).from(s.developers).where(and(eq(s.developers.tenantId, t.tenantId), inArray(s.developers.name, p.developers.map((d) => d.name))));
+  for (const d of p.developers) {
+    const hit = existingDevs.find((x) => x.name === d.name);
+    if (hit) alias.set(`dev:${d.key}`, hit.id);
+  }
+  const existingClients = await db.select({ id: s.clients.id, name: s.clients.name }).from(s.clients).where(and(eq(s.clients.tenantId, t.tenantId), inArray(s.clients.name, p.clients.map((c) => c.name))));
+  for (const c of p.clients) {
+    const hit = existingClients.find((x) => x.name === c.name);
+    if (hit) alias.set(`client:${c.key}`, hit.id);
+  }
   const agents = p.agents.map((a, i) => ({ id: id(`user:${a.key}`), tenantId: t.tenantId, name: a.name, email: `${slugOf(a.name)}@${domain}`, title: a.title, role: "analyst" as const, accessRole: i === 0 ? ("senior_analyst" as const) : ("analyst" as const), preferences: { digest: "weekly" as const, alerts: true, currency: (p.currency === "INR" ? "INR" : p.currency === "AED" ? "AED" : "USD") as "AED" | "USD" | "INR" }, lastActiveAt: new Date(now - (1 + i * 3) * HOUR), createdAt: new Date(now - (420 - i * 90) * DAY) }));
   await db.insert(s.users).values(agents).onConflictDoNothing();
   const staff = [t.adminUserId, ...agents.map((a) => a.id)];
@@ -120,7 +142,7 @@ async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
     return {
       id: id(`listing:${i}`),
       tenantId: t.tenantId,
-      reference: `LS-${String(i + 1).padStart(4, "0")}`,
+      reference: refOf(t, "LS", i + 1),
       title: `${beds ? `${beds}-bedroom` : "Studio"} ${ty.type.toLowerCase()}${rent ? " to let" : ""}, ${c.community}`,
       market: p.code,
       city: c.city,
@@ -173,7 +195,7 @@ async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
     const phone = p.phone(i);
     const scored = scoreLead({ email, phone, intent, timeline, source, budgetMin: null, budgetMax, listingPrice: l?.price ?? null, recentEngagements: stage === "viewing" || stage === "offer" ? 3 : contacted && now - contacted < 14 * DAY ? 1 : 0, daysSinceContact: contacted ? Math.floor((now - contacted) / DAY) : null, daysSinceCreated: Math.floor((now - created) / DAY) });
     const leadId = id(`lead:${i}`);
-    leadRows.push({ id: leadId, tenantId: t.tenantId, reference: `LD-${String(i + 1).padStart(4, "0")}`, name, email, phone, source, market: p.code, intent, propertyType: l?.propertyType ?? null, budgetMax, currency: p.currency, locations: [l?.community ?? pick(p.communities, i).community], timeline, stage, score: scored.score, scoreFactors: scored.factors, ownerUserId: owner(i), listingId: l?.id ?? null, message: l ? pick(["Is this still available, and can I view it this week?", "Please share the floor plan and the service charge.", "Is the price negotiable for a cash buyer?", "We are relocating next quarter and need to move quickly."], i) : "Looking for advice on the right community for our budget.", lastContactAt: contacted ? new Date(contacted) : null, nextAction: stage === "won" || stage === "lost" ? null : stage === "new" ? "First contact" : "Book a viewing", nextActionAt: stage === "won" || stage === "lost" ? null : new Date(now + ((i % 4) - 1) * DAY), lostReason: stage === "lost" ? "Bought through another agency" : null, consentMarketing: i % 3 !== 1, createdAt: new Date(created), updatedAt: new Date(contacted ?? created) });
+    leadRows.push({ id: leadId, tenantId: t.tenantId, reference: refOf(t, "LD", i + 1), name, email, phone, source, market: p.code, intent, propertyType: l?.propertyType ?? null, budgetMax, currency: p.currency, locations: [l?.community ?? pick(p.communities, i).community], timeline, stage, score: scored.score, scoreFactors: scored.factors, ownerUserId: owner(i), listingId: l?.id ?? null, message: l ? pick(["Is this still available, and can I view it this week?", "Please share the floor plan and the service charge.", "Is the price negotiable for a cash buyer?", "We are relocating next quarter and need to move quickly."], i) : "Looking for advice on the right community for our budget.", lastContactAt: contacted ? new Date(contacted) : null, nextAction: stage === "won" || stage === "lost" ? null : stage === "new" ? "First contact" : "Book a viewing", nextActionAt: stage === "won" || stage === "lost" ? null : new Date(now + ((i % 4) - 1) * DAY), lostReason: stage === "lost" ? "Bought through another agency" : null, consentMarketing: i % 3 !== 1, createdAt: new Date(created), updatedAt: new Date(contacted ?? created) });
     acts.push({ id: id(`lead-act:${i}:0`), tenantId: t.tenantId, leadId, type: "inbound", summary: `Enquiry via ${SOURCE_NAME[source] ?? source}`, occurredAt: new Date(created) });
     if (contacted) acts.push({ id: id(`lead-act:${i}:1`), tenantId: t.tenantId, leadId, type: i % 2 ? "whatsapp" : "call", summary: i % 2 ? "WhatsApp: sent the floor plan and asked about timing" : "Call: confirmed budget, financing and preferred areas", outcome: "Responded", userId: owner(i), occurredAt: new Date(contacted) });
     if (stage === "viewing" || stage === "offer" || stage === "won") acts.push({ id: id(`lead-act:${i}:2`), tenantId: t.tenantId, leadId, type: "viewing", summary: `Viewing of ${l?.title ?? "shortlisted homes"}`, outcome: "Interested", userId: owner(i), occurredAt: new Date((contacted ?? created) + 3 * DAY) });
@@ -201,11 +223,11 @@ async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
 
   /* deals: one complete journey, two historical closings, seven open across the pipeline */
   let journeys = 0;
-  const [existingDeal] = await db.select({ id: s.deals.id }).from(s.deals).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.reference, "DL-0001"))).limit(1);
+  const [existingDeal] = await db.select({ id: s.deals.id }).from(s.deals).where(and(eq(s.deals.tenantId, t.tenantId), eq(s.deals.reference, refOf(t, "DL", 1)))).limit(1);
   if (!existingDeal) journeys = await journey(db, t, p, id, now, staff);
   const histRefs = [
-    { ref: "DL-0002", c: 1, x: 1, closed: 75, side: "buy" as const },
-    { ref: "DL-0003", c: 2, x: 4, closed: 40, side: "sell" as const },
+    { ref: refOf(t, "DL", 2), c: 1, x: 1, closed: 75, side: "buy" as const },
+    { ref: refOf(t, "DL", 3), c: 2, x: 4, closed: 40, side: "sell" as const },
   ];
   const { computeForDeal } = await import("@/lib/commission/service");
   for (const h of histRefs) {
@@ -233,7 +255,7 @@ async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
     { stage: "payment", prob: 0.9 },
   ];
   for (const [k, o] of open.entries()) {
-    const ref = `DL-${String(k + 4).padStart(4, "0")}`;
+    const ref = refOf(t, "DL", k + 4);
     const c = pick(p.clients, k + 2);
     const x = pick(p.projects, k + 2);
     const created = new Date(now - (60 - k * 6) * DAY);
@@ -280,9 +302,9 @@ async function journey(db: DB, t: MarketSeedTarget, p: MarketProfile, id: (k: st
   const mandateId = id("mandate:journey");
   await db
     .insert(s.mandates)
-    .values({ id: mandateId, tenantId: t.tenantId, reference: "MND-0001", title: `${x.assetClass} acquisition in ${x.community} for ${c.name}`, clientId: id(`client:${c.key}`), propertyId: id(`prop:${x.key}`), analystId: staff[1], brief: `Acquire a ${x.assetClass.toLowerCase()} in ${x.community} for long-term hold and rental income, within the client's investment policy.`, objective: "Income and capital preservation", ticketSizeAed: Math.round(value * p.aedPer), horizonYears: 7, status: "DELIVERED", priority: "standard", timeline: ["RESEARCH", "UNDERWRITING", "DUE_DILIGENCE", "DEBATE", "MEMO", "DELIVERED"].map((stage, k) => ({ stage, agent: stage.toLowerCase(), status: "complete" as const, startedAt: at(k * 0.5).toISOString(), completedAt: at(k * 0.5 + 0.4).toISOString() })), recommendation: "PROCEED", riskRating: "MEDIUM", deliveredAt: at(3), createdAt: at(0) })
+    .values({ id: mandateId, tenantId: t.tenantId, reference: refOf(t, "MND", 1), title: `${x.assetClass} acquisition in ${x.community} for ${c.name}`, clientId: id(`client:${c.key}`), propertyId: id(`prop:${x.key}`), analystId: staff[1], brief: `Acquire a ${x.assetClass.toLowerCase()} in ${x.community} for long-term hold and rental income, within the client's investment policy.`, objective: "Income and capital preservation", ticketSizeAed: Math.round(value * p.aedPer), horizonYears: 7, status: "DELIVERED", priority: "standard", timeline: ["RESEARCH", "UNDERWRITING", "DUE_DILIGENCE", "DEBATE", "MEMO", "DELIVERED"].map((stage, k) => ({ stage, agent: stage.toLowerCase(), status: "complete" as const, startedAt: at(k * 0.5).toISOString(), completedAt: at(k * 0.5 + 0.4).toISOString() })), recommendation: "PROCEED", riskRating: "MEDIUM", deliveredAt: at(3), createdAt: at(0) })
     .onConflictDoNothing();
-  const d = await createDeal(db, actor, { clientId: id(`client:${c.key}`), propertyId: id(`prop:${x.key}`), mandateId, side: "buy", value, counterparty: p.counterparty[0]!, ownerUserId: staff[1], notes: "The unit recommended in the Allocation Memo.", targetCloseDate: at(30).toISOString().slice(0, 10) }, { inline: true, reference: "DL-0001", createdAt: at(4) });
+  const d = await createDeal(db, actor, { clientId: id(`client:${c.key}`), propertyId: id(`prop:${x.key}`), mandateId, side: "buy", value, counterparty: p.counterparty[0]!, ownerUserId: staff[1], notes: "The unit recommended in the Allocation Memo.", targetCloseDate: at(30).toISOString().slice(0, 10) }, { inline: true, reference: refOf(t, "DL", 1), createdAt: at(4) });
   const o1 = await createOffer(db, actor, d.id, { type: "offer", party: "buyer", amount: round(value * 0.95, step), submit: true, terms: { depositPct: 10, completionDays: 30 } }, { inline: true, at: at(5) });
   const o2 = await createOffer(db, actor, d.id, { type: "counter", party: "seller", amount: round(value * 1.02, step), submit: true, parentOfferId: o1.id, terms: { depositPct: 10, completionDays: 30 } }, { inline: true, at: at(6) });
   const o3 = await createOffer(db, actor, d.id, { type: "final", party: "buyer", amount: value, submit: true, parentOfferId: o2.id, terms: { depositPct: 10, completionDays: 30 } }, { inline: true, at: at(7) });

@@ -58,6 +58,7 @@ export const REC_TYPE_LABEL: Record<string, string> = {
 /** Local currency value with sensible unit. INR in crore. */
 export function formatLocal(value: number, currency: string) {
   if (currency === "INR") return `INR ${(value / 10_000_000).toFixed(2)} Cr`;
+  if (Math.abs(value) >= 1_000_000_000) return `${currency} ${(value / 1_000_000_000).toFixed(2)}B`;
   if (Math.abs(value) >= 1_000_000) return `${currency} ${(value / 1_000_000).toFixed(2)}M`;
   if (Math.abs(value) >= 1_000) return `${currency} ${Math.round(value / 1_000)}K`;
   return `${currency} ${Math.round(value)}`;
