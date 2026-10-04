@@ -22,7 +22,9 @@ export const roleEnum = pgEnum("role", ["platform_admin", "tenant_admin", "analy
 export const planEnum = pgEnum("plan", ["starter", "professional", "enterprise", "white_label"]);
 export const tenantStatusEnum = pgEnum("tenant_status", ["trial", "active", "suspended", "cancelled"]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", ["trialing", "active", "past_due", "cancelled"]);
-export const marketEnum = pgEnum("market", ["UAE", "India"]);
+export const CATALOGUE_MARKETS = ["UAE", "India", "United Kingdom", "Singapore", "Australia", "United States"] as const;
+export type CatalogueMarket = (typeof CATALOGUE_MARKETS)[number];
+export const marketEnum = pgEnum("market", CATALOGUE_MARKETS);
 export const propertyStatusEnum = pgEnum("property_status", ["off_plan", "under_construction", "ready"]);
 export const mandateStatusEnum = pgEnum("mandate_status", ["INTAKE", "RESEARCH", "UNDERWRITING", "DUE_DILIGENCE", "DEBATE", "MEMO", "REVIEW", "DELIVERED"]);
 export const memoStatusEnum = pgEnum("memo_status", ["draft", "in_review", "approved", "delivered"]);
@@ -158,7 +160,7 @@ export type InvestmentPolicy = {
   targetNetYield: number;
   maxOffPlanPct: number;
   maxSingleAssetPct: number;
-  markets: ("UAE" | "India")[];
+  markets: CatalogueMarket[];
   horizonYears: number;
   notes?: string;
 };

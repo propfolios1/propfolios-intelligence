@@ -64,6 +64,13 @@
       "when": 1791115753141,
       "tag": "0008_job_runs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791116924147,
+      "tag": "0009_trials",
+      "breakpoints": true
     }
   ]
 }

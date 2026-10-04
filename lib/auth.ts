@@ -245,7 +245,22 @@ export async function requireApiUser(roles?: Role[]): Promise<CurrentUser> {
   if (s.status === "needs_onboarding") throw new HttpError(409, "Create your firm's workspace first.");
   if (s.status === "suspended") throw new HttpError(403, `The ${s.tenantName} workspace is ${s.tenantStatus}. Contact Nakhla support.`);
   if (roles && !roles.includes(s.user.role)) throw new HttpError(403, "Your role does not permit this action.");
+  await assertTrialWritable(s.user);
   return s.user;
+}
+
+/** Paths a read-only trial may still write to: upgrading, sign-out and session switches. */
+const TRIAL_WRITABLE = [/^\/api\/trial\//, /^\/api\/billing\//, /^\/api\/demo\//, /^\/api\/locale/, /^\/api\/presence/];
+
+/** After day 14 a trial is read-only until it converts: every write outside upgrading is refused with 402. */
+async function assertTrialWritable(user: CurrentUser) {
+  if (user.platformAdmin) return;
+  const { requestContext } = await import("./request-context");
+  const ctx = requestContext.getStore();
+  if (!ctx || ["GET", "HEAD", "OPTIONS"].includes(ctx.method) || TRIAL_WRITABLE.some((r) => r.test(ctx.path))) return;
+  const { trialStatus } = await import("./trial/status");
+  const t = await trialStatus(await getDb(), user.tenantId);
+  if (t && t.state === "read_only") throw new HttpError(402, "The trial has ended and the workspace is read-only. Upgrade in Administration to continue; nothing has been deleted.");
 }
 
 /** Staff always; clients only for their own client record. */

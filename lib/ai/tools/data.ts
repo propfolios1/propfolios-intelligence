@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { DB } from "@/db";
 import * as s from "@/db/schema";
 import { embed } from "../embed";
+import { CATALOGUE_MARKETS } from "@/db/schema-core";
 
 /**
  * Read-only data tools for the assistant. Every tool is scoped to the
@@ -175,7 +176,7 @@ export const DATA_TOOLS = [
     name: "search_properties",
     description: "Search the property catalogue by market, city, community, status or maximum price (local currency).",
     input: z.object({
-      market: z.enum(["UAE", "India"]).nullable().optional(),
+      market: z.enum(CATALOGUE_MARKETS).nullable().optional(),
       text: z.string().nullable().optional().describe("Matches name, city or community"),
       status: z.enum(["off_plan", "under_construction", "ready"]).nullable().optional(),
       maxPrice: z.number().nullable().optional(),

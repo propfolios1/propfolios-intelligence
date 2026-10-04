@@ -4,9 +4,10 @@ import { getDb } from "@/db";
 import { handle } from "@/lib/api";
 import { requireApiUser } from "@/lib/auth";
 import { listProperties } from "@/lib/queries";
+import { CATALOGUE_MARKETS } from "@/db/schema-core";
 
 const query = z.object({
-  market: z.enum(["UAE", "India"]).optional(),
+  market: z.enum(CATALOGUE_MARKETS).optional(),
   status: z.enum(["off_plan", "under_construction", "ready"]).optional(),
   developerId: z.uuid().optional(),
   q: z.string().max(100).optional(),

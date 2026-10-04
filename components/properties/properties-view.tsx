@@ -11,6 +11,7 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { formatLocal, PROPERTY_STATUS_LABEL } from "@/lib/domain";
 import { useUi } from "@/lib/store";
 import { PropertyMap } from "./property-map";
+import type { CatalogueMarket } from "@/db/schema-core";
 
 export interface PropertyRow {
   id: string;
@@ -20,7 +21,7 @@ export interface PropertyRow {
   region: string;
   city: string;
   community: string;
-  market: "UAE" | "India";
+  market: CatalogueMarket;
   assetClass: string;
   status: string;
   priceMin: number;

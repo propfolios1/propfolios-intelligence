@@ -7,12 +7,14 @@ import { HttpError, type CurrentUser } from "./auth";
 import { APIError } from "@anthropic-ai/sdk";
 import { AgentDisabledError } from "./ai/agents/define";
 import { DomainError } from "./errors";
+import { requestContext } from "./request-context";
 
 /** Wraps a route handler: maps HttpError and Zod errors to JSON responses. */
 export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
   return async (...args: A) => {
+    const req = args[0] instanceof Request ? args[0] : null;
     try {
-      return await fn(...args);
+      return req ? await requestContext.run({ method: req.method, path: new URL(req.url).pathname }, () => fn(...args)) : await fn(...args);
     } catch (err) {
       if (err instanceof HttpError || err instanceof DomainError) return NextResponse.json({ error: err.message }, { status: err.status });
       if (err instanceof z.ZodError) return NextResponse.json({ error: "Some fields are missing or invalid. Correct the highlighted fields and submit again.", issues: z.flattenError(err) }, { status: 422 });

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { CatalogueMarket } from "@/db/schema-core";
 
 const MapboxView = dynamic(() => import("./mapbox-view"), { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-none" /> });
 
@@ -12,7 +13,7 @@ export interface MapPoint {
   name: string;
   lat: number;
   lng: number;
-  market: "UAE" | "India";
+  market: CatalogueMarket;
   sub: string;
   href?: string;
 }

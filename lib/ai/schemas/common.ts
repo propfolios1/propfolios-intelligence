@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CATALOGUE_MARKETS } from "@/db/schema-core";
 
 export const severity = z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW"]);
 export type Severity = z.infer<typeof severity>;
@@ -27,7 +28,7 @@ export const mandateContext = z.object({
   client: z.object({ name: z.string(), type: z.string(), nationality: z.string(), residency: z.string(), riskProfile: z.string() }),
   property: z.object({
     name: z.string(),
-    market: z.enum(["UAE", "India"]),
+    market: z.enum(CATALOGUE_MARKETS),
     city: z.string(),
     region: z.string(),
     community: z.string(),

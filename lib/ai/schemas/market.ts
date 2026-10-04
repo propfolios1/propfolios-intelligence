@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { CATALOGUE_MARKETS } from "@/db/schema-core";
 
 export const developerRiskInput = z.object({
   developer: z.object({
     name: z.string(),
-    market: z.enum(["UAE", "India"]),
+    market: z.enum(CATALOGUE_MARKETS),
     deliveryPct: z.number(),
     financialHealth: z.number(),
     litigationCount: z.number(),
@@ -77,7 +78,7 @@ export const marketYields = z.object({
 export const crossBorderInput = z.object({
   client: z.object({ name: z.string(), nationality: z.string(), residency: z.string() }),
   markets: marketYields.optional(),
-  property: z.object({ name: z.string(), market: z.enum(["UAE", "India"]), region: z.string(), priceLocal: z.number(), currency: z.string() }),
+  property: z.object({ name: z.string(), market: z.enum(CATALOGUE_MARKETS), region: z.string(), priceLocal: z.number(), currency: z.string() }),
   structure: z.string().describe("Proposed holding structure"),
 });
 export const crossBorderOutput = z.object({

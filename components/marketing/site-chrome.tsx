@@ -7,10 +7,10 @@ function Wordmark({ name }: { name?: string }) {
   );
 }
 import { Button } from "@/components/ui/button";
-import { clerkEnabled } from "@/lib/auth";
 
+/** Self-serve trials start at /trial in every mode; Clerk sends the sign-in link by email. */
 export function trialHref() {
-  return clerkEnabled ? "/sign-up" : "/onboarding";
+  return "/trial";
 }
 
 export function SiteHeader({ brandName }: { brandName?: string }) {
@@ -30,7 +30,7 @@ export function SiteHeader({ brandName }: { brandName?: string }) {
           Sign in
         </Link>
         <Button asChild size="sm">
-          <Link href={trialHref()}>Start a trial</Link>
+          <Link href={trialHref()}>Start free trial</Link>
         </Button>
       </nav>
     </header>

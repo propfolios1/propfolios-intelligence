@@ -151,3 +151,59 @@ export const jobRuns = pgTable(
   },
   (t) => [index("job_runs_job_idx").on(t.job, t.startedAt), uniqueIndex("job_runs_idem_idx").on(t.job, t.idempotencyKey)],
 );
+
+/* ================================================================ F2 TRIAL */
+
+export type TrialState = "active" | "read_only" | "soft_deleted" | "purged" | "converted";
+
+/**
+ * Self-serve trial sign-ups. Platform-level: a sign-up exists before its
+ * tenant, so the row is keyed by email; tenant_id is set once provisioned.
+ */
+export const trialSignups = pgTable(
+  "trial_signups",
+  {
+    id,
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    firmName: text("firm_name").notNull(),
+    country: text("country").notNull(),
+    agentCount: integer("agent_count").notNull(),
+    tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "set null" }),
+    seededIn: integer("seeded_in_ms"),
+    convertedAt: at("converted_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("trial_signups_email_idx").on(t.email), index("trial_signups_tenant_idx").on(t.tenantId)],
+);
+
+export const trialEvents = pgTable(
+  "trial_events",
+  {
+    id,
+    trialSignupId: uuid("trial_signup_id")
+      .notNull()
+      .references(() => trialSignups.id, { onDelete: "cascade" }),
+    /** Copied from the sign-up so tenant RLS can cover the row; null before provisioning. */
+    tenantId: uuid("tenant_id").references(() => tenants.id, { onDelete: "set null" }),
+    eventType: text("event_type").notNull(),
+    metadata: jsonb("metadata_json").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    ...ts,
+  },
+  (t) => [index("trial_events_signup_idx").on(t.trialSignupId, t.createdAt), uniqueIndex("trial_events_once_idx").on(t.trialSignupId, t.eventType)],
+);
+
+export const trialLifecycle = pgTable(
+  "trial_lifecycle",
+  {
+    id,
+    tenantId: tenantRef(),
+    trialSignupId: uuid("trial_signup_id").references(() => trialSignups.id, { onDelete: "set null" }),
+    state: text("state").$type<TrialState>().notNull().default("active"),
+    startedAt: at("started_at").notNull().defaultNow(),
+    enteredAt: at("entered_at").notNull().defaultNow(),
+    nextTransitionAt: at("next_transition_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("trial_lifecycle_tenant_idx").on(t.tenantId), index("trial_lifecycle_next_idx").on(t.state, t.nextTransitionAt)],
+);

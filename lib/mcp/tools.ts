@@ -14,6 +14,7 @@ import { getMarket, getPortfolio, listProperties } from "@/lib/queries";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { scope } from "@/lib/tenant-db";
 import { OS_TOOLS } from "./os-tools";
+import { CATALOGUE_MARKETS } from "@/db/schema-core";
 
 export interface ToolContext {
   db: DB;
@@ -40,7 +41,7 @@ export const MCP_TOOLS = {
     title: "List properties",
     description: "Search the firm's property catalogue (UAE and India) by market, status, text or minimum gross yield.",
     input: z.object({
-      market: z.enum(["UAE", "India"]).optional(),
+      market: z.enum(CATALOGUE_MARKETS).optional(),
       status: z.enum(["off_plan", "under_construction", "ready"]).optional(),
       q: z.string().max(100).optional().describe("Matches name, community or city"),
       minYield: z.number().min(0).max(20).optional().describe("Minimum gross yield, percent"),

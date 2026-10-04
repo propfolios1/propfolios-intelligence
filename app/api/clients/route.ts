@@ -5,6 +5,7 @@ import * as s from "@/db/schema";
 import { audit, handle, parseBody } from "@/lib/api";
 import { requireApiUser } from "@/lib/auth";
 import { listClients } from "@/lib/queries";
+import { CATALOGUE_MARKETS } from "@/db/schema-core";
 
 export const GET = handle(async () => {
   const user = await requireApiUser(["tenant_admin", "analyst"]);
@@ -23,7 +24,7 @@ const create = z.object({
     targetNetYield: z.number().min(0).max(20),
     maxOffPlanPct: z.number().min(0).max(100),
     maxSingleAssetPct: z.number().min(0).max(100),
-    markets: z.array(z.enum(["UAE", "India"])).min(1),
+    markets: z.array(z.enum(CATALOGUE_MARKETS)).min(1),
     horizonYears: z.number().int().min(1).max(30),
     notes: z.string().max(1000).optional(),
   }),

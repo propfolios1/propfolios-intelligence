@@ -15,6 +15,7 @@ import { navFor, type Area } from "./nav-config";
 import { PageTransition } from "./page-transition";
 import { SidebarNav } from "./sidebar-nav";
 import { TopBar } from "./top-bar";
+import { TrialBanner } from "@/components/trial/trial-banner";
 
 const AREA_ROLES: Record<Area, Role[]> = { analyst: ["tenant_admin", "analyst"], client: ["tenant_admin", "analyst", "client"], admin: ["tenant_admin"], platform: ["platform_admin", "tenant_admin"] };
 
@@ -115,6 +116,7 @@ export async function AppShell({ area, children }: { area: Area; children: React
               Previewing the client portal as <span className="font-medium text-ink-900">{previewing}</span>. Choose another client from Clients.
             </div>
           )}
+          {area !== "platform" && <TrialBanner tenantId={user.tenantId} admin={user.role === "tenant_admin"} />}
           <TopBar area={area} notifications={alerts} viewerName={user.name} />
           <main id="main" className="flex-1">
             <PageTransition area={area}>{children}</PageTransition>

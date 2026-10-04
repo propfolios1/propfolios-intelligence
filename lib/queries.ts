@@ -9,6 +9,7 @@ import type { DDFinding, DebateOutput, ResearchOutput } from "@/lib/ai/schemas";
 import type { CashFlowYear, Distribution } from "@/lib/ai/tools/financial";
 import { HttpError, type CurrentUser } from "./auth";
 import { scope } from "./tenant-db";
+import type { CatalogueMarket } from "@/db/schema-core";
 
 /**
  * Read models shared by API routes and server components. Every function
@@ -178,7 +179,7 @@ export type MemoDetail = Awaited<ReturnType<typeof getMemo>>;
 /* ------------------------------------------------------------ properties */
 
 export interface PropertyFilters {
-  market?: "UAE" | "India";
+  market?: CatalogueMarket;
   status?: "off_plan" | "under_construction" | "ready";
   developerId?: string;
   q?: string;
@@ -251,7 +252,7 @@ export type PropertyDetail = Awaited<ReturnType<typeof getProperty>>;
 
 /* ------------------------------------------------------------ developers */
 
-export async function listDevelopers(db: DB, tenantId: string, f: { market?: "UAE" | "India" } = {}) {
+export async function listDevelopers(db: DB, tenantId: string, f: { market?: CatalogueMarket } = {}) {
   const rows = await db
     .select({ d: s.developers, projects: count(s.properties.id) })
     .from(s.developers)
