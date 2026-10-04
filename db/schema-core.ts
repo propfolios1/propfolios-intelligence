@@ -144,6 +144,12 @@ export const users = pgTable(
     /** Invited but not yet signed in. */
     invitedAt: timestamp("invited_at", { withTimezone: true }),
     clientId: uuid("client_id"),
+    /** Enterprise: a firm-defined role that replaces the access role's permissions. */
+    customRoleId: uuid("custom_role_id"),
+    /** Set when SCIM or an administrator deactivates the account; the user can no longer sign in. */
+    deactivatedAt: timestamp("deactivated_at", { withTimezone: true }),
+    /** The identity provider's id for this user (SCIM externalId). */
+    scimExternalId: text("scim_external_id"),
     preferences: jsonb("preferences").$type<{ digest: "daily" | "weekly" | "off"; alerts: boolean; currency: "AED" | "USD" | "INR" }>(),
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
     ...timestamps,
@@ -786,6 +792,10 @@ export const apiKeys = pgTable(
     prefix: text("prefix").notNull(),
     keyHash: text("key_hash").notNull(),
     createdBy: text("created_by").notNull(),
+    /** What the key may call: "mcp" (MCP tools) and "leads:write" (inbound lead API). */
+    scopes: jsonb("scopes").$type<("mcp" | "leads:write")[]>().notNull().default(sql`'["mcp","leads:write"]'::jsonb`),
+    rateLimitPerMinute: integer("rate_limit_per_minute").notNull().default(60),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
     ...timestamps,

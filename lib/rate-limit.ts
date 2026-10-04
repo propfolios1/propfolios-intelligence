@@ -63,3 +63,10 @@ export async function enforcePublicRateLimit(req: Request, bucket: Bucket) {
   const count = await hit(`rl:public:${ip}:${bucket}:${window}`, windowSec);
   if (count > limit) throw new HttpError(429, "Too many attempts. Retry in a minute.");
 }
+
+/** API keys: each key's own per-minute limit. Returns the count in the current window and seconds until it resets. */
+export async function consumeKeyQuota(keyId: string, limitPerMinute: number, now = Date.now()) {
+  const window = Math.floor(now / 60_000);
+  const count = await hit(`rl:key:${keyId}:${window}`, 60);
+  return { count, limit: limitPerMinute, allowed: count <= limitPerMinute, resetSec: 60 - Math.floor((now % 60_000) / 1000) };
+}

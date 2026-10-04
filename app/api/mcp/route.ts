@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import type { z } from "zod";
 import { getDb } from "@/db";
-import { userFromApiKey, presentsBearer } from "@/lib/api-keys";
+import { keyErrorResponse, presentsBearer, userFromApiKey } from "@/lib/api-keys";
 import { HttpError, requireApiUser, type CurrentUser } from "@/lib/auth";
 import { callTool, MCP_TOOLS, TOOL_NAMES } from "@/lib/mcp/tools";
 
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 async function caller(req: Request): Promise<(CurrentUser & { apiKey?: boolean }) | null> {
-  const keyUser = await userFromApiKey(req);
+  const keyUser = await userFromApiKey(req, { scope: "mcp", route: "mcp" });
   if (keyUser) return keyUser;
   if (presentsBearer(req)) return null;
   try {
@@ -26,7 +26,14 @@ async function caller(req: Request): Promise<(CurrentUser & { apiKey?: boolean }
  * a signed-in staff session. Tools act inside the key's tenant only.
  */
 async function serve(req: Request) {
-  const user = await caller(req);
+  let user: Awaited<ReturnType<typeof caller>>;
+  try {
+    user = await caller(req);
+  } catch (e) {
+    const res = keyErrorResponse(e);
+    if (res) return res;
+    throw e;
+  }
   if (!user) {
     return Response.json(
       { jsonrpc: "2.0", error: { code: -32001, message: "Unauthorised. Send Authorization: Bearer <Nakhla API key>." }, id: null },

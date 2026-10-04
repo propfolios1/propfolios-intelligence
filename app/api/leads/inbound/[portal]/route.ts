@@ -18,10 +18,10 @@ const SOURCES = new Set(LEAD_SOURCES.map((x) => x.key));
  * matched to the listing by reference, assigned, scored and logged.
  */
 export const POST = handle(async (req: Request, { params }: { params: Promise<{ portal: string }> }) => {
-  const user = await userFromApiKey(req);
+  const { portal } = await params;
+  const user = await userFromApiKey(req, { scope: "leads:write", route: `leads/inbound/${portal.slice(0, 40)}` });
   if (!user) throw new HttpError(401, "A valid API key is required: Authorization: Bearer nk_live_…");
   await enforceRateLimit(user, "write");
-  const { portal } = await params;
   if (!SOURCES.has(portal)) throw new HttpError(404, `Unknown lead source "${portal}".`);
   const raw = (await req.json().catch(() => {
     throw new HttpError(400, "Request body must be JSON.");

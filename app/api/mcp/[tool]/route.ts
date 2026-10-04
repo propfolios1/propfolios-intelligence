@@ -11,7 +11,7 @@ export const maxDuration = 300;
 type Ctx = { params: Promise<{ tool: string }> };
 
 async function caller(req: Request) {
-  const keyUser = await userFromApiKey(req);
+  const keyUser = await userFromApiKey(req, { scope: "mcp", route: `mcp/${new URL(req.url).pathname.split("/").pop()?.slice(0, 40) ?? "tool"}` });
   if (keyUser) return keyUser;
   if (presentsBearer(req)) throw new HttpError(401, "Invalid or revoked API key.");
   return requireApiUser(["tenant_admin", "analyst"]);

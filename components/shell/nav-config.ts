@@ -1,4 +1,6 @@
 import {
+  FileDown,
+  Code2,
   BellRing,
   Zap,
   FileSignature,
@@ -214,6 +216,17 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/admin/seed", label: "Demonstration data", key: "s" },
       ],
     },
+    {
+      title: "Enterprise",
+      items: [
+        { href: "/admin/sso", label: "Single sign-on" },
+        { href: "/admin/scim", label: "SCIM provisioning" },
+        { href: "/admin/roles", label: "Roles" },
+        { href: "/admin/api", label: "API" },
+        { href: "/admin/audit/export", label: "Audit export" },
+        { href: "/admin/data-residency", label: "Data residency" },
+      ],
+    },
   ],
   platform: [
     {
@@ -232,6 +245,13 @@ export const NAV: Record<Area, NavSection[]> = {
 };
 
 export const SEGMENT_LABEL: Record<string, string> = {
+  sso: "Single sign-on",
+  scim: "SCIM provisioning",
+  roles: "Roles",
+  api: "API",
+  export: "Export",
+  "data-residency": "Data residency",
+  subscriptions: "Market subscriptions",
   analyst: "Analyst",
   client: "Client",
   admin: "Admin",
@@ -346,6 +366,12 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/client/recommendations": ListChecks,
   "/client/reports": BookOpen,
   "/client/subscriptions": BellRing,
+  "/admin/sso": KeyRound,
+  "/admin/scim": UserCog,
+  "/admin/roles": ShieldCheck,
+  "/admin/api": Code2,
+  "/admin/audit/export": FileDown,
+  "/admin/data-residency": Globe2,
   "/client/statements": FileSpreadsheet,
   "/client/goals": Flag,
   "/client/private-banking": Landmark,

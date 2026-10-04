@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { leads } from "./schema-brokerage";
-import { clients, tenants, users } from "./schema-core";
+import { apiKeys, clients, tenants, users } from "./schema-core";
 
 /*
  * Production brokerage modules: CRM migration, trials, portal publishing,
@@ -1108,4 +1108,115 @@ export const clientMarketSubscriptions = pgTable(
     ...ts,
   },
   (t) => [index("cms_tenant_idx").on(t.tenantId, t.active, t.nextDueAt), index("cms_client_idx").on(t.clientId)],
+);
+
+/* ======================================================= F15 ENTERPRISE */
+
+export type SsoDomain = { domain: string; token: string; verifiedAt: string | null; lastCheckedAt: string | null };
+export type SsoCheck = { at: string; ok: boolean; items: { label: string; ok: boolean; detail: string }[] };
+
+/** Single sign-on through the firm's identity provider (SAML 2.0 or OpenID Connect). One per firm. */
+export const ssoConfigs = pgTable(
+  "sso_configs",
+  {
+    id,
+    tenantId: tenantRef(),
+    protocol: text("protocol").$type<"saml" | "oidc">().notNull().default("saml"),
+    provider: text("provider").$type<"okta" | "entra_id" | "google_workspace" | "onelogin" | "jumpcloud" | "custom">().notNull().default("custom"),
+    domains: jsonb("domains").$type<SsoDomain[]>().notNull().default(sql`'[]'::jsonb`),
+    idpEntityId: text("idp_entity_id"),
+    idpSsoUrl: text("idp_sso_url"),
+    idpCertificate: text("idp_certificate"),
+    idpMetadataUrl: text("idp_metadata_url"),
+    oidcIssuer: text("oidc_issuer"),
+    oidcClientId: text("oidc_client_id"),
+    oidcClientSecretEncrypted: text("oidc_client_secret_encrypted"),
+    /** Users on a verified domain must sign in through the identity provider. */
+    enforce: boolean("enforce").notNull().default(false),
+    /** Create a user on first sign-in from a verified domain. */
+    jitProvisioning: boolean("jit_provisioning").notNull().default(true),
+    defaultRole: text("default_role").$type<"analyst" | "tenant_admin">().notNull().default("analyst"),
+    status: text("status").$type<"draft" | "active" | "disabled">().notNull().default("draft"),
+    providerConnectionId: text("provider_connection_id"),
+    /** The service provider values Clerk returns for the connection (entity ID and ACS URL). */
+    spConfig: jsonb("sp_config").$type<{ entityId: string; acsUrl: string } | null>(),
+    lastCheck: jsonb("last_check").$type<SsoCheck>(),
+    ...ts,
+  },
+  (t) => [uniqueIndex("sso_tenant_idx").on(t.tenantId)],
+);
+
+/** Bearer tokens the identity provider uses to provision users over SCIM 2.0. Only the hash is stored. */
+export const scimTokens = pgTable(
+  "scim_tokens",
+  {
+    id,
+    tenantId: tenantRef(),
+    name: text("name").notNull(),
+    prefix: text("prefix").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    createdBy: text("created_by").notNull(),
+    lastUsedAt: at("last_used_at"),
+    requests: integer("requests").notNull().default(0),
+    revokedAt: at("revoked_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("scim_token_hash_idx").on(t.tokenHash), index("scim_tokens_tenant_idx").on(t.tenantId)],
+);
+
+/** Firm-defined roles: a base role for area access and an explicit permission set. */
+export const customRoles = pgTable(
+  "custom_roles",
+  {
+    id,
+    tenantId: tenantRef(),
+    key: text("key").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    baseRole: text("base_role").$type<"tenant_admin" | "analyst" | "client">().notNull(),
+    permissions: jsonb("permissions").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    /** IdP group names that map to this role during SCIM provisioning. */
+    scimGroups: jsonb("scim_groups").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    createdBy: userRef("created_by"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("custom_roles_key_idx").on(t.tenantId, t.key)],
+);
+
+/** Daily request counts per API key and route, for usage reporting and abuse review. */
+export const apiUsage = pgTable(
+  "api_usage",
+  {
+    id,
+    tenantId: tenantRef(),
+    apiKeyId: uuid("api_key_id")
+      .notNull()
+      .references(() => apiKeys.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    route: text("route").notNull(),
+    requests: integer("requests").notNull().default(0),
+    errors: integer("errors").notNull().default(0),
+    throttled: integer("throttled").notNull().default(0),
+    ...ts,
+  },
+  (t) => [uniqueIndex("api_usage_key_day_route_idx").on(t.apiKeyId, t.day, t.route), index("api_usage_tenant_idx").on(t.tenantId, t.day)],
+);
+
+/** Where the firm's data is stored and processed, and any request to move it. */
+export const dataResidencyConfigs = pgTable(
+  "data_residency_configs",
+  {
+    id,
+    tenantId: tenantRef(),
+    region: text("region").notNull(),
+    requestedRegion: text("requested_region"),
+    status: text("status").$type<"current" | "requested" | "scheduled" | "migrating">().notNull().default("current"),
+    requestedAt: at("requested_at"),
+    requestedBy: userRef("requested_by"),
+    reason: text("reason"),
+    /** The firm has reviewed the list of sub-processors and where each processes data. */
+    subprocessorsAcknowledgedAt: at("subprocessors_acknowledged_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("residency_tenant_idx").on(t.tenantId)],
 );

@@ -5,7 +5,7 @@ import { type AccessRole, can, DEFAULT_ACCESS, type Permission } from "./rbac/pe
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { getDb } from "@/db";
-import { clients, tenants, users } from "@/db/schema";
+import { clients, customRoles, ssoConfigs, tenants, users } from "@/db/schema";
 import { planById } from "./plans";
 import { DEFAULT_SLUG, PLATFORM_SLUG } from "./tenant";
 
@@ -31,6 +31,15 @@ export interface CurrentUser {
   demo: boolean;
   /** Fine-grained role for permission checks (lib/rbac/permissions). */
   accessRole: AccessRole;
+  /** Enterprise custom role: when set, these permissions replace the access role's. */
+  customRole?: { id: string; name: string; permissions: Permission[] } | null;
+  /** Deactivated by an administrator or by SCIM. */
+  deactivated?: boolean;
+}
+
+/** Whether the user holds a permission, through a custom role when one is assigned. */
+export function hasPermission(user: Pick<CurrentUser, "accessRole" | "customRole">, permission: Permission) {
+  return user.customRole ? user.customRole.permissions.includes(permission) : can(user.accessRole, permission);
 }
 
 export type AuthState =
@@ -58,7 +67,7 @@ async function tenantIdForOrg(orgId: string) {
   return t?.id ?? null;
 }
 
-async function platformTenantId() {
+export async function platformTenantId() {
   const db = await getDb();
   const [t] = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, PLATFORM_SLUG));
   return t?.id ?? null;
@@ -101,6 +110,20 @@ export async function upsertClerkUser(input: { clerkUserId: string; email: strin
       return created!;
     }
   }
+
+  // Single sign-on with just-in-time provisioning: an address on a firm's verified domain joins that firm, within its seats.
+  const domain = email.split("@")[1];
+  if (domain) {
+    const configs = await db.select().from(ssoConfigs).where(and(eq(ssoConfigs.status, "active"), eq(ssoConfigs.jitProvisioning, true)));
+    const sso = configs.find((c) => c.domains.some((d) => d.domain === domain && d.verifiedAt));
+    if (sso) {
+      const { used, limit } = await seatUsage(sso.tenantId);
+      if (limit === null || used < limit) {
+        const [created] = await db.insert(users).values({ tenantId: sso.tenantId, clerkUserId: input.clerkUserId, email, name: input.name, role: sso.defaultRole, lastActiveAt: new Date() }).returning();
+        return created!;
+      }
+    }
+  }
   return null;
 }
 
@@ -119,12 +142,19 @@ async function previewClientId(tenantId: string) {
 /** Suspended and cancelled workspaces are closed to their users; platform administrators keep access. */
 async function gate(user: CurrentUser | null): Promise<AuthState> {
   if (!user) return { status: "signed_out" };
+  if (user.deactivated && !user.platformAdmin) return { status: "suspended", tenantName: user.name, tenantStatus: "deactivated" };
   if (!user.platformAdmin) {
     const db = await getDb();
     const [t] = await db.select({ name: tenants.name, status: tenants.status }).from(tenants).where(eq(tenants.id, user.tenantId));
     if (t && (t.status === "suspended" || t.status === "cancelled")) return { status: "suspended", tenantName: t.name, tenantStatus: t.status };
   }
   return { status: "ok", user };
+}
+
+async function customRoleFor(id: string, tenantId: string) {
+  const db = await getDb();
+  const [r] = await db.select({ id: customRoles.id, name: customRoles.name, permissions: customRoles.permissions }).from(customRoles).where(and(eq(customRoles.id, id), eq(customRoles.tenantId, tenantId)));
+  return r ? { ...r, permissions: r.permissions as Permission[] } : null;
 }
 
 async function toCurrentUser(row: typeof users.$inferSelect, demo: boolean): Promise<CurrentUser | null> {
@@ -161,6 +191,8 @@ async function toCurrentUser(row: typeof users.$inferSelect, demo: boolean): Pro
     clientId: role === "client" ? row.clientId : role === "platform_admin" ? null : await previewClientId(tenantId),
     demo,
     accessRole: impersonating ? "tenant_admin" : ((row.accessRole as AccessRole | null) ?? DEFAULT_ACCESS[role]),
+    customRole: !impersonating && row.customRoleId ? await customRoleFor(row.customRoleId, tenantId) : null,
+    deactivated: !!row.deactivatedAt,
   };
 }
 
@@ -275,7 +307,7 @@ export async function seatUsage(tenantId: string) {
   const [{ n }] = (await db
     .select({ n: sql<number>`count(*)::int` })
     .from(users)
-    .where(and(eq(users.tenantId, tenantId), inArray(users.role, STAFF_ROLES)))) as [{ n: number }];
+    .where(and(eq(users.tenantId, tenantId), inArray(users.role, STAFF_ROLES), isNull(users.deactivatedAt)))) as [{ n: number }];
   const plan = planById(t?.plan ?? "starter");
   return { used: Number(n), limit: plan.seats, plan };
 }
@@ -296,7 +328,7 @@ export async function assertSeatAvailable(tenantId: string, extra = 1, excludeUs
 
 /** API routes: throws 403 unless the user's access role grants the permission. */
 export function requirePermission(user: CurrentUser, permission: Permission) {
-  if (can(user.accessRole, permission)) return;
+  if (hasPermission(user, permission)) return;
   // Refusals are audited: the permission suggester reads them.
   void import("./api").then((m) => m.audit(user, `refused: ${permission}`, { entityType: "permission" })).catch(() => undefined);
   throw new HttpError(403, "Your role does not permit this action.");

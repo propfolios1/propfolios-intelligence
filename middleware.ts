@@ -20,6 +20,7 @@ const isPublic = createRouteMatcher([
   "/api/leads/inbound/(.*)",
   "/api/feeds/(.*)",
   "/api/mcp(.*)",
+  "/api/scim(.*)",
   "/api/setup",
   "/api/migrate/rename-demo-tenants",
   "/api/locale",

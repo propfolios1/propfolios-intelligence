@@ -16,7 +16,10 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
     try {
       return req ? await requestContext.run({ method: req.method, path: new URL(req.url).pathname }, () => fn(...args)) : await fn(...args);
     } catch (err) {
-      if (err instanceof HttpError || err instanceof DomainError) return NextResponse.json({ error: err.message }, { status: err.status });
+      if (err instanceof HttpError || err instanceof DomainError) {
+        const retry = (err as { retryAfter?: number }).retryAfter;
+        return NextResponse.json({ error: err.message }, { status: err.status, headers: retry ? { "retry-after": String(retry) } : undefined });
+      }
       if (err instanceof z.ZodError) return NextResponse.json({ error: "Some fields are missing or invalid. Correct the highlighted fields and submit again.", issues: z.flattenError(err) }, { status: 422 });
       if (err instanceof AgentDisabledError) return NextResponse.json({ error: err.message }, { status: 409 });
       if (err instanceof APIError && err.status === 429) return NextResponse.json({ error: "Anthropic rate limit reached. Retry in 30 seconds, or move the agent to a lighter model tier in Administration, AI control." }, { status: 429 });

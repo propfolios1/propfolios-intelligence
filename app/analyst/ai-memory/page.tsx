@@ -9,8 +9,7 @@ import { RelativeTime } from "@/components/ui/relative-time";
 import { getDb } from "@/db";
 import * as s from "@/db/schema";
 import { OS_AGENT_INDEX } from "@/lib/ai/os-agents/registry";
-import { requireRole } from "@/lib/auth";
-import { can } from "@/lib/rbac/permissions";
+import { hasPermission, requireRole } from "@/lib/auth";
 import { scope } from "@/lib/tenant-db";
 
 export const metadata = { title: "AI memory" };
@@ -42,7 +41,7 @@ export default async function AiMemory() {
       db.select({ id: s.users.id, name: s.users.name }).from(s.users).where(eq(s.users.tenantId, user.tenantId)),
     ]).then((r) => new Map(r.flat().map((x) => [x.id, x.name]))),
   ]);
-  const forget = can(user.accessRole, "firm:ai_control");
+  const forget = hasPermission(user, "firm:ai_control");
   const label = (a: string) => OS_AGENT_INDEX[a]?.label ?? a.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
   const about = (m: (typeof learned)[number]) => (m.scopeKey === "tenant" ? "Whole firm" : (names.get(m.entityId ?? "") ?? m.scopeKey));
 
