@@ -74,49 +74,71 @@ const LEGACY_TEXT: [string, string][] = [
   ["yousef@alnoor.ae", "yousef@alnoor.example.com"],
 ];
 
+/** The administrator email each demonstration tenant was seeded with by earlier releases. */
+const LEGACY_SEEDED_ADMIN: { key: "main" | "gulf" | "india"; id: string; email: string }[] = [
+  { key: "main", id: uid("tenant"), email: "amol@propfolios.ae" },
+  { key: "gulf", id: uid("tenant:gulfrealty"), email: "omar@gulfrealty.ae" },
+  { key: "india", id: uid("tenant:bombay"), email: "priya@bombaypi.in" },
+];
+
+export type RenameOutcome = { tenantId: string; from: string; to: string; renamed: boolean; reason: string };
+
 /**
- * Renames the demonstration tenants seeded by earlier releases. Tenant rows
- * are updated by id; free text in every text and JSON column is rewritten with
- * plain substring replacement, touching only rows that contain a legacy name.
- * Idempotent: a second run finds nothing to change.
+ * One-time rename of demonstration tenants seeded by earlier releases. Never
+ * runs from /api/setup. A tenant is renamed only when it still has its seeded
+ * administrator email and no user has ever signed in (no Clerk identity), so a
+ * firm that adopted a demonstration workspace as its own is never touched.
+ * Text is rewritten only in rows belonging to the eligible tenants.
  */
-export async function renameLegacyTenants(db: DB) {
-  const [main] = await db.select({ slug: s.tenants.slug }).from(s.tenants).where(eq(s.tenants.id, uid("tenant")));
-  // Only workspaces that still carry the old slug need the rewrite.
-  const legacy = main?.slug === "propfolios" || (await db.select({ id: s.tenants.id }).from(s.tenants).where(eq(s.tenants.slug, "gulfrealty"))).length > 0;
-  if (!legacy) return false;
-  const tenants: [string, (typeof DEMO_TENANTS)[keyof typeof DEMO_TENANTS]][] = [
-    [uid("tenant"), DEMO_TENANTS.main],
-    [uid("tenant:gulfrealty"), DEMO_TENANTS.gulf],
-    [uid("tenant:bombay"), DEMO_TENANTS.india],
-  ];
-  for (const [id, t] of tenants) await db.update(s.tenants).set({ name: t.name, slug: t.slug, configJson: t.config, customDomain: null }).where(eq(s.tenants.id, id));
+export async function renameDemoTenants(db: DB): Promise<RenameOutcome[]> {
+  const out: RenameOutcome[] = [];
+  const eligible: string[] = [];
+  for (const t of LEGACY_SEEDED_ADMIN) {
+    const target = DEMO_TENANTS[t.key];
+    const [row] = await db.select({ name: s.tenants.name }).from(s.tenants).where(eq(s.tenants.id, t.id));
+    if (!row) continue;
+    const users = await db.select({ email: s.users.email, clerk: s.users.clerkUserId }).from(s.users).where(eq(s.users.tenantId, t.id));
+    const hasSeededAdmin = users.some((u) => u.email.toLowerCase() === t.email);
+    const realUsers = users.filter((u) => u.clerk).length;
+    const base = { tenantId: t.id, from: row.name, to: target.name };
+    if (row.name === target.name) out.push({ ...base, renamed: false, reason: "Already renamed." });
+    else if (!hasSeededAdmin) out.push({ ...base, renamed: false, reason: "The seeded administrator email is no longer present." });
+    else if (realUsers > 0) out.push({ ...base, renamed: false, reason: `${realUsers} user${realUsers === 1 ? " has" : "s have"} signed in; the workspace is in real use.` });
+    else {
+      eligible.push(t.id);
+      await db.update(s.tenants).set({ name: target.name, slug: target.slug, configJson: target.config, customDomain: null }).where(eq(s.tenants.id, t.id));
+      out.push({ ...base, renamed: true, reason: "Seeded administrator only; no sign-ins." });
+    }
+  }
+  if (!eligible.length) return out;
   const pairs = LEGACY_TEXT.map(([a, b]) => `ARRAY['${a.replace(/'/g, "''")}', '${b.replace(/'/g, "''")}']`).join(", ");
+  const ids = eligible.map((i) => `'${i}'::uuid`).join(", ");
   await db.execute(
     sql.raw(`DO $$
 DECLARE
   c record;
-  p text[];
   pairs text[][] := ARRAY[${pairs}];
+  ids uuid[] := ARRAY[${ids}];
   i int;
 BEGIN
-  PERFORM set_config('app.actor', 'Demonstration data rename', true);
+  PERFORM set_config('app.actor', 'Demonstration tenant rename', true);
   FOR c IN
-    SELECT table_name, column_name, data_type FROM information_schema.columns
-    WHERE table_schema = 'public' AND data_type IN ('text', 'jsonb') AND table_name NOT LIKE '\\_\\_%'
-      AND table_name IN (SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE')
+    SELECT col.table_name, col.column_name, col.data_type FROM information_schema.columns col
+    WHERE col.table_schema = 'public' AND col.data_type IN ('text', 'jsonb') AND col.table_name <> 'tenants'
+      AND EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'public' AND k.table_name = col.table_name AND k.column_name = 'tenant_id')
+      AND col.table_name IN (SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE')
   LOOP
     FOR i IN 1 .. array_length(pairs, 1) LOOP
       IF c.data_type = 'jsonb' THEN
-        EXECUTE format('UPDATE public.%I SET %I = replace(%I::text, %L, %L)::jsonb WHERE strpos(%I::text, %L) > 0', c.table_name, c.column_name, c.column_name, pairs[i][1], pairs[i][2], c.column_name, pairs[i][1]);
+        EXECUTE format('UPDATE public.%I SET %I = replace(%I::text, %L, %L)::jsonb WHERE tenant_id = ANY($1) AND strpos(%I::text, %L) > 0', c.table_name, c.column_name, c.column_name, pairs[i][1], pairs[i][2], c.column_name, pairs[i][1]) USING ids;
       ELSE
-        EXECUTE format('UPDATE public.%I SET %I = replace(%I, %L, %L) WHERE strpos(%I, %L) > 0', c.table_name, c.column_name, c.column_name, pairs[i][1], pairs[i][2], c.column_name, pairs[i][1]);
+        EXECUTE format('UPDATE public.%I SET %I = replace(%I, %L, %L) WHERE tenant_id = ANY($1) AND strpos(%I, %L) > 0', c.table_name, c.column_name, c.column_name, pairs[i][1], pairs[i][2], c.column_name, pairs[i][1]) USING ids;
       END IF;
     END LOOP;
   END LOOP;
 END $$;`),
   );
-  return true;
+  return out;
 }
 
 /* ------------------------------------------------- brokerage-only tenants */

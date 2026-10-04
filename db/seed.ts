@@ -10,7 +10,7 @@ import { defaultTenantConfig } from "@/lib/tenant";
 import { planById, type PlanId } from "@/lib/plans";
 import { AVG_TICKET_AED, CLIENTS, DEVELOPERS, INR_PER_AED, MARKET_SERIES, PROPERTIES, scoreDeveloper, STAFF } from "./seed-data";
 import { DOWNTOWN, downtownMemoHtml, INDIA, PALM, palmMemoHtml } from "./seed-mandates";
-import { DEMO_ADMINS, DEMO_TENANTS, renameLegacyTenants, seedBrokerageOnlyTenants } from "./seed-tenants";
+import { DEMO_ADMINS, DEMO_TENANTS, seedBrokerageOnlyTenants } from "./seed-tenants";
 
 /** Deterministic UUID from a key so re-seeding never duplicates. */
 export function uid(key: string) {
@@ -803,7 +803,6 @@ const NAMED_TENANTS = [
  * including anything users changed, are left untouched.
  */
 async function upgrade(db: DB) {
-  await renameLegacyTenants(db);
   await seedBrokerageOnlyTenants(db);
   const done: string[] = [];
   for (const t of NAMED_TENANTS) {
