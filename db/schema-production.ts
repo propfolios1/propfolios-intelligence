@@ -274,3 +274,63 @@ export const portalPublishJobs = pgTable(
   },
   (t) => [index("portal_jobs_due_idx").on(t.status, t.nextAttemptAt), index("portal_jobs_tenant_idx").on(t.tenantId, t.createdAt)],
 );
+
+/* ===================================================== F4 WEBSITE BUILDER */
+
+export type WebsiteTheme = "modern" | "classic" | "luxury" | "minimal" | "bold";
+export type WebsiteSeo = { title: string; description: string; ogImage: string | null; keywords: string[]; index: boolean };
+export type BlockType = "hero" | "featured_listings" | "agent_grid" | "testimonials" | "contact" | "about" | "areas" | "market_stats";
+
+export const websiteConfigs = pgTable(
+  "website_configs",
+  {
+    id,
+    tenantId: tenantRef(),
+    /** firm-slug.nakhla.site and /sites/firm-slug. */
+    slug: text("slug").notNull(),
+    theme: text("theme").$type<WebsiteTheme>().notNull().default("modern"),
+    customDomain: text("custom_domain"),
+    /** TXT value proving control of the custom domain. */
+    domainToken: text("domain_token").notNull(),
+    domainVerifiedAt: at("domain_verified_at"),
+    domainCheck: jsonb("domain_check").$type<{ at: string; txt: boolean; cname: boolean; detail: string } | null>(),
+    seo: jsonb("seo_json").$type<WebsiteSeo>().notNull(),
+    contact: jsonb("contact").$type<{ email: string | null; phone: string | null; whatsapp: string | null; address: string | null }>().notNull().default(sql`'{"email":null,"phone":null,"whatsapp":null,"address":null}'::jsonb`),
+    publishedAt: at("published_at"),
+    ...ts,
+  },
+  (t) => [uniqueIndex("website_configs_tenant_idx").on(t.tenantId), uniqueIndex("website_configs_slug_idx").on(t.slug), uniqueIndex("website_configs_domain_idx").on(t.customDomain)],
+);
+
+export const websitePages = pgTable(
+  "website_pages",
+  {
+    id,
+    tenantId: tenantRef(),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    /** Draft blocks as edited; published pages render website_blocks. */
+    blocks: jsonb("blocks_json").$type<{ type: BlockType; content: Record<string, unknown> }[]>().notNull().default(sql`'[]'::jsonb`),
+    published: boolean("published").notNull().default(false),
+    position: integer("position").notNull().default(0),
+    ...ts,
+  },
+  (t) => [uniqueIndex("website_pages_slug_idx").on(t.tenantId, t.slug), index("website_pages_tenant_idx").on(t.tenantId)],
+);
+
+/** The published blocks of each page, in order: what visitors see. */
+export const websiteBlocks = pgTable(
+  "website_blocks",
+  {
+    id,
+    tenantId: tenantRef(),
+    websitePageId: uuid("website_page_id")
+      .notNull()
+      .references(() => websitePages.id, { onDelete: "cascade" }),
+    type: text("type").$type<BlockType>().notNull(),
+    content: jsonb("content_json").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    order: integer("order").notNull(),
+    ...ts,
+  },
+  (t) => [index("website_blocks_page_idx").on(t.websitePageId, t.order), index("website_blocks_tenant_idx").on(t.tenantId)],
+);
