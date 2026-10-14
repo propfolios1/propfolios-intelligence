@@ -17,8 +17,8 @@ import { scope } from "@/lib/tenant-db";
 export type Region = { key: string; label: string; location: string; provider: string; available: boolean; note: string; suits: string[] };
 
 export const REGIONS: Region[] = [
-  { key: "ap-south-1", label: "Mumbai", location: "India", provider: "Supabase on AWS ap-south-1", available: true, note: "Keeps Indian clients' records in India, which DPDP Act rules on cross-border transfer and RBI expectations for financial data favour.", suits: ["IN"] },
-  { key: "eu-central-1", label: "Frankfurt", location: "Germany, European Union", provider: "Supabase on AWS eu-central-1", available: true, note: "EU storage for firms subject to the GDPR. Also the nearest standard region to the Gulf by latency.", suits: ["EU", "AE"] },
+  { key: "ap-south-1", label: "Mumbai", location: "India", provider: "Supabase on AWS ap-south-1", available: true, note: "Keeps Indian clients' records in India, which DPDP Act rules on cross-border transfer and RBI expectations for financial data favour. Also the nearest hosted region to the UAE by latency.", suits: ["IN", "AE"] },
+  { key: "eu-central-1", label: "Frankfurt", location: "Germany, European Union", provider: "Supabase on AWS eu-central-1", available: true, note: "EU storage for firms subject to the GDPR.", suits: ["EU"] },
   { key: "eu-west-2", label: "London", location: "United Kingdom", provider: "Supabase on AWS eu-west-2", available: true, note: "UK storage for firms under the UK GDPR and Data Protection Act 2018.", suits: ["GB"] },
   { key: "ap-southeast-1", label: "Singapore", location: "Singapore", provider: "Supabase on AWS ap-southeast-1", available: true, note: "Singapore storage for firms under the PDPA.", suits: ["SG"] },
   { key: "ap-southeast-2", label: "Sydney", location: "Australia", provider: "Supabase on AWS ap-southeast-2", available: true, note: "Australian storage for firms under the Privacy Act 1988.", suits: ["AU"] },
