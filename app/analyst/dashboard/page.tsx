@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 export default async function Dashboard() {
   const user = await requireRole(["tenant_admin", "analyst"]);
   const db = await getDb();
-  const [d, market, insights, fed, rev] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId), listInsights(db, user, { limit: 6 }), federationStats(db), revenueCockpit(db, user.tenantId, { simulations: 2000 })]);
+  const [d, market, insights, fed, rev] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId), listInsights(db, user, { limit: 6 }), federationStats(db), revenueCockpit(db, user.tenantId)]);
   const r90 = rev.forecast.horizons[2]!;
   const topActions = rev.queue.slice(0, 3);
   after(() => refreshIfStale(db, user.tenantId).then(() => undefined, () => undefined));

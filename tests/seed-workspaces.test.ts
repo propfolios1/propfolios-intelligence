@@ -45,6 +45,18 @@ describe("demonstration workspaces", () => {
     expect(r.forecast.stages.find((m) => m.stage === "origination")!.win).toBeLessThan(0.6);
     expect(r.forecast.horizons[2]!.p90).toBeGreaterThan(0);
     for (const q of r.queue) expect(q.evAed).toBeGreaterThanOrEqual(0);
+    const { MCP_TOOLS } = await import("@/lib/mcp/tools");
+    const staff = { tenantId: firm!.id, role: "analyst", name: "Analyst" } as unknown as Parameters<typeof MCP_TOOLS.get_revenue_forecast.run>[0]["user"];
+    const viaMcp = (await MCP_TOOLS.get_revenue_forecast.run({ db: env.db, user: staff }, { simulations: 500, actions: 3 })) as { horizons: { p50: number }[]; nextBestActions: unknown[]; currency: string };
+    expect(viaMcp.currency).toBe("AED");
+    expect(viaMcp.horizons).toHaveLength(3);
+    expect(viaMcp.nextBestActions.length).toBeLessThanOrEqual(3);
+    await expect(MCP_TOOLS.get_revenue_forecast.run({ db: env.db, user: { ...staff, role: "client" } }, { simulations: 500, actions: 3 })).rejects.toThrow("staff");
+    const [listing] = await env.db.select({ id: s.listings.id }).from(s.listings).where(eq(s.listings.tenantId, firm!.id)).limit(1);
+    const est = (await MCP_TOOLS.get_price_estimate.run({ db: env.db, user: staff }, { listingId: listing!.id })) as { estimate: { p10: number; p50: number; p90: number } };
+    expect(est.estimate.p10).toBeLessThanOrEqual(est.estimate.p50);
+    expect(est.estimate.p50).toBeLessThanOrEqual(est.estimate.p90);
+    await expect(MCP_TOOLS.get_price_estimate.run({ db: env.db, user: { ...staff, tenantId: env.b.id } }, { listingId: listing!.id })).rejects.toThrow("Listing not found");
     const other = await revenueCockpit(env.db, env.b.id, { simulations: 100 });
     expect(other.forecast.deals).toHaveLength(0);
     expect(other.forecast.learnedFrom).toBe(0);

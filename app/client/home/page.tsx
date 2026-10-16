@@ -97,7 +97,7 @@ export default async function ClientHome() {
       {/* Hero: the client's largest holding, photographed, with the one number that matters. */}
       <section className="relative overflow-hidden rounded-lg" aria-labelledby="home-title">
         <Photo seed={lead ? lead.property.slug : p.client.id} scene={lead ? bundle(lead.property.slug, lead.property.city).scene : "dubai"} photo={lead ? bundle(lead.property.slug, lead.property.city).photo : null} ownSrc={null} alt={lead ? `${lead.property.name}, ${lead.property.community}` : "Skyline"} className="h-[380px] md:h-[400px]" sceneWidth={1000} sizes="100vw" priority>
-          <span aria-hidden className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/5" />
+          <span aria-hidden className="absolute inset-0 bg-linear-to-r from-black/75 via-black/50 to-black/10" />
         </Photo>
         <div className="pointer-events-none absolute inset-0 flex flex-col justify-end gap-6 p-6 md:flex-row md:items-end md:justify-between md:p-10">
           <div className="pointer-events-auto max-w-[620px] text-white">

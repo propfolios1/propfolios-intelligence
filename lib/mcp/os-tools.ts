@@ -11,6 +11,7 @@ import { clerkEnabled } from "@/lib/auth";
 import { listCommissions } from "@/lib/commission/service";
 import { getClient360 } from "@/lib/data-model";
 import { createOffer, getDeal, listDeals } from "@/lib/deals/service";
+import { listingEstimate, revenueCockpit } from "@/lib/revenue/service";
 import { scope } from "@/lib/tenant-db";
 import type { ToolContext } from "./tools";
 
@@ -146,6 +147,51 @@ export const OS_TOOLS = {
       const { latest } = await latestAml(ctx.db, ctx.user.tenantId, a.clientId);
       if (!latest.length) throw new HttpError(404, "Not screened yet; call again with rescreen=true.");
       return latest.map((x) => ({ type: x.type, status: x.status, provider: x.provider, alerts: x.flags, checkedAt: x.checkedAt, reviewedBy: x.reviewedBy }));
+    },
+  }),
+  get_revenue_forecast: def({
+    title: "Get revenue forecast",
+    description: "Commission expected in the next 30, 60 and 90 days (P10, P50, P90, AED) from a Monte Carlo simulation of the open pipeline, with each deal's model probability, the stage conversion learned from closed deals, and the next best actions ranked by expected value.",
+    input: z.object({ simulations: z.number().int().min(500).max(10_000).default(4000), actions: z.number().int().min(0).max(20).default(8) }),
+    run: async (ctx, a) => {
+      staff(ctx);
+      const r = await revenueCockpit(ctx.db, ctx.user.tenantId, { simulations: a.simulations });
+      const f = r.forecast;
+      const round = (v: number) => Math.round(v);
+      return {
+        currency: "AED",
+        learnedFromClosedDeals: f.learnedFrom,
+        horizons: f.horizons.map((h) => ({ days: h.days, p10: round(h.p10), p50: round(h.p50), p90: round(h.p90), mean: round(h.mean) })),
+        months: f.months.map((m) => ({ month: m.month, p10: round(m.p10), p50: round(m.p50), p90: round(m.p90) })),
+        weightedPipeline: round(f.weightedPipeline),
+        stalledCommission: round(f.stalledAed),
+        concentrationTop3: +f.concentration.toFixed(3),
+        brierScore: f.brier === null ? null : +f.brier.toFixed(3),
+        stages: f.stages.map((m) => ({ stage: m.stage, closedThrough: m.n, won: m.won, conversion: +m.win.toFixed(3), medianDaysToClose: Math.round(m.medianDays) })),
+        deals: f.deals.map((d) => ({ reference: d.reference, stage: d.stage, probability: +d.probability.toFixed(3), statedProbability: d.stated, daysInStage: d.daysInStage, stalled: d.stalled, commission: round(d.commissionAed), expectedValue: round(d.expectedAed), expectedClose: d.closeP50 })),
+        nextBestActions: r.queue.slice(0, a.actions).map((q) => ({ kind: q.kind, title: q.title, reason: q.reason, expectedValue: round(q.evAed), atStake: round(q.atStakeAed), owner: q.owner })),
+      };
+    },
+  }),
+  get_price_estimate: def({
+    title: "Get price estimate",
+    description: "A listing's estimated price range from weighted comparable listings and the regional median, where its asking price sits against it, and the expected days on market at the asking price and at the estimate.",
+    input: z.object({ listingId: uuid }),
+    run: async (ctx, a) => {
+      staff(ctx);
+      const r = await listingEstimate(ctx.db, ctx.user.tenantId, a.listingId);
+      if (!r) throw new HttpError(404, "Listing not found.");
+      const e = r.estimate;
+      return {
+        estimate: { p10: Math.round(e.value.p10), p50: Math.round(e.value.p50), p90: Math.round(e.value.p90) },
+        pricePerSqft: { asking: Math.round(e.askingPsf), p50: Math.round(e.psf.p50) },
+        premium: +e.premium.toFixed(3),
+        position: e.position,
+        confidence: e.confidence,
+        daysOnMarket: e.dom,
+        advice: e.advice,
+        comparables: e.comparables.map((c) => ({ reference: c.reference, community: c.community, evidence: c.status, bedrooms: c.bedrooms, sqft: Math.round(c.sqft), pricePerSqft: Math.round(c.psf), price: c.price, weight: +c.weight.toFixed(3) })),
+      };
     },
   }),
 } as const;

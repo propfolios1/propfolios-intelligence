@@ -278,3 +278,52 @@ These are operational reminders for firms using Nakhla, not legal advice. Each f
 ## 12. Screenshots
 
 There are 134 screenshots in `docs/screenshots/production/`, named by feature: `f6-` to `f21-` for features, and `f22-` for the seven brokerages, the wider product, the client portal and mobile layouts. Desktop captures are 1440 pixels wide and mobile captures 390. The automated sweep found no page errors, no server errors and no horizontal overflow.
+
+## 13. Portal and intelligence release (16 October 2026)
+
+This release makes the client portal friendlier and more colourful, adds property photography, and gives the analyst desk three new engines. Commits `ffde9ce`, `ad40da1` and the commit that adds this section.
+
+### Client portal
+
+| Change | Where | Detail |
+| --- | --- | --- |
+| Home | `/client/home` (`/client` now opens here) | A photographed hero with the portfolio's value and gain on cost. Six colour-coded figure tiles; each term opens a plain-language definition on tap. A ranked list of what needs the client's attention, then property photo cards, an adviser card with the latest message, an allocation donut, goal rings and a short glossary. |
+| What needs attention | `lib/client/next-steps.ts` | Ranks identity verification (missing, rejected, expired or expiring within 45 days), contracts out for signature, unpaid and overdue invoices, unread reports, open recommendations and goals behind plan with a deadline inside a year. Also scores readiness (four standing obligations). |
+| Opportunities | `/client/opportunities` | Photo cards with stage filters (everything, ready to move in, being built), city filters, sorting by yield, price or developer strength, and a developer risk dot. |
+| Recommendations | `/client/recommendations` | The property's photograph, coloured type chips, a priority marker, and clear actions: discuss with my adviser, ask the assistant, not now. |
+| Portfolio | `/client/portfolio` | A row of photo cards for the holdings above the existing analysis. |
+| Navigation | `components/shell/nav-config.ts`, `sidebar-nav.tsx`, `client-tab-bar.tsx` | Five colour-coded groups (Home, Insight, Planning, Paperwork, Your adviser) with tinted icon tiles; a five-tab bar on phones. Labels translated into Arabic, Hindi, Marathi and Konkani. |
+| Glossary | `lib/client/glossary.ts`, `components/portal/term.tsx` | Fourteen terms: value, gain, IRR, annual rent, cash and gross yield, off-plan share, handover, escrow, RERA, cap rate, P10/P50/P90, service charge and loan to value. |
+| Palette | `app/globals.css` | Sea, iris, sun, coral, sky, mint and rose, each in 50/100/500/600/700, used only in the client area. The staff areas keep the navy and gold system. |
+
+### Photography (Unsplash)
+
+- `lib/media/unsplash.ts` searches the Unsplash API (landscape, high content safety) with `UNSPLASH_ACCESS_KEY`. Each search is cached for a week in the data cache and six hours in memory; failures retry after ten minutes. A workspace makes a few dozen calls a week, inside the free tier of 50 an hour.
+- `lib/media/subjects.ts` picks the search per property: villas as villas, branded towers as towers, well-known communities (Dubai Marina, Palm Jumeirah, Saadiyat Island, Bandra and others) as themselves, everything else as its city. The pick within the results is stable per property, and two properties sharing a search get different photographs.
+- Images are hotlinked from `images.unsplash.com` with their `ixid`, sized through the imgix parameters, painted in the photograph's dominant colour while loading, and credited "Photo by … on Unsplash" with referral links, as the API guidelines require.
+- The firm's own photograph (`properties.image_url`, or an absolute URL in a listing's photos) takes precedence.
+- Without a key, or when a search or image fails, each property is drawn as an illustrated skyline for its city (Dubai, Abu Dhabi, Mumbai, Goa, Bengaluru, Delhi NCR, Pune, London, Singapore, Sydney, New York, Toronto) at golden hour, by day or at night, so a page never shows a broken image.
+- To enable: create an application at unsplash.com/developers, copy its Access Key into `UNSPLASH_ACCESS_KEY` in Vercel and redeploy. Admin → Integrations shows whether it is set.
+
+### Analyst desk
+
+| Engine | Where | Method |
+| --- | --- | --- |
+| Commission forecast | `/analyst/revenue`, `lib/revenue/forecast.ts` | The open pipeline is simulated 4,000 times with a seeded generator, so the same pipeline gives the same answer. Stage conversion has a Beta prior worth six deals and time to close a log-normal prior worth four; the firm's closed deals, won and lost, update both. A deal past 1.25 times its stage's usual dwell is marked stalled and its probability halves for each further dwell period, never below 40% of the stage rate. The owner's own probability carries 35%. Output: P10, P50 and P90 for 30, 60 and 90 days, a six-month fan chart, the 90-day distribution, concentration in the three largest deals, the stage funnel, the learned stage table and a leave-one-out Brier score. |
+| Next best actions | `lib/revenue/actions.ts` | One queue ranked by the commission an action is expected to recover or protect: stalled deals, completions due within three weeks, uncontacted or unanswered leads scoring 60 or more, listings priced more than 5% above comparables, contracts unsigned after three days and overdue invoices. Each item shows its arithmetic. |
+| Listing price intelligence | listing detail, `lib/revenue/pricing.ts` | Comparables weighted by similarity (community, type, bedrooms, size), evidence (sold or let over under offer over asking) and recency (one-year decay), with the regional median as a prior worth three comparables. Gives the P10 to P90 range, where the asking price sits, days on market at the asking price and at the estimate (elasticity 2.2), and the chance of selling within 90 days. |
+| MCP | `get_revenue_forecast`, `get_price_estimate` | Both staff-only, tenant-scoped, rate limited and audited like the other tools, and listed in the OpenAPI reference. |
+
+The dashboard shows the 90-day forecast and the value of the top three actions. Every workspace seed now adds nine deals that fell through at different stages, with their stage history, so conversion is learned from losses as well as wins. Trial workspaces get them too.
+
+### Verification
+
+- Type-check, lint, tests (330 in 38 files) and build pass. New tests: `tests/portal.test.ts` (next steps, readiness, subjects, scenes, the Unsplash client with a stubbed API) and `tests/revenue.test.ts` (priors, learning, determinism, quantile ordering, stall handling, analytic check, pricing, quantiles, queue ranking). `tests/seed-workspaces.test.ts` runs the cockpit and both MCP tools on a seeded firm and confirms another firm sees none of its deals or listings.
+- A date-dependent test in `tests/developers.test.ts` began failing on 16 October as its fixture aged out of a 14-day window. `inventoryView` now accepts the reference date.
+- Screenshots: `docs/screenshots/production/r1-*.png` (ten, desktop and mobile). No page errors, no server errors and no horizontal overflow.
+
+### Limitations of this release
+
+1. **Unsplash was not exercised live.** The build environment's network policy blocks unsplash.com and its API, so photographs could not be fetched or checked here, and the screenshots show the illustrated skylines. The API client is tested against a stubbed API with the documented response shape.
+2. **Forecast quality depends on history.** With few closed deals the priors dominate; the page states how many deals the model learned from. Lost deals need their stage history recorded (the deal pipeline does this) to be learned from.
+3. **Price estimates use the firm's own listings.** A firm with few listings in a community leans on the regional median; the page reports its confidence. Registry transaction feeds would improve it.
