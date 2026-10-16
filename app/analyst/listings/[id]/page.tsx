@@ -4,7 +4,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingStatusControl, ListingWriter, Syndicate } from "@/components/brokerage/actions";
 import { PageHeader } from "@/components/composites/page-header";
+import { Photo } from "@/components/media/photo";
 import { PublishPanel } from "@/components/portals/portals";
+import { PriceIntel } from "@/components/revenue/price-intel";
 import { Flag } from "@/components/os/badges";
 import { Section, SimpleTable } from "@/components/os/simple-table";
 import { PageContainer } from "@/components/shell/page-container";
@@ -18,6 +20,9 @@ import { STAGE_LABEL } from "@/lib/brokerage/leads";
 import { getListing, LISTING_STATUS_LABEL, listingIssues } from "@/lib/brokerage/listings";
 import { formatLocal } from "@/lib/format";
 import { marketOf, permitLabel, PORTAL_INDEX, SOURCE_NAME } from "@/lib/markets";
+import { photosForProperties } from "@/lib/media/unsplash";
+import { sceneFor } from "@/lib/media/subjects";
+import { listingEstimate } from "@/lib/revenue/service";
 import { PORTAL_SPECS } from "@/lib/portals/specs";
 import { scope } from "@/lib/tenant-db";
 
@@ -41,6 +46,8 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   const [t] = await db.select({ slug: s.tenants.slug }).from(s.tenants).where(eq(s.tenants.id, user.tenantId));
   const feedPortals = m.portals.filter((p) => p.feed);
   const [conns, published] = await Promise.all([db.select({ portal: s.portalConnections.portal, status: s.portalConnections.status }).from(s.portalConnections).where(scope(s.portalConnections, user.tenantId)), db.select().from(s.portalListings).where(scope(s.portalListings, user.tenantId, eq(s.portalListings.listingId, l.id)))]);
+  const [priced, media] = await Promise.all([listingEstimate(db, user.tenantId, l.id), photosForProperties([{ seed: l.reference, city: l.city, community: l.community, kind: l.propertyType }])]);
+  const cover = l.photos.find((p) => /^https?:\/\//.test(p.url))?.url ?? null;
   const apiPortals = Object.values(PORTAL_SPECS).filter((p) => p.market === m.code);
   const publishRows = apiPortals.map((p) => {
     const pl = published.find((x) => x.portal === p.key);
@@ -88,6 +95,12 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       )}
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0">
+          <Photo seed={l.reference} scene={media.get(l.reference)?.scene ?? sceneFor(l.city)} photo={media.get(l.reference)?.photo ?? null} ownSrc={cover} alt={`${l.title}, ${l.community}`} className="aspect-[21/9] rounded-md" sceneWidth={640} sizes="(min-width: 1024px) 60vw, 100vw" priority />
+          {priced && l.status !== "draft" && (
+            <Section title="Price intelligence" description={`What comparable ${l.purpose === "rent" ? "lettings" : "sales"} support for this ${l.propertyType.toLowerCase()}, and what the asking price means for time on market.`}>
+              <PriceIntel e={priced.estimate} price={l.price} currency={l.currency} purpose={l.purpose} rentPeriod={l.rentPeriod} />
+            </Section>
+          )}
           <Section title="Description">
             {l.description ? <p className="max-w-[72ch] text-read whitespace-pre-line text-ink-800">{l.description}</p> : <p className="text-ui text-ink-500">No description yet.</p>}
             {l.features.length > 0 && (

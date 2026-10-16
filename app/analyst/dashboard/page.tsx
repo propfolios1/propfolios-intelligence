@@ -15,8 +15,9 @@ import { formatAed } from "@/lib/domain";
 import { getDashboard, getMarket } from "@/lib/queries";
 import { insightViews, mandateRows } from "@/lib/serialize";
 import { federationStats } from "@/lib/federation";
+import { revenueCockpit } from "@/lib/revenue/service";
 import { listInsights, refreshIfStale } from "@/lib/insights";
-import { relativeTime } from "@/lib/utils";
+import { formatMoney, relativeTime } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -24,7 +25,9 @@ export const dynamic = "force-dynamic";
 export default async function Dashboard() {
   const user = await requireRole(["tenant_admin", "analyst"]);
   const db = await getDb();
-  const [d, market, insights, fed] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId), listInsights(db, user, { limit: 6 }), federationStats(db)]);
+  const [d, market, insights, fed, rev] = await Promise.all([getDashboard(db, user), getMarket(db, user.tenantId), listInsights(db, user, { limit: 6 }), federationStats(db), revenueCockpit(db, user.tenantId, { simulations: 2000 })]);
+  const r90 = rev.forecast.horizons[2]!;
+  const topActions = rev.queue.slice(0, 3);
   after(() => refreshIfStale(db, user.tenantId).then(() => undefined, () => undefined));
   const dubai = market.find((m) => m.region === "Dubai");
   const rows = mandateRows(d.mandates);
@@ -51,6 +54,18 @@ export default async function Dashboard() {
         <StatCard label="Awaiting review" value={String(d.inReview)} note="Investment committee" href="/analyst/mandates?status=REVIEW" />
         <StatCard label="Agent spend, 30 days" value={`$${d.agentSpend30.toFixed(2)}`} spark={d.spendSpark} note="Anthropic API" />
       </section>
+
+      {rev.forecast.deals.length > 0 && (
+        <Link href="/analyst/revenue" className="group mt-8 flex flex-col gap-3 rounded-md border border-hairline bg-surface px-5 py-4 transition-[border-color] duration-150 hover:border-ink-300 md:flex-row md:items-center md:justify-between">
+          <span className="text-small text-ink-700">
+            <span className="eyebrow me-3">Revenue</span>
+            Commission expected in the next 90 days: <span className="num text-ink-900">{formatMoney(r90.p50)}</span>, between <span className="num">{formatMoney(r90.p10)}</span> and <span className="num">{formatMoney(r90.p90)}</span> in four simulations out of five.
+          </span>
+          <span className="text-small text-ink-500 group-hover:text-ink-900">
+            {topActions.length ? `${topActions.length} highest-value actions worth ${formatMoney(topActions.reduce((a, q) => a + q.evAed, 0))}` : "Open the forecast"}
+          </span>
+        </Link>
+      )}
 
       <section className="mt-10">
         <div className="mb-2 flex items-center justify-between">

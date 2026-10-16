@@ -20,7 +20,7 @@ export default function TrialPage() {
         <div className="max-w-[520px]">
           <div className="eyebrow">Free trial</div>
           <h1 className="mt-5 font-display text-[40px] leading-[1.05] text-navy-900 md:text-[56px]">A working brokerage in under a minute.</h1>
-          <p className="mt-6 text-read text-ink-700">Nakhla builds a workspace for your market and fills it the way a live firm looks: three agents with history, 30 listings, 50 leads from the local portals, ten deals at every stage, five clients with holdings, and one transaction from mandate to paid commission.</p>
+          <p className="mt-6 text-read text-ink-700">Nakhla builds a workspace for your market and fills it the way a live firm looks: three agents with history, 30 listings, 50 leads from the local portals, ten deals at every stage with nine that fell through, five clients with holdings, and one transaction from mandate to paid commission.</p>
           <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-hairline pt-8">
             {[
               ["14 days", "Full access to every module"],

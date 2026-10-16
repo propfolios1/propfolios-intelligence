@@ -6,6 +6,7 @@ import { seedBrokerage } from "./seed-brokerage";
 import { seedClientLayer } from "./seed-client";
 import { seedMarketBriefs } from "./seed-market-intel";
 import { seedCommissions } from "./seed-commission";
+import { seedLostDeals } from "./seed-lost-deals";
 import { seedDeals, seedJourney } from "./seed-deals";
 import { seedAutomations, seedFabricRecords } from "./seed-fabric";
 import { seedIndia } from "./seed-india";
@@ -46,6 +47,7 @@ export async function seedTenantOs(db: DB, t: OsSeedTarget) {
     const automations = await seedAutomations(db, t);
     const commissions = await seedCommissions(db, t);
     const deals = await seedDeals(db, t);
+    await seedLostDeals(db, t);
     const client = await seedClientLayer(db, t);
     // After the client layer: the journey's events run the KYC analyzer, which opens KYC files of its own.
     const journey = await seedJourney(db, t);

@@ -6,6 +6,7 @@ import type { CatalogueMarket } from "@/db/schema-core";
 import type { LeadIntent, LeadStage, LeadTimeline } from "@/db/schema-brokerage";
 import { scoreLead } from "@/lib/brokerage/scoring";
 import { recordPayment } from "@/lib/commission/service";
+import { seedLostDeals } from "./seed-lost-deals";
 import { DEAL_STAGES } from "@/lib/deals/domain";
 import { closeDeal, createDeal, createOffer, generateContract, respondOffer, sendForSignature, signAllForSeed, updateChecklistItem, updatePayment } from "@/lib/deals/service";
 import { MARKETS, type MarketCode, SOURCE_NAME } from "@/lib/markets";
@@ -16,7 +17,7 @@ import { withSeedRuntime } from "./seed-runtime";
  * A complete brokerage workspace in one market: three agents with history,
  * the market's developers and projects, ninety days of market data, 30
  * listings, 50 leads, five clients with holdings, ten deals across the
- * pipeline, three commission records, two automations and one journey from
+ * pipeline, nine that fell through, three commission records, two automations and one journey from
  * mandate to paid commission invoice. Used for self-serve trials and for the
  * demonstration brokerages. Deterministic ids under the given key, so it is
  * idempotent; inserts skip rows that already exist.
@@ -245,6 +246,7 @@ async function seed(db: DB, t: MarketSeedTarget): Promise<MarketSeedCounts> {
     await db.insert(s.dealStages).values(DEAL_STAGES.map((name, order) => ({ tenantId: t.tenantId, dealId: d!.id, name, order, enteredAt: new Date(created.getTime() + order * 6 * DAY), completedAt: name === "closed" ? null : new Date(created.getTime() + (order + 1) * 6 * DAY), completedBy: agents[h.c % agents.length]!.name })));
     await computeForDeal(db, { tenantId: t.tenantId, name: "Finance" }, d!.id, { inline: true, at: closedAt, issue: true });
   }
+  await seedLostDeals(db, { tenantId: t.tenantId, id, now });
   const open: { stage: (typeof DEAL_STAGES)[number]; prob: number }[] = [
     { stage: "origination", prob: 0.2 },
     { stage: "origination", prob: 0.25 },

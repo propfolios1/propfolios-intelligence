@@ -53,6 +53,7 @@ import {
   Sparkles,
   SquareStack,
   Target,
+  TrendingUp,
   UserCog,
   Users,
   Workflow,
@@ -87,6 +88,7 @@ export const NAV: Record<Area, NavSection[]> = {
         { href: "/analyst/insights", label: "Insights", key: "i" },
         { href: "/analyst/mandates", label: "Mandates", key: "m" },
         { href: "/analyst/deals", label: "Deals", key: "e" },
+        { href: "/analyst/revenue", label: "Revenue", key: "u" },
         { href: "/analyst/commissions", label: "My commissions" },
         { href: "/analyst/memos", label: "Memos", key: "o" },
         { href: "/analyst/clients", label: "Clients", key: "c" },
@@ -267,6 +269,7 @@ export const NAV: Record<Area, NavSection[]> = {
 
 export const SEGMENT_LABEL: Record<string, string> = {
   home: "Home",
+  revenue: "Revenue",
   sso: "Single sign-on",
   scim: "SCIM provisioning",
   roles: "Roles",
@@ -380,6 +383,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/analyst/india/tax-calculator": Calculator,
   "/notifications": Bell,
   "/analyst/settings": Settings,
+  "/analyst/revenue": TrendingUp,
   "/client/home": Home,
   "/client/portfolio": PieChart,
   "/client/deals": Handshake,

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 type Country = { code: string; name: string; flag: string; seeds: string };
 
-const STEPS = ["Creating the workspace", "Adding three agents and their history", "Loading developers, projects and 90 days of market data", "Seeding 30 listings and 50 leads", "Opening 10 deals and one complete journey", "Computing commissions and invoices"];
+const STEPS = ["Creating the workspace", "Adding three agents and their history", "Loading developers, projects and 90 days of market data", "Seeding 30 listings and 50 leads", "Opening 10 deals, nine lost deals and one complete journey", "Computing commissions and invoices"];
 
 export function TrialForm({ countries }: { countries: Country[] }) {
   const [country, setCountry] = React.useState<string>("");

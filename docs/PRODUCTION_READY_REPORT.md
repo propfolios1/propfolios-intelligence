@@ -121,7 +121,7 @@ Vercel Cron is not used: the former `/api/cron/*` routes, `lib/cron.ts` and the 
 
 ## 6. Demonstration data
 
-Seven brokerages are seeded by `seedMarketWorkspace` (`db/seed-workspaces.ts`). Each gets three agents with history, 30 listings, 50 leads, five clients with holdings, ten deals across the pipeline, three commission records, two automations, one journey from mandate to paid commission invoice, and ninety days of market data.
+Seven brokerages are seeded by `seedMarketWorkspace` (`db/seed-workspaces.ts`). Each gets three agents with history, 30 listings, 50 leads, five clients with holdings, ten deals across the pipeline, nine lost deals with their stage history, three commission records, two automations, one journey from mandate to paid commission invoice, and ninety days of market data.
 
 | Firm | Market | Plan | Notes |
 | --- | --- | --- | --- |

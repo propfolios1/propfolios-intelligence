@@ -37,7 +37,8 @@ describe("self-serve trial", () => {
       const count = async (table: typeof s.leads | typeof s.listings | typeof s.deals | typeof s.clients | typeof s.commissions | typeof s.automations) => (await env.db.select({ id: table.id }).from(table).where(eq(table.tenantId, t))).length;
       expect(await count(s.leads)).toBe(50);
       expect(await count(s.listings)).toBe(30);
-      expect(await count(s.deals)).toBe(10);
+      // Ten live and won deals, plus nine that fell through for the revenue model to learn from.
+      expect(await count(s.deals)).toBe(19);
       expect(await count(s.clients)).toBe(5);
       expect(await count(s.commissions)).toBe(3);
       expect(await count(s.automations)).toBe(2);

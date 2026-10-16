@@ -10,7 +10,7 @@ import { seedMarketWorkspace, type MarketSeedCounts } from "./seed-market";
 /**
  * The seven demonstration brokerages, one or more per market, each brought to
  * a full workspace by seedMarketWorkspace: three agents with history, 30
- * listings, 50 leads, five clients, ten deals, three commissions, two
+ * listings, 50 leads, five clients, ten deals and nine lost ones, three commissions, two
  * automations, one mandate-to-commission journey and ninety days of market
  * data. Firms seeded by earlier releases keep their records; references are
  * offset (LS-0501, LD-0101 and so on) so nothing collides, and agents,

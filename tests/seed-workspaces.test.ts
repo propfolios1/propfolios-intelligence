@@ -25,13 +25,30 @@ describe("demonstration workspaces", () => {
     const firms = await env.db.select().from(s.tenants).where(eq(s.tenants.slug, "manhattan-premier"));
     expect(firms[0]).toMatchObject({ name: "Manhattan Premier", plan: "enterprise", status: "active" });
     const t = firms[0]!.id;
-    expect([await count(s.leads, t), await count(s.listings, t), await count(s.deals, t), await count(s.clients, t), await count(s.commissions, t), await count(s.automations, t)]).toEqual([50, 30, 10, 5, 3, 2]);
+    expect([await count(s.leads, t), await count(s.listings, t), await count(s.deals, t), await count(s.clients, t), await count(s.commissions, t), await count(s.automations, t)]).toEqual([50, 30, 19, 5, 3, 2]);
     const listings = await env.db.select({ currency: s.listings.currency }).from(s.listings).where(eq(s.listings.tenantId, t));
     expect(new Set(listings.map((l) => l.currency))).toEqual(new Set(["USD"]));
     await seedWorkspaces(env.db, { only: ["manhattanpremier"] });
     expect(await count(s.leads, t)).toBe(50);
-    expect(await count(s.deals, t)).toBe(10);
+    // Ten live and won deals plus nine that fell through, which the revenue model learns from.
+    expect(await count(s.deals, t)).toBe(19);
+    expect((await env.db.select({ status: s.deals.status }).from(s.deals).where(eq(s.deals.tenantId, t))).filter((d) => d.status === "lost")).toHaveLength(9);
   }, 240_000);
+
+  it("forecasts each firm's revenue from its own deals only", async () => {
+    const { revenueCockpit } = await import("@/lib/revenue/service");
+    const [firm] = await env.db.select().from(s.tenants).where(eq(s.tenants.slug, "manhattan-premier"));
+    const deals = await env.db.select({ status: s.deals.status }).from(s.deals).where(eq(s.deals.tenantId, firm!.id));
+    const r = await revenueCockpit(env.db, firm!.id, { simulations: 400 });
+    expect(r.forecast.learnedFrom).toBe(deals.filter((d) => d.status === "won" || d.status === "lost").length);
+    expect(r.forecast.deals.length).toBe(deals.filter((d) => d.status === "active").length);
+    expect(r.forecast.stages.find((m) => m.stage === "origination")!.win).toBeLessThan(0.6);
+    expect(r.forecast.horizons[2]!.p90).toBeGreaterThan(0);
+    for (const q of r.queue) expect(q.evAed).toBeGreaterThanOrEqual(0);
+    const other = await revenueCockpit(env.db, env.b.id, { simulations: 100 });
+    expect(other.forecast.deals).toHaveLength(0);
+    expect(other.forecast.learnedFrom).toBe(0);
+  }, 120_000);
 
   it("tops up a firm that already has records without collisions or duplicates", async () => {
     const { seedMarketWorkspace } = await import("@/db/seed-market");
