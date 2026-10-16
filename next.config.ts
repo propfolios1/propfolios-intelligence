@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/**": ["./drizzle/**/*"],
   },
-  images: { remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }] },
+  images: { remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }, { protocol: "https", hostname: "images.unsplash.com" }] },
 };
 
 export default createNextIntlPlugin("./i18n/request.ts")(nextConfig);

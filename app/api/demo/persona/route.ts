@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const as = url.searchParams.get("as");
   const user = url.searchParams.get("user");
   const client = url.searchParams.get("client");
-  const fallback = as === "client" ? "/client/portfolio" : as === "platform" ? "/platform/dashboard" : "/analyst/dashboard";
+  const fallback = as === "client" ? "/client/home" : as === "platform" ? "/platform/dashboard" : "/analyst/dashboard";
   const to = url.searchParams.get("to") ?? (user ? "/home" : fallback);
   const res = NextResponse.redirect(new URL(to.startsWith("/") ? to : "/", url.origin));
   if (!clerkEnabled) {

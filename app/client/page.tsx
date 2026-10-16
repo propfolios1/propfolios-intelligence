@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function ClientIndex() {
-  redirect("/client/portfolio");
+  redirect("/client/home");
 }

@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/composites/empty-state";
 import { STAGE_LABEL } from "@/lib/domain";
 import { listMandates } from "@/lib/queries";
 import { relativeTime } from "@/lib/utils";
+import { ClientTabBar } from "./client-tab-bar";
 import { CommandPaletteProvider, type SearchItem } from "./command-palette";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { navFor, type Area } from "./nav-config";
@@ -118,11 +119,12 @@ export async function AppShell({ area, children }: { area: Area; children: React
           )}
           {area !== "platform" && <TrialBanner tenantId={user.tenantId} admin={user.role === "tenant_admin"} />}
           <TopBar area={area} notifications={alerts} viewerName={user.name} />
-          <main id="main" className="flex-1">
+          <main id="main" className={area === "client" ? "flex-1 pb-16 lg:pb-0" : "flex-1"}>
             <PageTransition area={area}>{children}</PageTransition>
           </main>
         </div>
       </div>
+      {area === "client" && <ClientTabBar />}
       <KeyboardShortcuts area={area} />
     </CommandPaletteProvider>
   );

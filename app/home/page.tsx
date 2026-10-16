@@ -10,5 +10,5 @@ export default async function Home() {
   if (s.status === "needs_onboarding") redirect("/onboarding");
   if (s.status === "suspended") redirect("/suspended");
   const u = s.user;
-  redirect(u.role === "platform_admin" ? "/platform/dashboard" : u.role === "client" ? "/client/portfolio" : "/analyst/dashboard");
+  redirect(u.role === "platform_admin" ? "/platform/dashboard" : u.role === "client" ? "/client/home" : "/analyst/dashboard");
 }

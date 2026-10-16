@@ -30,6 +30,7 @@ import {
   GitBranch,
   Globe2,
   Handshake,
+  Home,
   Inbox,
   KeyRound,
   Landmark,
@@ -68,8 +69,12 @@ export interface NavItem {
   feature?: "assistant" | "clientPortal" | "marketTiming" | "crossBorder";
 }
 
+/** Portal section colours: each group of the client navigation carries its own hue. */
+export type NavTone = "sea" | "iris" | "sun" | "coral" | "sky";
+
 export interface NavSection {
   title?: string;
+  tone?: NavTone;
   items: NavItem[];
 }
 
@@ -128,38 +133,54 @@ export const NAV: Record<Area, NavSection[]> = {
   ],
   client: [
     {
+      tone: "sea",
       items: [
+        { href: "/client/home", label: "Home", key: "h" },
         { href: "/client/portfolio", label: "Portfolio", key: "p" },
-        { href: "/client/deals", label: "Transactions", key: "t" },
-        { href: "/client/insights", label: "Insights", key: "i" },
-        { href: "/client/market-insights", label: "Market insights" },
         { href: "/client/opportunities", label: "Opportunities", key: "o" },
         { href: "/client/recommendations", label: "Recommendations", key: "r" },
+        { href: "/client/deals", label: "Transactions", key: "t" },
       ],
     },
     {
-      title: "Reporting",
+      title: "Insight",
+      tone: "iris",
       items: [
+        { href: "/client/insights", label: "Insights", key: "i" },
+        { href: "/client/market-insights", label: "Market insights" },
         { href: "/client/reports", label: "Reports" },
         { href: "/client/subscriptions", label: "Market subscriptions" },
-        { href: "/client/statements", label: "Statements" },
-        { href: "/client/goals", label: "Goals", key: "g" },
-        { href: "/client/private-banking", label: "Private banking" },
       ],
     },
     {
-      title: "Workspace",
+      title: "Planning",
+      tone: "sun",
+      items: [
+        { href: "/client/goals", label: "Goals", key: "g" },
+        { href: "/client/statements", label: "Statements" },
+        { href: "/client/private-banking", label: "Private banking" },
+        { href: "/client/india", label: "India" },
+        { href: "/client/nri", label: "NRI plan" },
+      ],
+    },
+    {
+      title: "Paperwork",
+      tone: "coral",
       items: [
         { href: "/client/documents", label: "Documents", key: "d" },
         { href: "/client/kyc", label: "Identity verification" },
         { href: "/client/contracts", label: "Contracts" },
         { href: "/client/invoices", label: "Invoices" },
         { href: "/client/tax-documents", label: "Tax documents" },
-        { href: "/client/india", label: "India" },
-        { href: "/client/nri", label: "NRI plan" },
+      ],
+    },
+    {
+      title: "Your adviser",
+      tone: "sky",
+      items: [
         { href: "/client/messages", label: "Messages", key: "m" },
-        { href: "/notifications", label: "Notifications", key: "n" },
         { href: "/client/assistant", label: "Assistant", key: "a", feature: "assistant" },
+        { href: "/notifications", label: "Notifications", key: "n" },
         { href: "/client/settings", label: "Settings", key: "s" },
       ],
     },
@@ -245,6 +266,7 @@ export const NAV: Record<Area, NavSection[]> = {
 };
 
 export const SEGMENT_LABEL: Record<string, string> = {
+  home: "Home",
   sso: "Single sign-on",
   scim: "SCIM provisioning",
   roles: "Roles",
@@ -358,6 +380,7 @@ export const NAV_ICON: Record<string, LucideIcon> = {
   "/analyst/india/tax-calculator": Calculator,
   "/notifications": Bell,
   "/analyst/settings": Settings,
+  "/client/home": Home,
   "/client/portfolio": PieChart,
   "/client/deals": Handshake,
   "/client/insights": Sparkles,

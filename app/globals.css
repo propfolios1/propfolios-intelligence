@@ -100,6 +100,45 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger-soft: var(--danger-soft);
   --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Client portal palette: brighter companions to navy for a portal clients read at a glance. Used in /client only. */
+  --color-sea-50: #ecfdfb;
+  --color-sea-100: #ccfbf1;
+  --color-sea-500: #14b8a6;
+  --color-sea-600: #0d9488;
+  --color-sea-700: #0f766e;
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+  --color-sky-700: #0369a1;
+  --color-iris-50: #f5f3ff;
+  --color-iris-100: #ede9fe;
+  --color-iris-500: #8b5cf6;
+  --color-iris-600: #7c3aed;
+  --color-iris-700: #6d28d9;
+  --color-coral-50: #fff4f1;
+  --color-coral-100: #ffe4dc;
+  --color-coral-500: #f97362;
+  --color-coral-600: #ea5a47;
+  --color-coral-700: #c2412f;
+  --color-sun-50: #fffbeb;
+  --color-sun-100: #fef3c7;
+  --color-sun-500: #f59e0b;
+  --color-sun-600: #d97706;
+  --color-sun-700: #b45309;
+  --color-mint-50: #ecfdf5;
+  --color-mint-100: #d1fae5;
+  --color-mint-500: #10b981;
+  --color-mint-600: #059669;
+  --color-mint-700: #047857;
+  --color-rose-50: #fff1f5;
+  --color-rose-100: #ffe4ec;
+  --color-rose-500: #f43f7a;
+  --color-rose-600: #e11d63;
+  --color-rose-700: #be185d;
   --color-current: currentColor;
 
   --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;

@@ -106,7 +106,7 @@ describe("inventory sync", () => {
     ]);
     expect((await d.matchingLeads(env.db, env.a.id, { price: 50_500_000, currency: "INR" }, "IN")).map((x) => x.name)).toEqual(["Anil Mehta"]);
     expect((await d.inventoryView(env.db, env.b.id, "lodha")).connection).toBeNull();
-    const v = await d.inventoryView(env.db, env.a.id, "lodha", { status: "available" });
+    const v = await d.inventoryView(env.db, env.a.id, "lodha", { status: "available", now: new Date("2026-10-03T12:00:00Z") });
     expect(v.units.map((x) => x.unitRef).sort()).toEqual(["W-1801", "W-2502"]);
     expect(v.changes.length).toBeGreaterThan(0);
   });

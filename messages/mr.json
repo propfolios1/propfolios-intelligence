@@ -72,7 +72,12 @@
     "client_portal": "ग्राहक पोर्टल",
     "administration": "प्रशासन",
     "nakhla_platform": "नखला प्लॅटफॉर्म",
-    "detail": "तपशील"
+    "detail": "तपशील",
+    "home": "मुख्यपृष्ठ",
+    "insight": "अंतर्दृष्टी",
+    "planning": "नियोजन",
+    "paperwork": "कागदपत्रे",
+    "your_adviser": "तुमचे सल्लागार"
   },
   "shell": {
     "search": "शोधा किंवा थेट जा…",

@@ -124,7 +124,9 @@ export async function matchingLeads(db: DB, tenantId: string, unit: { price: num
     .limit(limit);
 }
 
-export async function inventoryView(db: DB, tenantId: string, developerKey: string, f: { status?: string; bedrooms?: number | null; project?: string | null } = {}) {
+/** Units, project totals and the last fortnight of price and status changes, measured back from `now`. */
+export async function inventoryView(db: DB, tenantId: string, developerKey: string, f: { status?: string; bedrooms?: number | null; project?: string | null; now?: Date } = {}) {
+  const since = new Date((f.now ?? new Date()).getTime() - 14 * DAY);
   const [c] = await db.select().from(s.developerConnections).where(scope(s.developerConnections, tenantId, eq(s.developerConnections.developerKey, developerKey)));
   if (!c) return { connection: null, units: [], projects: [], changes: [] };
   const conds = [eq(s.developerInventory.connectionId, c.id)];
@@ -134,7 +136,7 @@ export async function inventoryView(db: DB, tenantId: string, developerKey: stri
   const [units, projects, changes] = await Promise.all([
     db.select().from(s.developerInventory).where(scope(s.developerInventory, tenantId, ...conds)).orderBy(s.developerInventory.project, s.developerInventory.price).limit(400),
     db.select({ project: s.developerInventory.project, n: sql<number>`count(*)::int`, available: sql<number>`count(*) filter (where ${s.developerInventory.status} = 'available')::int`, minPrice: sql<number | null>`min(${s.developerInventory.price}) filter (where ${s.developerInventory.status} = 'available')` }).from(s.developerInventory).where(scope(s.developerInventory, tenantId, eq(s.developerInventory.connectionId, c.id))).groupBy(s.developerInventory.project),
-    db.select().from(s.developerInventory).where(scope(s.developerInventory, tenantId, eq(s.developerInventory.connectionId, c.id), or(gte(s.developerInventory.priceChangedAt, new Date(Date.now() - 14 * DAY)), gte(s.developerInventory.statusChangedAt, new Date(Date.now() - 14 * DAY))))).orderBy(desc(sql`greatest(coalesce(${s.developerInventory.priceChangedAt}, 'epoch'), coalesce(${s.developerInventory.statusChangedAt}, 'epoch'))`)).limit(30),
+    db.select().from(s.developerInventory).where(scope(s.developerInventory, tenantId, eq(s.developerInventory.connectionId, c.id), or(gte(s.developerInventory.priceChangedAt, since), gte(s.developerInventory.statusChangedAt, since)))).orderBy(desc(sql`greatest(coalesce(${s.developerInventory.priceChangedAt}, 'epoch'), coalesce(${s.developerInventory.statusChangedAt}, 'epoch'))`)).limit(30),
   ]);
   return { connection: c, units, projects, changes };
 }

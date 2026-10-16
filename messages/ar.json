@@ -72,7 +72,12 @@
     "client_portal": "بوابة العملاء",
     "administration": "الإدارة",
     "nakhla_platform": "منصة نخلة",
-    "detail": "التفاصيل"
+    "detail": "التفاصيل",
+    "home": "الرئيسية",
+    "insight": "الرؤى",
+    "planning": "التخطيط",
+    "paperwork": "المستندات",
+    "your_adviser": "مستشارك"
   },
   "shell": {
     "search": "ابحث أو انتقل إلى…",

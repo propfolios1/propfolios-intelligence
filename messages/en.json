@@ -72,7 +72,12 @@
     "client_portal": "Client portal",
     "administration": "Administration",
     "nakhla_platform": "Nakhla platform",
-    "detail": "Detail"
+    "detail": "Detail",
+    "home": "Home",
+    "insight": "Insight",
+    "planning": "Planning",
+    "paperwork": "Paperwork",
+    "your_adviser": "Your adviser"
   },
   "shell": {
     "search": "Search or jump to…",

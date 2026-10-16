@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { LocaleMenuItems } from "./language-switcher";
-import { AREA_LABEL, FALLBACK_ICON, NAV_ICON, navFor, type Area } from "./nav-config";
+import { AREA_LABEL, FALLBACK_ICON, NAV_ICON, navFor, type Area, type NavTone } from "./nav-config";
 import { SignOutItem } from "./sign-out";
 import { useNavLabel } from "./use-nav-label";
 
@@ -62,47 +62,68 @@ export function Wordmark({ area }: { area: Area }) {
   );
 }
 
+/** Client portal hues per navigation group: a tinted icon tile, and the same hue for the active row. */
+const TONE: Record<NavTone, { tile: string; active: string; bar: string; title: string }> = {
+  sea: { tile: "bg-sea-100 text-sea-700", active: "bg-sea-50", bar: "bg-sea-500", title: "text-sea-700" },
+  iris: { tile: "bg-iris-100 text-iris-700", active: "bg-iris-50", bar: "bg-iris-500", title: "text-iris-700" },
+  sun: { tile: "bg-sun-100 text-sun-700", active: "bg-sun-50", bar: "bg-sun-500", title: "text-sun-700" },
+  coral: { tile: "bg-coral-100 text-coral-700", active: "bg-coral-50", bar: "bg-coral-500", title: "text-coral-700" },
+  sky: { tile: "bg-sky-100 text-sky-700", active: "bg-sky-50", bar: "bg-sky-500", title: "text-sky-700" },
+};
+
 /**
  * Navigation rows: 32px, 8px padding, 6px radius, a 16px line icon. The
  * active row sits on ink-100 with a 2px gold bar on its leading edge. The
- * first five rows with a shortcut show it on hover.
+ * first five rows with a shortcut show it on hover. The client portal is
+ * colour-coded instead: each group has its hue, and every row an icon tile.
  */
 export function NavList({ area, pathname }: { area: Area; pathname: string }) {
   const { config } = useTenant();
   const tr = useNavLabel();
   let hinted = 0;
+  const portal = area === "client";
   return (
     <>
-      {navFor(area, config.features).map((section, i) => (
-        <div key={i} className={cn(section.title ? "pt-6" : i > 0 && "pt-2")}>
-          {section.title && <div className="px-2 pb-2 text-label font-medium tracking-[0.1em] text-ink-400 uppercase">{tr(section.title)}</div>}
-          <ul className="space-y-px">
-            {section.items.map((item) => {
-              const active = pathname === item.href || (item.href !== "/analyst/india" && pathname.startsWith(`${item.href}/`));
-              const Icon = NAV_ICON[item.href] ?? FALLBACK_ICON;
-              const hint = item.key && hinted < 5 ? (hinted++, item.key) : null;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    title={hint ? `G then ${hint.toUpperCase()}` : undefined}
-                    className={cn(
-                      "group relative flex h-8 items-center gap-3 rounded-sm px-2 text-ui transition-[background-color,color] duration-150",
-                      active ? "bg-ink-100 font-medium text-ink-900" : "text-ink-700 hover:bg-ink-100 hover:text-ink-900",
-                    )}
-                  >
-                    <span aria-hidden className={cn("absolute inset-y-0 start-0 w-0.5 rounded-full bg-gold-500 transition-opacity duration-150", active ? "opacity-100" : "opacity-0")} />
-                    <Icon className={cn("size-4 shrink-0 stroke-[1.5] transition-colors duration-150", active ? "text-ink-900" : "text-ink-500 group-hover:text-ink-700")} aria-hidden />
-                    <span className="min-w-0 flex-1 truncate">{tr(item.label)}</span>
-                    {hint && <kbd className="num rounded-xs border border-hairline px-1 py-px text-hint text-ink-400 opacity-0 transition-opacity duration-150 group-hover:opacity-100">G {hint.toUpperCase()}</kbd>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+      {navFor(area, config.features).map((section, i) => {
+        const tone = portal ? TONE[section.tone ?? "sea"] : null;
+        return (
+          <div key={i} className={cn(section.title ? (portal ? "pt-4" : "pt-6") : i > 0 && "pt-2")}>
+            {section.title && <div className={cn("px-2 pb-2 text-label font-medium tracking-[0.1em] uppercase", tone ? tone.title : "text-ink-400")}>{tr(section.title)}</div>}
+            <ul className={portal ? "space-y-0.5" : "space-y-px"}>
+              {section.items.map((item) => {
+                const active = pathname === item.href || (item.href !== "/analyst/india" && pathname.startsWith(`${item.href}/`));
+                const Icon = NAV_ICON[item.href] ?? FALLBACK_ICON;
+                const hint = item.key && hinted < 5 ? (hinted++, item.key) : null;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      title={hint ? `G then ${hint.toUpperCase()}` : undefined}
+                      className={cn(
+                        "group relative flex items-center gap-3 rounded-sm px-2 text-ui transition-[background-color,color] duration-150",
+                        "h-8",
+                        active ? cn("font-medium text-ink-900", tone ? tone.active : "bg-ink-100") : "text-ink-700 hover:bg-ink-100 hover:text-ink-900",
+                      )}
+                    >
+                      <span aria-hidden className={cn("absolute inset-y-0 start-0 w-0.5 rounded-full transition-opacity duration-150", tone ? tone.bar : "bg-gold-500", active ? "opacity-100" : "opacity-0")} />
+                      {tone ? (
+                        <span aria-hidden className={cn("grid size-6 shrink-0 place-items-center rounded-sm transition-transform duration-150 group-hover:scale-105", tone.tile)}>
+                          <Icon className="size-3.5 stroke-[1.75]" />
+                        </span>
+                      ) : (
+                        <Icon className={cn("size-4 shrink-0 stroke-[1.5] transition-colors duration-150", active ? "text-ink-900" : "text-ink-500 group-hover:text-ink-700")} aria-hidden />
+                      )}
+                      <span className="min-w-0 flex-1 truncate">{tr(item.label)}</span>
+                      {hint && <kbd className="num rounded-xs border border-hairline px-1 py-px text-hint text-ink-400 opacity-0 transition-opacity duration-150 group-hover:opacity-100">G {hint.toUpperCase()}</kbd>}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
     </>
   );
 }

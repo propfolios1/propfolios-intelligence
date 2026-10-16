@@ -10,6 +10,7 @@ import * as s from "@/db/schema";
 import { isAiConfigured, MODELS } from "@/lib/ai/client";
 import { clerkEnabled, requireRole } from "@/lib/auth";
 import { TOOL_NAMES, MCP_TOOLS } from "@/lib/mcp/tools";
+import { unsplashConfigured } from "@/lib/media/unsplash";
 import { supabaseConfigured } from "@/lib/supabase/server";
 
 export const metadata = { title: "Integrations" };
@@ -30,6 +31,7 @@ export default async function IntegrationsPage() {
     ["Supabase Realtime", "Live portfolios, insights, actions and market data", "NEXT_PUBLIC_SUPABASE_ANON_KEY", Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)],
     ["Upstash Redis", "Shared rate limiting", "KV_REST_API_URL", Boolean(process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)],
     ["Mapbox", "Property map tiles", "NEXT_PUBLIC_MAPBOX_TOKEN", Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN)],
+    ["Unsplash", "Property photography in the client portal", "UNSPLASH_ACCESS_KEY", unsplashConfigured()],
   ] as const;
   return (
     <PageContainer className="pt-10 md:pt-12">

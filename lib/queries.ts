@@ -216,6 +216,7 @@ export async function listProperties(db: DB, tenantId: string, f: PropertyFilter
       lat: s.properties.lat,
       lng: s.properties.lng,
       reraNumber: s.properties.reraNumber,
+      imageUrl: s.properties.imageUrl,
       developerId: s.developers.id,
       developerName: s.developers.name,
       developerRisk: s.developers.riskScore,
@@ -371,7 +372,7 @@ export async function listRecommendations(db: DB, user: CurrentUser, f: { client
   if (f.clientId) where.push(eq(s.recommendations.clientId, f.clientId));
   if (f.status) where.push(eq(s.recommendations.status, f.status));
   return db
-    .select({ r: s.recommendations, clientName: s.clients.name, propertyName: s.properties.name, propertySlug: s.properties.slug, propertyYield: s.properties.grossYield, propertyCurrency: s.properties.currency, propertyPriceMin: s.properties.priceMin })
+    .select({ r: s.recommendations, clientName: s.clients.name, propertyName: s.properties.name, propertySlug: s.properties.slug, propertyCity: s.properties.city, propertyCommunity: s.properties.community, propertyAssetClass: s.properties.assetClass, propertyImageUrl: s.properties.imageUrl, propertyYield: s.properties.grossYield, propertyCurrency: s.properties.currency, propertyPriceMin: s.properties.priceMin })
     .from(s.recommendations)
     .innerJoin(s.clients, eq(s.clients.id, s.recommendations.clientId))
     .leftJoin(s.properties, eq(s.properties.id, s.recommendations.propertyId))
